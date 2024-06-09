@@ -89,7 +89,7 @@
 		let duplicateSymbol = duplicateSymbolInBinary(binary, sourceSymbol)
 		
 		obj[fieldName] = {
-			symbolName: demangle(duplicateSymbol.name),
+			symbolName: duplicateSymbol.name,
 			children: [],
 		}
 		

@@ -208,8 +208,8 @@
 <ul class="tab_bar" bind:this={tabBar} on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
 	{#if showBugReporter}
 		<li class:absolute={tabs.length === 0} style="font-weight: 600;">
-			<a href="https://github.com/Darxoon/OrigamiWand/issues"
-				target="_blank" rel="noopener noreferrer">Report bugs</a>
+			<a href="https://discord.com/invite/pdYpWw8"
+				target="_blank" rel="noopener noreferrer">Need help?</a>
 		</li>
 	{/if}
 	{#if tabs.length === 0}

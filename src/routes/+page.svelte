@@ -17,7 +17,6 @@
 	import { map2d, createFileTab, createWelcomeScreen } from '$lib/util';
 	
 	import TitleCard from '$lib/TitleCard.svelte';
-    import VersionIdentifier from '$lib/VersionIdentifier.svelte';
     import type { MenuCategory } from '$lib/types';
 	
 	let editorStrip: EditorStrip
@@ -153,6 +152,8 @@ to me, the developer (Darxoon). Thanks.`
 	<meta name="twitter:image" content="https://darxoon.neocities.org/res/origamiwand.png">
 </svelte:head>
 
+<!-- TODO: consider whether this element should get a role after all -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <section class="main" on:dragover={fileDragHandler} on:dragleave={dragLeaveHandler} on:drop={fileDropHandler}>
 	<div class="title_card">
 		<TitleCard menu={menuItems} />
@@ -160,8 +161,6 @@ to me, the developer (Darxoon). Thanks.`
 	
 	<EditorStrip bind:this={editorStrip}></EditorStrip>
 </section>
-
-<VersionIdentifier />
 
 {#if $modalVisible}
 	<Modal>

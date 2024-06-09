@@ -130,7 +130,7 @@
 			// also create symbol
 			let baseSymbolIndex = binary.findSymbolIndex(lastBaseObject.symbolName)
 			let newSymbol = binary.symbolTable[baseSymbolIndex].clone()
-			newSymbol.name = mangleIdentifier(symbolName)
+			newSymbol.name = symbolName
 			binary.symbolTable.splice(baseSymbolIndex + 1, 0, newSymbol)
 		}
 		

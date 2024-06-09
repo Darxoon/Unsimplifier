@@ -1,6 +1,7 @@
 import BoyerMoore from "./boyermoore"
 import { Pointer } from "./elfBinary"
 import { BinaryReader, BinaryWriter } from "./misc"
+import { demangle, followsManglingRules, mangleIdentifier } from "./nameMangling"
 
 /**
  * Sections are a fundamental part of ELF binaries.
@@ -24,6 +25,7 @@ export class Section {
 	entSize: number
 	
 	content: ArrayBuffer
+	reader: BinaryReader
 	
 	constructor(reader: BinaryReader) {
 		this.namePointer = new Pointer(reader.readInt32())
@@ -39,6 +41,7 @@ export class Section {
 		this.entSize = Number(reader.readBigInt64())
 
 		this.content = null
+		this.reader = null
 	}
 	
 	getStringAt(offset: Pointer): string {
@@ -112,6 +115,7 @@ export class Relocation {
 
 export class Symbol {
 	name: string
+	isNameMangled: boolean
 	info: number
 	visibility: number
 	sectionHeaderIndex: number
@@ -122,7 +126,9 @@ export class Symbol {
 		let symbol = new Symbol()
 		
 		let namePointer = new Pointer(reader.readInt32())
-		symbol.name = stringSection.getStringAt(namePointer)
+		let rawName = stringSection.getStringAt(namePointer)
+		symbol.name = demangle(rawName)
+		symbol.isNameMangled = followsManglingRules(rawName)
 		symbol.info = reader.readUint8()
 		symbol.visibility = reader.readUint8()
 		symbol.sectionHeaderIndex = reader.readInt16()
@@ -133,16 +139,21 @@ export class Symbol {
 	}
 	
 	toBinaryWriter(writer: BinaryWriter, stringTable: Section) {
+		let name = this.isNameMangled && this.name != "" ? mangleIdentifier(this.name) : this.name
 		let nameOffset: number = 0
 		
-		if (this.name != "") {
-			let search = new BoyerMoore(new TextEncoder().encode(this.name))
-			nameOffset = search.findIndex(stringTable.content)
-		}
-		
-		if (nameOffset == -1) {
-			nameOffset = stringTable.content.byteLength
-			stringTable.appendString(this.name)
+		// 3 is section, whose names are referenced through
+		// the section header table, so the nameOffset stays 0
+		if (this.info != 3) {
+			if (name != "") {
+				let search = new BoyerMoore(new TextEncoder().encode(name))
+				nameOffset = search.findIndex(stringTable.content)
+			}
+			
+			if (nameOffset == -1) {
+				nameOffset = stringTable.content.byteLength
+				stringTable.appendString(name)
+			}
 		}
 		
 		writer.writeInt32(nameOffset)

@@ -49,6 +49,9 @@ export class FileSystem {
 	}
 	
 	// get state
+	public async getFileContent(filePath: string, isText: true): Promise<string>
+	public async getFileContent(filePath: string, isText: false): Promise<ArrayBuffer>
+	
 	public async getFileContent(filePath: string, isText: boolean): Promise<string | ArrayBuffer> {
 		let files = await this.getFilesInDirectory(path.dirname(filePath))
 		let fileId = files[path.basename(filePath)]

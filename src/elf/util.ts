@@ -11,6 +11,26 @@ export function* enumerate<T>(arr: T[]): Generator<[T, number], void, unknown> {
 	}
 }
 
+export type Peekable<T> = Generator<T, never> & { peek: () => T | null }
+
+export function peekable<T>(iterable: Iterable<T> | Iterator<T>): Peekable<T> {
+	let iterator: Iterator<T> = iterable[globalThis.Symbol.iterator] ? iterable[globalThis.Symbol.iterator]() : iterable
+	let state = iterator.next();
+	
+	// @ts-expect-error
+	const i: Peekable<T> = (function* (initial) {
+		while (!state.done) {
+		const current = state.value;
+		state = iterator.next();
+		const arg = yield current;
+		}
+		return state.value;
+	})()
+
+	i.peek = () => state.done ? null : state.value;
+	return i;
+}
+
 const customPrototype = Object.create(Map.prototype)
 
 customPrototype.set = function(key, value) {
@@ -46,7 +66,7 @@ export function duplicateObjectInBinary<T extends object>(binary: ElfBinary, dat
 		for (const [fieldName, fieldValue] of Object.entries(obj) as [string, unknown][]) {
 			const fieldType = FILE_TYPES[dataType].typedef[fieldName]
 			
-			if (fieldType === "symbol" || fieldType === "pointer" && fieldValue != null) {
+			if (fieldType === "symbol" && fieldValue != null) {
 				const childDataType = FILE_TYPES[dataType].childTypes[fieldName]
 				const childObjectType = FILE_TYPES[childDataType].objectType
 				

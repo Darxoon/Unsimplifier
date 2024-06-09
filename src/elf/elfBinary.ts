@@ -28,11 +28,11 @@ export class ElfBinary {
 	}
 	
 	public findSymbol(name: string): Symbol {
-		return this.symbolTable.find(symbol => demangle(symbol.name) === name)
+		return this.symbolTable.find(symbol => symbol.name === name)
 	}
 	
 	public findSymbolIndex(name: string): number {
-		return this.symbolTable.findIndex(symbol => demangle(symbol.name) === name)
+		return this.symbolTable.findIndex(symbol => symbol.name === name)
 	}
 }
 

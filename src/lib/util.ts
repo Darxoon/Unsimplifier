@@ -56,12 +56,14 @@ export function downloadBlob(data: Uint8Array | BlobPart, fileName: string, mime
 	}, 1000);
 };
 
-export function getFileContent(file: File): Promise<ArrayBuffer> {
+export function getFileContent(file: File, verbose = true): Promise<ArrayBuffer> {
 	return new Promise<ArrayBuffer>((resolve, reject) => {
 		const fileReader = new FileReader()
 		
 		fileReader.onload = function(e) {
-			console.log(fileReader.result)
+			if (verbose) {
+				console.log("read file", fileReader.result)
+			}
 			
 			resolve(fileReader.result as ArrayBuffer)
 		}
@@ -72,6 +74,24 @@ export function getFileContent(file: File): Promise<ArrayBuffer> {
 		
 		fileReader.readAsArrayBuffer(file)
 	})
+}
+
+export function openFolderSelector() {
+	console.log("opening file")
+
+	const fileSelector = document.createElement('input')
+	fileSelector.setAttribute('type', 'file')
+	fileSelector.setAttribute('webkitdirectory', "webkitdirectory")
+	fileSelector.setAttribute('directory', "directory")
+	fileSelector.setAttribute('multiple', "multiple")
+	fileSelector.click()
+	
+    return new Promise<File[]>((resolve, reject) => {
+        fileSelector.addEventListener('change', async (e: any) => {
+            const files: File[] = [...e.target.files]
+            resolve(files)
+        })
+    })
 }
 
 function downloadURL(url: string, fileName: string) {
