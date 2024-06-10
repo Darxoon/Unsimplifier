@@ -10,6 +10,7 @@
     import { HTML_FOCUSABLE_ELEMENTS } from "$lib/util";
     import { OpenWindowEvent } from "../events";
     import Page from "../fileEditor/Page.svelte";
+    import WelcomeScreen from "../fileEditor/welcomeScreen/WelcomeScreen.svelte";
 	
 	interface ContentComponent {
 		collapseAll(): void
@@ -132,18 +133,26 @@
 	}
 	
 	function selectTabContent(tabIndex: number) {
-		let firstFocusable = contentDivElements[tabIndex].querySelector(HTML_FOCUSABLE_ELEMENTS.join(', '))
-		
-		dispatch('activate')
-		
-		if (firstFocusable instanceof HTMLElement) {
-			firstFocusable.focus()
-		} else {
-			throw new Error("Cannot focus a not-HTML element")
-		}
+		// if I don't delay this, the tab's content might not even have been loaded yet
+		// and would get focused very inconsistently
+		setTimeout(() => {
+			let firstFocusable = contentDivElements[tabIndex]?.querySelector(HTML_FOCUSABLE_ELEMENTS.join(', '))
+			
+			if (firstFocusable == null)
+				return
+			
+			dispatch('activate')
+			
+			if (firstFocusable instanceof HTMLElement) {
+				firstFocusable.focus()
+			} else {
+				console.log('firstFocusable', firstFocusable)
+				throw new Error("Cannot focus a not-HTML element")
+			}
+		})
 	}
 	
-	function handleOpenWindowEvent(e: unknown, tab: Tab) {
+	function handleOpenWindowEvent(e: unknown, tab: Tab = null) {
 		if (!(e instanceof OpenWindowEvent))
 			throw new TypeError("Expected an OpenWindowEvent as event detail for open event, not " + e)
 		
@@ -190,6 +199,8 @@ Do you want to close those too?`,
 
 <svelte:options accessors={true} />
 
+<!-- TODO: revisit this svelte-ignore -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="main" bind:this={mainElement} class:inactive={!isActive} on:mouseleave={onMouseLeave} on:mouseenter={onMouseEnter} on:keydown={onKeyDown}>
 	
 	<EditorTabBar bind:tabs={tabs} bind:activeIndex={selectedIndex} bind:disableSideDocking={disableSideDocking}
@@ -207,6 +218,12 @@ Do you want to close those too?`,
 					fileName={tab.name} on:open={e => handleOpenWindowEvent(e.detail, tab)}/>
 			</div>
 		{/each}
+		
+		{#if tabs.length == 0}
+			<div>
+				<WelcomeScreen on:open={e => handleOpenWindowEvent(e.detail)} />
+			</div>
+		{/if}
 		
 		<div class="card dockArea dockLeft" on:mouseup={() => onDockMouseUp('left')}
 			class:hidden={!dockAreaShown || disableSideDocking}>

@@ -4,6 +4,22 @@ import type { Tab } from "./editor/globalDragging"
 
 export function noop() {}
 
+export function wait(ms: number): Promise<void> {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve()
+		}, ms)
+	})
+}
+
+export function waitAnimationFrame(): Promise<number> {
+	return new Promise((resolve, reject) => {
+		requestAnimationFrame(time => {
+			resolve(time)
+		})
+	})
+}
+
 // credit: https://github.com/ghosh/Micromodal/blob/master/lib/src/index.js#L4
 // https://github.com/ghosh/Micromodal/blob/master/LICENSE.md
 export const HTML_FOCUSABLE_ELEMENTS = [
@@ -150,18 +166,6 @@ export function createFileTab(fileName: string, binary: ElfBinary, dataType: Dat
 			type: "cardList",
 			binary,
 			dataType,
-		}
-	}
-}
-
-export function createWelcomeScreen(): Tab {
-	return {
-		id: Symbol(),
-		name: "Welcome to Origami Wand",
-		isCompressed: false,
-		children: [],
-		content: {
-			type: "welcomeScreen",
 		}
 	}
 }

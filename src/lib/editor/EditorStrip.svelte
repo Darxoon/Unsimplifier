@@ -139,6 +139,7 @@
 <div class="editors">
 	<!-- TODO: replace tabs with windows and use a proper persistent each key -->
 	{#each tabs as tabList, i (tabList)}
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div on:mousedown|capture={e => activeEditor = i}>
 			<EditorWindow isActive={activeEditor == i} showBugReporter={i == 0} index={i}
 				bind:this={editorWindows[i]} bind:selectedIndex={selectedTabs[i]} bind:tabs={tabList} 
@@ -173,16 +174,18 @@
 					if (detail instanceof OpenWindowEvent) {
 						const { title, parentTab, content } = detail
 						
-						if (parentTab == undefined) {
-							throw new Error(`OpenWindowEvent with title "${title}" does not have a parentTab set and thus cannot be handled.`)
+						// triple equals because if parentTab is null that means that this probably was intended
+						if (parentTab === undefined) {
+							console.warn(`OpenWindowEvent with title "${title}" does not have a parentTab set.`)
 						}
 						
 						const childID = Symbol(`Tab ID ${detail.title}`)
-						tabList[selectedTabs[i]].children.push(childID)
+						
+						tabList[selectedTabs[i]]?.children?.push(childID)
 						
 						let tab = tabIdentity({
 							id: childID,
-							parentId: parentTab.id,
+							parentId: parentTab?.id,
 							name: title,
 							isCompressed: false,
 							children: [],

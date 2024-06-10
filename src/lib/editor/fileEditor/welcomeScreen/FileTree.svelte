@@ -1,0 +1,238 @@
+<script lang="ts">
+    import type { FileSystem } from "$lib/save/vfs";
+    import { waitAnimationFrame } from "$lib/util";
+    import { dirname } from "path-browserify";
+    import { afterUpdate, createEventDispatcher, onMount } from "svelte";
+
+    interface FsItem {
+        path: string
+        name: string
+        indentation: number
+        isFile: boolean
+        isCollapsed: boolean
+    }
+    
+    const supportedFiles = [
+        "data_Npc",
+        "data_Item",
+    ]
+    
+    const dispatch = createEventDispatcher()
+    
+    export let romfs: FileSystem | undefined
+    export let onlyShowSupported: boolean
+    
+    let prevRomfs: FileSystem
+    let prevOnlyShowSupported: boolean
+    let fileTree: FsItem[] = JSON.parse(localStorage.getItem('romfs_list_cache'))
+    
+    let treeElement: HTMLUListElement
+    let short = true
+    let showMoreVisible = true
+    
+    $: itemsVisible = fileTree && calculateItemsVisible(fileTree)
+    
+    $: console.log('romfs')
+    
+    $: if (romfs && (romfs != prevRomfs || prevOnlyShowSupported != onlyShowSupported)) {
+        // if I don't do this, romfs keeps getting set to itself all the time for some reason
+        // which causes the file tree to be regenerated on every click which is janky
+        prevRomfs = romfs
+        prevOnlyShowSupported = onlyShowSupported
+        
+        getRomfsList().then(async list => {
+            fileTree = list
+            console.log('updated romfs list')
+            
+            await waitAnimationFrame()
+            
+            // @ts-ignore
+            feather.replace()
+        })
+    }
+    
+    $: localStorage.setItem('romfs_list_cache', JSON.stringify(fileTree))
+    
+    onMount(() => {
+        // @ts-ignore
+        feather.replace()
+    })
+    
+    afterUpdate(() => {
+        showMoreVisible = treeElement?.getBoundingClientRect().height >= 400
+    })
+    
+    async function readRawRomfsList(outFiles: FsItem[], startPath: string = "/", indentation = -1): Promise<void> {
+        let dir = await romfs.getDirectoryMetadata(startPath)
+        
+        if (fileTree == undefined)
+            console.error('unde')
+        
+        if (dir.name) {
+            outFiles.push({
+                path: dir.path,
+                name: dir.name,
+                indentation,
+                isFile: false,
+                isCollapsed: fileTree?.find(item => item.name == dir.name)?.isCollapsed
+                    ?? dir.directories.length == 0,
+            })
+        }
+        
+        for (const child of dir.directories) {
+            await readRawRomfsList(outFiles, child, indentation + 1)
+        }
+        
+        for (const file of dir.files) {
+            if (!onlyShowSupported || supportedFiles.some(name => file.name.includes(name))) {
+                outFiles.push({
+                    path: file.path,
+                    name: file.name,
+                    indentation: indentation + 1,
+                    isFile: true,
+                    isCollapsed: false,
+                })
+            }
+        }
+    }
+    
+    async function getRomfsList(): Promise<FsItem[]> {
+        let out: FsItem[] = []
+        await readRawRomfsList(out)
+        
+        // purge all empty folders
+        let prevIndentation = 0
+        
+        for (let i = out.length - 1; i >= 0; i--) {
+            if (!out[i].isFile && out[i].indentation >= prevIndentation) {
+                out.splice(i, 1)
+            } else {
+                prevIndentation = out[i].indentation
+            }
+        }
+        
+        return out
+    }
+    
+    function calculateItemsVisible(items: FsItem[]): boolean[] {
+        let collapsedStack: boolean[] = []
+        let collapsedCount = 0
+        let out: boolean[] = []
+        
+        let prevIndentation = -1
+        for (const item of items) {            
+            if (item.indentation < prevIndentation) {
+                // I don't know why *this* specifically works but it does
+                for (let i = 0; i < prevIndentation - item.indentation + 1; i++) {
+                    if (collapsedStack[collapsedStack.length - 1])
+                        collapsedCount -= 1
+                    collapsedStack.pop()
+                }
+            }
+            
+            out.push(collapsedCount == 0)
+            
+            if (item.indentation != prevIndentation) {
+                collapsedStack.push(item.isCollapsed)
+                if (item.isCollapsed)
+                    collapsedCount += 1
+            }
+            
+            prevIndentation = item.indentation
+        }
+        
+        return out
+    }
+    
+    function toggleFolderCollapse(dir: FsItem) {
+        if (!dir.isFile) {
+            dir.isCollapsed = !dir.isCollapsed;
+            fileTree = fileTree
+        }
+    }
+    
+    function openFile(file: FsItem) {
+        if (!file.isFile)
+            return
+        
+        dispatch('selectFile', file.path)
+    }
+</script>
+
+{#if fileTree}
+    <ul role="menu" class="tree" bind:this={treeElement} class:shortened={short && showMoreVisible}>
+        {#each fileTree as item, i (item.path)}
+            <!-- TODO: keyboard support -->
+            <li style="padding-left: calc(var(--padding-left) + var(--indent-width) * {item.indentation});"
+                on:mousedown={() => toggleFolderCollapse(item)}
+                on:dblclick={() => openFile(item)}
+                class:collapsed={item.isCollapsed} class:file={item.isFile} class="fs-item"
+                class:invisible={!itemsVisible[i]} role="menuitem" tabindex="0">
+                {#if !item.isFile}
+                    <i data-feather="chevron-down" class="arrow"></i>
+                {/if}
+                {item.name}
+            </li>
+        {/each}
+    </ul>
+    {#if short}
+        <button class="show-more" class:invisible={!showMoreVisible} on:click={() => short = false}>Show more...</button>
+    {/if}
+{/if}
+
+<style>
+    .tree {
+        --padding-left: 0px;
+        --indent-width: 32px;
+        padding-left: 0px;
+        list-style: none;
+        margin-bottom: 0.5rem;
+    }
+    
+    .tree.shortened {
+        max-height: 400px;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+    
+    .tree li {
+        user-select: none;
+        cursor: pointer;
+    }
+    
+    .tree li:hover {
+        background: #d0d0d0;
+    }
+    
+    .tree li:focus, .tree li:active {
+        background: #bfbfbf;
+    }
+    
+    .file {
+        --padding-left: 24px;
+    }
+    
+    .arrow {
+        float: left;
+        height: 20px;
+        transform: translateY(1px);
+    }
+    
+    .collapsed .arrow {
+        transform: translateY(1px) rotateZ(-90deg);
+    }
+    
+    .show-more {
+        font: inherit;
+        border: none;
+        background: none;
+        padding: 0;
+        
+        margin-top: 0;
+        margin-left: 1rem;
+    }
+    
+    .invisible {
+        display: none;
+    }
+</style>

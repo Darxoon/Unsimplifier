@@ -95,7 +95,7 @@ export class FileSystem {
 			let dir = await this.db.directory.get(pathSoFar)
 			
 			if (dir == null) {
-				this.db.directory.add({
+				await this.db.directory.add({
 					path: pathSoFar,
 					isRoot: pathSoFar === '/',
 					directories: [],
@@ -171,7 +171,7 @@ export interface FileMetadata {
 }
 
 export async function createFileSystem(id: string): Promise<FileSystem> {
-	let db = new Dexie("~VFS:" + id) as DB
+	let db = new Dexie("VFS:" + id) as DB
 	
 	db.version(1).stores({
 		directory: "path,isRoot",
@@ -180,7 +180,7 @@ export async function createFileSystem(id: string): Promise<FileSystem> {
 	
 	// @ts-ignore
 	let fs: FileSystem = new FileSystem(await db.open())
-	fs.createDirectory('/')
+	await fs.createDirectory('/')
 	
 	return fs
 }

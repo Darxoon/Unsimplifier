@@ -17,6 +17,12 @@ export interface PropertyOptions {
 export type PropertyType = "string" | "symbol" | "Vector3" | "float"
 	| "double" | "byte" | "bool8" | "bool32" | "short" | "int" | "long"
 
+const NUMBER_TYPES = ["float", "double", "byte", "short", "int", "long"]
+
+export function isNumber(fieldType: PropertyType): boolean {
+	return NUMBER_TYPES.includes(fieldType)
+}
+
 export class Property<T extends PropertyType> {
 	type: T
 	description?: string

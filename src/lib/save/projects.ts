@@ -3,8 +3,12 @@ import romfsdata from "./romfsdata.json";
 import { getFileContent } from "$lib/util";
 import { sha256 } from "js-sha256";
 
-export async function loadFilesToRomfsStore(files: File[]) {
-    const romfs = await createFileSystem("romfs_data")
+export async function getRomfsVfs() {
+    return await createFileSystem("romfs_data")
+}
+
+export async function loadFilesToRomfsStore(files: File[], progressCallback: (state: string) => void) {
+    const romfs = await getRomfsVfs()
     
     // Create map for easier file access
     const fileMap: Map<string, File> = new Map()
@@ -17,17 +21,29 @@ export async function loadFilesToRomfsStore(files: File[]) {
         }
     }
     
+    console.log('transferred files into a map')
+    
     // Create all necessary directories
+    progressCallback("creating directories")
+    
     const allFilePaths = [...fileMap.keys()]
     const directories = new Set(allFilePaths.map(path => path.slice(0, path.lastIndexOf('/'))))
     
     for (const dir of directories) {
-        romfs.createDirectory("/" + dir)
+        await romfs.createDirectory("/" + dir)
     }
     
+    console.log('created necessary directories')
+    
     // Load files based on romfsdata.json
-    await Promise.all(romfsdata.map(async ({ name, hash: baseHash }) => {
+    let currentFile = 1
+    
+    for (const { name, hash: baseHash } of romfsdata) {
         const file = fileMap.get(name)
+        
+        if (file == undefined)
+            throw new Error(`File 'romfs/${name}' does not exist! Did you select the correct folder?`)
+        
         const content: ArrayBuffer = await getFileContent(file, false)
         const hash = sha256(content)
         
@@ -36,5 +52,10 @@ export async function loadFilesToRomfsStore(files: File[]) {
         }
         
         await romfs.writeFileContent("/" + name, content)
-    }))
+        
+        let percentage = currentFile++ / fileMap.size
+        progressCallback(`loading files, ${Math.floor(percentage * 100)}% complete`)
+    }
+    
+    console.log('created all necessary files')
 }

@@ -16,4 +16,8 @@ declare global {
 	interface FocusOptions {
 		focusVisible?: boolean
 	}
+	
+	interface Storage {
+		setItem(key: string, value: number): void;
+	}
 }

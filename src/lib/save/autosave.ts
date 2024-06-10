@@ -20,7 +20,7 @@ export async function initializeAutosaves() {
 		console.error("Your browser doesn't support a stable version of IndexedDB. Consider updating your browser.")
 	}
 	
-	db = new Dexie("AutoSave") as DB
+	db = new Dexie("TTYDAutoSave") as DB
 	db.version(3).stores({
 		overview: "++id,timestamp",
 		saves: "++id",

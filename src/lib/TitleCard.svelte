@@ -9,6 +9,7 @@
 </script>
 
 <div>
+	<img class="icon" src="Unsimplifier_icon.png" alt="Unsimplifier's logo">
 	<div class="title_card">
 		<div class="title">
 			<h1>Unsimplifier</h1>
@@ -31,6 +32,12 @@
 </div>
 
 <style lang="scss">
+	.icon {
+		position: relative;
+		top: 0.4rem;
+		float: left;
+	}
+	
 	.title_card {
 		padding: 0.2rem 1rem calc(1rem - 10px) 1rem;
 		border-radius: 1rem;

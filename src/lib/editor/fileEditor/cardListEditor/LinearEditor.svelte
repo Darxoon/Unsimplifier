@@ -164,10 +164,10 @@
 	</div>
 	
 	<!-- TODO: use a dedicated special elf editor instead -->
-	{#if dataType === DataType.Maplink}
+	<!-- {#if dataType === DataType.Maplink}
 		<ObjectEditor title="Maplink Header" bind:obj={binary.data.main[0]} 
 			dataType={DataType.MaplinkHeader} showButtons={false} binary={binary} />
-	{/if}
+	{/if} -->
 </div>
 {/if}
 

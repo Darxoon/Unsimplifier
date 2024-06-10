@@ -72,7 +72,7 @@
 		<button class="modalbtn" on:click={() => hideActiveModal({
 			dataType: DataType[select.options[select.selectedIndex].value],
 			isCompressed,
-		})} bind:this={okButton}>Okay</button>
+		})} bind:this={okButton}>Confirm</button>
 	</div>
 </Alert>
 

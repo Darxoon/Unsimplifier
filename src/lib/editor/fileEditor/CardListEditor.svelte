@@ -26,7 +26,7 @@
 	}
 	
 	export function collapseAll() {
-		inner.collapseAll
+		inner.collapseAll()
 	}
 	
 	export function expandAll() {

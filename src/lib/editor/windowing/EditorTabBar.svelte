@@ -205,28 +205,34 @@
 	}
 </script>
 
-<ul class="tab_bar" bind:this={tabBar} on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
+<ul class="tab_bar" role="menubar" aria-orientation="horizontal" bind:this={tabBar} on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
 	{#if showBugReporter}
-		<li class:absolute={tabs.length === 0} style="font-weight: 600;">
+		<li style="font-weight: 600;">
 			<a href="https://discord.com/invite/pdYpWw8"
 				target="_blank" rel="noopener noreferrer">Need help?</a>
 		</li>
 	{/if}
-	{#if tabs.length === 0}
-		<li class="active" style="margin: 0 auto">Open a file to get started.</li>
-	{/if}
 	{#if tabs.length != 0 && immediateTabs.length == 0}
 		<li>&nbsp</li>
 	{/if}
+	{#if tabs.length === 0}
+		<li class="active">
+			<span class="tabName">Welcome</span>
+			<div class="close_button disabled white-x" role="button" aria-disabled="true">
+				<i data-feather="x" class="icon-close"></i>
+			</div>
+		</li>
+	{/if}
 	{#each immediateTabs as tab, i}
 		<li bind:this={tabElements[i]} use:nonnativeButton={() => { activeIndex = i; dispatch('selectTabContent', i) }}
-			class="tab_button"
+			class="tab_button" role="menuitem"
 			class:active={immediateActiveIndex == i}
 			class:colorInvisible={tab == floating}
 			on:mousedown={() => onTabMouseDown(tab, i)} 
 			on:mousemove={e => onTabMouseMove(tab, i)}>
 			
 			<span class="tabName">{tab.name}</span>
+			<!-- svelte-ignore a11y-no-static-element-interactions -- nonnativeButton gives it a role="button" -->
 			<div class="close_button" class:white-x={state == 'default' && immediateActiveIndex == i}
 				on:mousedown|stopPropagation={noop} use:nonnativeButton={() => dispatch('closeTab', tab)}>
 				<i data-feather="x" class="icon-close"></i>
@@ -301,12 +307,20 @@
 		
 		color: black;
 		
-		&:hover {
+		&:not(.disabled):hover {
 			background: #ffffff4f;
+		}
+		
+		&.disabled {
+			color: gray;
 		}
 		
 		&.white-x {
 			color: white;
+		}
+		
+		&.white-x.disabled {
+			color: #828282;
 		}
 		
 		.icon-close {
@@ -314,10 +328,6 @@
 			height: 100%;
 			stroke-width: 2.5px;
 		}
-	}
-	
-	.absolute {
-		position: absolute;
 	}
 	
 	.colorInvisible {

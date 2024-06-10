@@ -4,7 +4,7 @@
 	
 	import type { ElfBinary } from "paper-mario-elfs/elfBinary";
 	import { DataType } from "paper-mario-elfs/dataType";
-	import { FILE_TYPES } from "paper-mario-elfs/fileTypes";
+	import { FILE_TYPES, isNumber } from "paper-mario-elfs/fileTypes";
 	import { onMount } from "svelte";
 
 	import StringViewer from "../modal/StringViewer.svelte";
@@ -74,9 +74,18 @@
 				<label for="hideNull">Hide all "null" values</label>
 			</div>
 		{/if}
+		{#if isNumber(fieldType)}
+			<div class="hideNullContainer">
+				<input type="checkbox" name="hideNull" on:change={e => {
+					// @ts-ignore
+					hideNulls = e.target.checked
+				}}>
+				<label for="hideNull">Hide all zeroes</label>
+			</div>
+		{/if}
 		<div class="allValues local tabbable">
 			{#each objects as obj, i}
-				{#if hideNulls ? obj[fieldName] !== null : true}
+				{#if hideNulls ? obj[fieldName] !== null && obj[fieldName] != 0 || obj[fieldName] === "" : true}
 					<div class="index">
 						{i}
 					</div>

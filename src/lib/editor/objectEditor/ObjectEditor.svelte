@@ -189,7 +189,7 @@
 				
 				<!-- Value Input -->
 				<div class="value">
-					{#if (FILE_TYPES[dataType].typedef[field] === "pointer" || FILE_TYPES[dataType].typedef[field] === "symbol")}
+					{#if FILE_TYPES[dataType].typedef[field] === "symbol"}
 						<CrossObjectLink binary={binary} targetObjects={value} sourceDataType={dataType} objectId={objectId}
 							targetDataType={FILE_TYPES[dataType].childTypes[field]}
 							tabTitle={FILE_TYPES[dataType].metadata[field]?.tabName} error={fieldErrors[field]}

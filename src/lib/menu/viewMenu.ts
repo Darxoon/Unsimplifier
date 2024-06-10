@@ -6,7 +6,7 @@ import DescriptionViewer from "$lib/modals/DescriptionViewer.svelte"
 import NoteViewer from "$lib/modals/NoteViewer.svelte"
 import { globalEditorStrip } from "$lib/stores"
 import type { MenuCategory } from "$lib/types"
-import { DataType } from "paper-mario-elfs/dataType"
+import type { DataType } from "paper-mario-elfs/dataType"
 import { FILE_TYPES, Property, type PropertyType } from "paper-mario-elfs/fileTypes"
 
 let editorStrip: EditorStrip
@@ -67,9 +67,9 @@ function viewAllDescriptions(dataType: DataType) {
 		}
 	}
 	
-	if (dataType == DataType.Maplink) {
-		addMetadataRecursive(DataType.MaplinkHeader, allMetadata)
-	}
+	// if (dataType == DataType.Maplink) {
+	// 	addMetadataRecursive(DataType.MaplinkHeader, allMetadata)
+	// }
 	
 	if (allMetadata.size >= 1) {
 		showModal(DescriptionViewer, { allMetadata })

@@ -13,8 +13,8 @@
 	import { getHelpMenu } from '$lib/menu/helpMenu';
 	import { getFileMenu, openFileToEditor } from '$lib/menu/fileMenu';
 	import { getViewMenu } from '$lib/menu/viewMenu';
-	import { globalEditorStrip, loadedAutosave } from '$lib/stores';
-	import { map2d, createFileTab, createWelcomeScreen } from '$lib/util';
+	import { globalEditorStrip, loadedAutosave, romfsInitialized } from '$lib/stores';
+	import { map2d, createFileTab } from '$lib/util';
 	
 	import TitleCard from '$lib/TitleCard.svelte';
     import type { MenuCategory } from '$lib/types';
@@ -23,19 +23,18 @@
 	
 	$: globalEditorStrip.set(editorStrip)
 	
+	$: if (globalThis.localStorage && $romfsInitialized != null) {
+		localStorage.setItem('romfs_initialized', $romfsInitialized ? 1 : 0)
+	}
+	
 	export const menuItems: MenuCategory[] = [
 		getFileMenu(),
 		{
 			title: "Edit",
 			items: [
 				{
-					name: "Edit Type Definition...",
-					onClick: () => {
-						showModal(TextAlert, {
-							title: "Coming Soon",
-							content: "The feature to edit the type definition is not completed, and thus is not available yet."
-						})
-					}
+					name: "Nothing here yet",
+					onClick: () => {}
 				}
 			],
 		},
@@ -52,7 +51,6 @@
 			
 			if (!save) {
 				$loadedAutosave = true
-				editorStrip.appendTab(createWelcomeScreen())
 				return
 			}
 			
@@ -60,52 +58,46 @@
 				createFileTab(name, parseElfBinary(dataType, content), dataType, isCompressed)
 			).filter(arr => arr.length > 0)
 			
-			if (tabs.length == 0) {
-				let showWelcomeScreen = !parseInt(localStorage.getItem('hide-welcome-screen'))
-				
-				if (showWelcomeScreen) {
-					editorStrip.appendTab(createWelcomeScreen())
-				}
-			} else {
+			if (tabs.length != 0) {
 				editorStrip.load(tabs)
 			}
 			
 			$loadedAutosave = true
 		})
-
+		
 		window.addEventListener('beforeunload', async e => {
 			await createTemporarySave(editorStrip.toSaveData())
 		})
 		
-		let betaBannerShown = !!localStorage.beta
+		let betaBannerShown = !!localStorage.ttydbeta
 		
 		if (!betaBannerShown) {
 			showModal(TextAlert, {
-				title: "Origami Wand Beta",
+				title: "Welcome to Unsimplifier!",
 				fontSize: 14,
 				content: `
-Welcome to the Origami Wand Beta!
+This tool is still in development so expect to come across issues. If you
+have any questions, feel free to message me (@Darxoon on discord) or join the
+discord linked under "Need help?" and ask me there.
 
-This product is still in beta, so it is not finished yet and might still contain bugs.
-If you encounter any, **please report them using the "Report bugs" button** or reach out
-to me, the developer (Darxoon). Thanks.`
+Anyway, have fun using this tool!`
 			})
 			
-			localStorage.beta = 1
+			localStorage.ttydbeta = 1
 		}
 	})
 	
 	let draggingFile = false
 	
 	function fileDragHandler(e: DragEvent) {
-		if (e.dataTransfer.types.includes("Files")) {
+		if ($romfsInitialized && e.dataTransfer.types.includes("Files")) {
 			draggingFile = true
 			e.preventDefault()
 		}
 	}
 	
 	async function fileDropHandler(e: DragEvent) {
-		if (e.dataTransfer.types.includes("Files")) {
+		if ($romfsInitialized && e.dataTransfer.types.includes("Files")) {
 			draggingFile = false
 			
 			e.preventDefault()
@@ -136,19 +128,19 @@ to me, the developer (Darxoon). Thanks.`
 </script>
 
 <svelte:head>
-	<title>Origami Wand</title>
+	<title>Unsimplifier Tool</title>
 	
-	<meta property="og:url" content="https://darxoon.neocities.org/OrigamiWand/">
+	<meta property="og:url" content="https://darxoon.neocities.org/Unsimplifier/">
 	<meta property="og:type" content="website">
-	<meta property="og:title" content="Origami Wand">
-	<meta property="og:description" content="Editor for Paper Mario: The Origami King (Beta)">
+	<meta property="og:title" content="Unsimplifier">
+	<meta property="og:description" content="Editor for Paper Mario: The Thousand Year Door Remake">
 	<meta property="og:image" content="https://darxoon.neocities.org/res/origamiwand.png">
 
 	<meta name="twitter:card" content="summary_large_image">
 	<meta property="twitter:domain" content="darxoon.neocities.org">
-	<meta property="twitter:url" content="https://darxoon.neocities.org/OrigamiWand/">
-	<meta name="twitter:title" content="Origami Wand">
-	<meta name="twitter:description" content="Editor for Paper Mario: The Origami King (Beta)">
+	<meta property="twitter:url" content="https://darxoon.neocities.org/Unsimplifier/">
+	<meta name="twitter:title" content="Unsimplifier">
+	<meta name="twitter:description" content="Editor for Paper Mario: The Thousand Year Door Remake">
 	<meta name="twitter:image" content="https://darxoon.neocities.org/res/origamiwand.png">
 </svelte:head>
 
