@@ -102,6 +102,7 @@
             type: "cardList",
             binary,
             dataType,
+            filePath: filePath.slice(1),
         }))
     }
 </script>

@@ -7,11 +7,8 @@ export interface CardList {
     
     binary: ElfBinary
     dataType: DataType
+    filePath?: string
     overrideObjects?: UuidTagged[]
 }
 
-export interface WelcomeScreen {
-    type: "welcomeScreen"
-}
-
-export type PageContent = CardList | WelcomeScreen
+export type PageContent = CardList

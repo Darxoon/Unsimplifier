@@ -131,7 +131,7 @@
 			let baseSymbolIndex = binary.findSymbolIndex(lastBaseObject.symbolName)
 			let newSymbol = binary.symbolTable[baseSymbolIndex].clone()
 			newSymbol.name = symbolName
-			binary.symbolTable.splice(baseSymbolIndex + 1, 0, newSymbol)
+			binary.symbolTable.push(newSymbol)
 		}
 		
 		return object

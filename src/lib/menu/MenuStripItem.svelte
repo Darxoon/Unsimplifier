@@ -39,15 +39,16 @@
 	}
 </script>
 
-<li role="button" tabindex="0" on:mouseenter={updateOpenedMenu} bind:this={li}
+<li role="menuitem" tabindex="0" class:shown={shown} bind:this={li} on:mouseenter={updateOpenedMenu}
 	on:mousedown|stopPropagation={open} on:keyup|stopPropagation={open}>
 	
 	{name}
 	
-	<div on:mousedown|stopPropagation={() => {}} class="menu" class:shown={shown}>
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div on:mousedown|stopPropagation={() => {}} class="menu" role="menubar" tabindex="0">
 		<ul>
 			{#each items as item}
-				<li class="menu_item" role="button" tabindex="0" use:nonnativeButton={() => activate(item)}>{item.name}</li>
+				<li class="menu_item" role="menuitem" tabindex="0" use:nonnativeButton={() => activate(item)}>{item.name}</li>
 			{/each}
 		</ul>
 	</div>
@@ -66,7 +67,7 @@
 		-ms-user-select: none;
 	}
 	
-	li:hover {
+	li:hover, li.shown {
 		background: #d9d9d9;
 	}
 	
@@ -84,7 +85,7 @@
 		z-index: 2;
 	}
 	
-	.menu.shown {
+	.shown .menu {
 		display: block;
 	}
 	

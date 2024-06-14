@@ -121,10 +121,7 @@ export function duplicateSymbolInBinary(binary: ElfBinary, originalSymbol: Symbo
 	// the new symbol is given a (probably) unique name to prevent symbol name collisions, which are the root of all evil
 	let clonedSymbolName = incrementName(demangle(originalSymbol.name)) + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
 	clonedSymbol.name = mangleIdentifier(clonedSymbolName)
-	
-	// insert new symbol into symboltable
-	let originalSymbolIndex = binary.symbolTable.indexOf(originalSymbol)
-	binary.symbolTable.splice(originalSymbolIndex + 1, 0, clonedSymbol)
+	binary.symbolTable.push(clonedSymbol)
 	
 	console.log("Duplicating symbol", demangle(originalSymbol.name), "new name:", clonedSymbolName)
 	

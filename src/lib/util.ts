@@ -72,6 +72,11 @@ export function downloadBlob(data: Uint8Array | BlobPart, fileName: string, mime
 	}, 1000);
 };
 
+export function downloadText(data: string, fileName: string, mimeType: string = 'text/plain') {
+	let blob = new TextEncoder().encode(data)
+	downloadBlob(blob, fileName, mimeType)
+};
+
 export function getFileContent(file: File, verbose = true): Promise<ArrayBuffer> {
 	return new Promise<ArrayBuffer>((resolve, reject) => {
 		const fileReader = new FileReader()

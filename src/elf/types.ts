@@ -164,6 +164,22 @@ export class Symbol {
 		writer.writeBigInt64(BigInt(this.size))
 	}
 	
+	equals(other: Symbol): boolean {
+		if (other == this)
+			return true
+		
+		if (other == undefined)
+			return false
+		
+		return this.name == other.name
+			&& this.isNameMangled == other.isNameMangled
+			&& this.info == other.info
+			&& this.visibility == other.visibility
+			&& this.sectionHeaderIndex == other.sectionHeaderIndex
+			&& this.location.equals(other.location)
+			&& this.size == other.size
+	}
+	
 	clone(): Symbol {
 		let clone = {...this}
 		Object.setPrototypeOf(clone, Object.getPrototypeOf(this))

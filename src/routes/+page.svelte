@@ -66,7 +66,9 @@
 		})
 		
 		window.addEventListener('beforeunload', async e => {
-			await createTemporarySave(editorStrip.toSaveData())
+			if (editorStrip) {
+				await createTemporarySave(editorStrip.toSaveData())
+			}
 		})
 		
 		let betaBannerShown = !!localStorage.ttydbeta

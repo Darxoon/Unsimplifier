@@ -41,7 +41,7 @@
 	}
 	
 	.btn {
-		height: 20px;
+		padding-bottom: 9px;
 	}
 	
 	.btn:hover {

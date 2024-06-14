@@ -38,49 +38,6 @@ export class ElfBinary {
 
 export const dataDivisions = {
 	main: "main",
-	maplinkNodes: "maplinkNodes",
-
-	assetGroup: "assetGroup",
-	state: "state",
-	subState: "subState",
-	face: "face",
-	anime: "anime",
-
-	element: "element",
-	map: "map",
-
-	dataHeader: "dataHeader",
-	hole: "hole",
-	version: "version",
-
-	category: "category",
-
-	model: "model",
-	modelProperty: "modelProperty",
-	msg: "msg",
-	shop: "shop",
-	sellItem: "sellItem",
-	seaEntry: "seaEntry",
-	menu: "menu",
-	announcement: "announcement",
-	announcementExclude: "announcementExclude",
-	
-	part: "part",
-	unit: "unit",
-	attackRangeHeader: "attackRangeHeader",
-	attackRange: "attackRange",
-	attack: "attack",
-	eventCamera: "eventCamera",
-	bossAttack: "bossAttack",
-	puzzleLevel: "puzzleLevel",
-	cheerTerm: "cheerTerm",
-	cheer: "cheer",
-	resourceField: "resourceField",
-	resource: "resource",
-	config: "config",
-	
-	battle: "battle",
-	enemy: "enemy",
 } as const
 
 export type DataDivision = keyof typeof dataDivisions
