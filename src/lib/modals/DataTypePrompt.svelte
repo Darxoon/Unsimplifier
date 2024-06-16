@@ -18,6 +18,7 @@
 	const defaultFileNames = {
 		"data_Npc": DataType.Npc,
 		"data_Item": DataType.Item,
+		"data_Mobj": DataType.Mobj,
 	}
 	
 	onMount(() => {
@@ -60,6 +61,7 @@
 		<option value="invalid">Please select data type</option>
 		<option value="Npc">NPC Placement (data_Npc)</option>
 		<option value="Item">Item Placement (data_Item)</option>
+		<option value="Mobj">Mobj Placement (data_Mobj)</option>
 	</select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">

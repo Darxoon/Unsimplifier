@@ -75,9 +75,9 @@ export async function openFileToEditor(file: File) {
 		await openYamlToEditor(file)
 			.catch(async (e: Error) => {
 				await showModal(TextAlert, {
-					title: "Error",
+					title: "Invalid File",
 					content: `
-Invalid Unsimplifier Yaml file
+Error: Tried to load invalid Unsimplifier Yaml file
 
 (reason: ${e.message})`,
 				})
@@ -108,12 +108,13 @@ export async function openElfToEditor(file: File) {
 	try {
 		binary = parseElfBinary(dataType, content)
 	} catch (e) {
-		if (e instanceof EmptyFileError) {
-			showModal(TextAlert, {
-				title: "Opening File",
-				content: "File is empty."
-			})
-		}
+		showModal(TextAlert, {
+			title: "Parse Error",
+			content: `There has been an issue with the parsing of the file
+${file.name}. Please report this to the developer (Darxoon)
+
+(reason: ${e.message})`
+		})
 		
 		throw e
 	}
@@ -152,7 +153,7 @@ export async function openYamlToEditor(file: File) {
 	
 	for (const dataDivision of dataDivisions) {
 		if (!(dataDivision in data && data[dataDivision] instanceof Array))
-			throw new Error(`Invalid yaml file, data division ${dataDivision} does not exist or is invalid`)
+			throw new Error(`Invalid yaml file, data division '${dataDivision}' does not exist or is invalid`)
 		
 		const curDataType = dataType
 		const yamlItems = data[dataDivision] as unknown[]
@@ -160,7 +161,7 @@ export async function openYamlToEditor(file: File) {
 		
 		for (const [item, i] of enumerate(yamlItems)) {
 			if (!(typeof item == 'object'))
-				throw new Error(`Invalid yaml file, object ${i} in ${dataDivision} is invalid`)
+				throw new Error(`Invalid yaml file, object ${i} in '${dataDivision}' is invalid`)
 			
 			let obj: UuidTagged = {
 				[VALUE_UUID]: ValueUuid(),
@@ -168,17 +169,27 @@ export async function openYamlToEditor(file: File) {
 			}
 			
 			for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[curDataType].typedef)) {
-				if (!(fieldName in item))
-					throw new Error(`Invalid yaml file, object ${i} in ${dataDivision} is missing field ${fieldName}`)
+				let yamlValue: unknown
 				
-				const yamlValue: unknown = item[fieldName]
+				if (fieldName in item)
+					yamlValue = item[fieldName]
+				else {
+					let defaultFieldName = 'field_0x' + FILE_TYPES[curDataType].fieldOffsets[fieldName].toString(16)
+					
+					if (defaultFieldName in item)
+						yamlValue = item['field_0x' + FILE_TYPES[curDataType].fieldOffsets[fieldName].toString(16)]
+					else
+						throw new Error(
+`Invalid yaml file, object ${i} in '${dataDivision}' \
+is missing field '${fieldName}' or '${defaultFieldName}'`)
+				}
 				
 				switch (fieldType) {
 					case "string":
 						if (typeof yamlValue != 'string' && yamlValue != null)
 							throw new Error(
-`Invalid yaml file, expected string for ${fieldName} \
-in ${dataDivision} object ${i} but got ${yamlValue}`)
+`Invalid yaml file, expected string for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 						
 						obj[fieldName] = yamlValue
 						break
@@ -186,8 +197,8 @@ in ${dataDivision} object ${i} but got ${yamlValue}`)
 					case "bool32":
 						if (typeof yamlValue != 'boolean')
 							throw new Error(
-`Invalid yaml file, expected boolean for ${fieldName} \
-in ${dataDivision} object ${i} but got ${yamlValue}`)
+`Invalid yaml file, expected boolean for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 						
 						obj[fieldName] = yamlValue
 						break
@@ -197,8 +208,8 @@ in ${dataDivision} object ${i} but got ${yamlValue}`)
 					case "long":
 						if (typeof yamlValue != 'number' || Math.round(yamlValue) != yamlValue)
 							throw new Error(
-`Invalid yaml file, expected ${fieldType} for ${fieldName} \
-in ${dataDivision} object ${i} but got ${yamlValue}`)
+`Invalid yaml file, expected ${fieldType} for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 						
 						obj[fieldName] = yamlValue
 						break
@@ -206,26 +217,26 @@ in ${dataDivision} object ${i} but got ${yamlValue}`)
 					case "double":
 						if (typeof yamlValue != 'number')
 							throw new Error(
-`Invalid yaml file, expected ${fieldType} for ${fieldName} \
-in ${dataDivision} object ${i} but got ${yamlValue}`)
+`Invalid yaml file, expected ${fieldType} for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 						
 						obj[fieldName] = yamlValue
 						break
 					case "Vector3":
 						if (typeof yamlValue != 'object')
 							throw new Error(
-`Invalid yaml file, expected Vector3 for ${fieldName} \
-in ${dataDivision} object ${i} but got ${yamlValue}`)
+`Invalid yaml file, expected Vector3 for '${fieldName}' \
+in '${dataDivision}' object ${i} but got ${yamlValue}`)
 						
 						const { x, y, z } = yamlValue as { x: number, y: number, z: number }
 						
 						if (typeof x != 'number' || typeof y != 'number' || typeof z != 'number')
-							throw new Error(`Invalid yaml file, invalid Vector3 ${fieldName} in ${dataDivision} object ${i}`)
+							throw new Error(`Invalid yaml file, invalid Vector3 '${fieldName}' in '${dataDivision}' object ${i}`)
 						
 						obj[fieldName] = new Vector3(x, y, z)
 						break
 					default:
-						throw new Error(`Invalid field type ${fieldType} (object ${i} in ${dataDivision})`)
+						throw new Error(`Invalid field type ${fieldType} (object ${i} in '${dataDivision}')`)
 				}
 			}
 			
@@ -513,7 +524,7 @@ function objToYaml(obj: any, indentation: number, numbersAsFloats = false): stri
 }
 
 function floatToString(x: number): string {
-	return x.toLocaleString("en-us", { minimumFractionDigits: 1 })
+	return x.toLocaleString("en-us", { minimumFractionDigits: 1, maximumFractionDigits: 99 })
 }
 
 export interface SaveAsDialogResults {

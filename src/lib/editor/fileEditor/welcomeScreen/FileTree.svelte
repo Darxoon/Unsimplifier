@@ -15,6 +15,7 @@
     const supportedFiles = [
         "data_Npc",
         "data_Item",
+        "data_Mobj",
     ]
     
     const dispatch = createEventDispatcher()

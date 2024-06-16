@@ -12,6 +12,7 @@
     import parseElfBinary from "paper-mario-elfs/parser";
     import { OpenWindowEvent } from "$lib/editor/events";
     import { romfsInitialized } from "$lib/stores";
+    import TextAlert from "$lib/modal/TextAlert.svelte";
     
     const dispatch = createEventDispatcher()
     
@@ -96,7 +97,19 @@
         console.log(DataType[dataType])
         
         const content = isCompressed ? await decompress(await contentPromise) : await contentPromise
-        const binary = parseElfBinary(dataType, content)
+        
+        try {
+            var binary = parseElfBinary(dataType, content)
+        } catch (e) {
+            showModal(TextAlert, {
+                title: "Parse Error",
+                content: `There has been an issue with the parsing of the file
+${filePath}. Please report this to the developer (Darxoon)
+
+(reason: ${e.message})`
+            })
+            throw e
+        }
         
         dispatch('open', new OpenWindowEvent(fileName, true, {
             type: "cardList",

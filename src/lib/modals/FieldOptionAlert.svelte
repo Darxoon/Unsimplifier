@@ -67,7 +67,7 @@
 	<div>
 		{#if fieldType === "string"}
 			<div class="hideNullContainer">
-				<input type="checkbox" name="hideNull" on:change={e => {
+				<input type="checkbox" id="hideNull" on:change={e => {
 					// @ts-ignore
 					hideNulls = e.target.checked
 				}}>
@@ -76,7 +76,7 @@
 		{/if}
 		{#if isNumber(fieldType)}
 			<div class="hideNullContainer">
-				<input type="checkbox" name="hideNull" on:change={e => {
+				<input type="checkbox" id="hideNull" on:change={e => {
 					// @ts-ignore
 					hideNulls = e.target.checked
 				}}>
