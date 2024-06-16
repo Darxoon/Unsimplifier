@@ -9,43 +9,33 @@
 </script>
 
 <div class="title_card_wrapper">
-	<div class="wrapper_inner">
-		<img class="icon" src="Unsimplifier_icon.png" alt="Unsimplifier's logo">
-		<div class="title_card">
-			<div class="title">
-				<h1>Unsimplifier</h1>
-				{#if !parseInt(PUBLIC_IS_DEV_VERSION)}
-					<div class="app_version">{PUBLIC_OW_VERSION}</div>
-				{/if}
-				<p>Editor for The Thousand Year Door Remake</p>
-			</div>
-			<div class="menu_strip_wrapper">
-				<ul class="menu_strip">
-					{#each menu as item}
-						<span>
-							<MenuStripItem name={item.title} items={item.items} />
-						</span>
-					{/each}
-				</ul>
-				<ul class="build_timestamp_wrapper_wrapper">
-					<span class="build_timestamp_wrapper">
-						<li class="build_timestamp">Last built {buildDate.toLocaleDateString("en-UK", { dateStyle: "long" })}</li>
+	<img class="icon" src="Unsimplifier_icon.png" alt="Unsimplifier's logo">
+	<div class="title_card">
+		<div class="title">
+			<h1>Unsimplifier</h1>
+			{#if !parseInt(PUBLIC_IS_DEV_VERSION)}
+				<div class="app_version">{PUBLIC_OW_VERSION}</div>
+			{/if}
+			<p>Editor for The Thousand Year Door Remake</p>
+		</div>
+		<div class="menu_strip_wrapper">
+			<ul class="menu_strip">
+				{#each menu as item}
+					<span>
+						<MenuStripItem name={item.title} items={item.items} />
 					</span>
-				</ul>
-			</div>
+				{/each}
+			</ul>
+			<span class="build_timestamp_wrapper">
+				<li class="build_timestamp">Last built {buildDate.toLocaleDateString("en-UK", { dateStyle: "long" })}</li>
+			</span>
 		</div>
 	</div>
 </div>
 
 <style lang="scss">
 	.title_card_wrapper {
-		display: flow-root;
-	}
-	
-	.wrapper_inner {
 		display: flex;
-		height: 100%;
-		width: 100%;
 	}
 	
 	.icon {
@@ -96,19 +86,15 @@
 		}
 		
 		.menu_strip {
+			margin: 0;
 			padding: 0;
-			display: flex;
 			min-width: fit-content;
+			
+			display: flex;
 			flex-direction: row;
-			list-style-type: none;
 			flex-wrap: wrap;
-		}
-		
-		.build_timestamp_wrapper_wrapper {
-			padding: 0;
+			
 			list-style-type: none;
-			margin: 16px 0;
-			overflow-x: hidden;
 		}
 		
 		.build_timestamp_wrapper {
