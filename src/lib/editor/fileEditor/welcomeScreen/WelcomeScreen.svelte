@@ -118,17 +118,17 @@
                         <h2>Learn</h2>
                         
                         <ul>
-                            <li><a href="https://github.com/Darxoon/OrigamiWand#usage">Read the introduction</a></li>
-                            <li><a href="https://docs.google.com/spreadsheets/d/1n5Y-fE2lAtEFBWkpXFYqbb6iKa4cqEIj2pGoXztAuRw/"
-                                target="_blank" rel="noopener noreferrer">Visit the ""documentation"" (TOK Spreadsheet)</a></li>
-                            <li><a href="https://discord.gg/y7qfTKyhZy" target="_blank" rel="noopener noreferrer">Join the TOK Refolded discord</a></li>
-                            <li>Open a file with File > Open</li>
+                            <li><a href="https://github.com/Darxoon/Unsimplifier#unsimplifier">Read the introduction</a></li>
+                            <li><a href="https://docs.google.com/spreadsheets/d/1pZogGh00xy939FdCG62uWjxZnkP1G4gjDGBG4TntbKY/"
+                                target="_blank" rel="noopener noreferrer">Visit jdaster's spreadsheet documentation</a></li>
+                            <li>Join <a href="https://discord.gg/pdYpWw8">Star Haven</a>
+                                or <a href="https://discord.gg/9EzRrfVfPg">Modern Paper Mario Modding</a> on discord</li>
                         </ul>
                     </div>
                     <div class="card recent">
                         <h2>Recent Files</h2>
                         
-                        <p>TODO</p>
+                        <p>WIP</p>
                     </div>
                 </div>
                 <div class="card open-file">
