@@ -118,7 +118,7 @@ export async function openElfToEditor(file: File) {
 		throw e
 	}
 
-	editorStrip.appendTab(createFileTab(file.name, binary, dataType, isCompressed))
+	editorStrip.appendTab(createFileTab(file.name, null, binary, dataType, isCompressed))
 }
 
 export async function openYamlToEditor(file: File) {
@@ -252,7 +252,7 @@ in ${dataDivision} object ${i} but got ${yamlValue}`)
 	
 	let outFileName = file.name.slice(0, file.name.lastIndexOf('.')) + (compressed ? '.elf.zst' : '.elf')
 	
-	editorStrip.appendTab(createFileTab(outFileName, binary, dataType, compressed))
+	editorStrip.appendTab(createFileTab(outFileName, baseFilePath, binary, dataType, compressed))
 }
 
 function openFileSelector() {
@@ -280,11 +280,19 @@ async function saveFile() {
 		return
 	}
 
-	const { name, isCompressed, content } = tab
+	let { name, isCompressed, content } = tab
 	
 	if (content.type != "cardList") {
 		// TODO: ideally, this menu option should just be grayed out in the first place
 		throw new Error("Cannot save non-cards list file")
+	}
+	
+	if (isCompressed && !name.endsWith('.zst')) {
+		name += '.zst'
+	}
+	
+	if (!isCompressed && name.endsWith('.zst')) {
+		name = name.slice(0, name.length - 4)
 	}
 	
 	const { dataType, binary } = content
@@ -539,6 +547,8 @@ async function openSaveDialog() {
 	}
 	
 	let { fileName, compressFile, compressionRatio, stripFile } = await showModal<SaveAsDialogResults>(SaveAsDialog, modalOptions)
+	
+	tab.isCompressed = compressFile
 	
 	fileName = fileName.trim()
 	

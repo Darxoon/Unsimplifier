@@ -54,8 +54,8 @@
 				return
 			}
 			
-			let tabs = map2d(save, ({name, dataType, content, isCompressed}) => 
-				createFileTab(name, parseElfBinary(dataType, content), dataType, isCompressed)
+			let tabs = map2d(save, ({ name, filePath, dataType, content, isCompressed }) => 
+				createFileTab(name, filePath, parseElfBinary(dataType, content), dataType, isCompressed)
 			).filter(arr => arr.length > 0)
 			
 			if (tabs.length != 0) {

@@ -32,8 +32,6 @@
     
     $: itemsVisible = fileTree && calculateItemsVisible(fileTree)
     
-    $: console.log('romfs')
-    
     $: if (romfs && (romfs != prevRomfs || prevOnlyShowSupported != onlyShowSupported)) {
         // if I don't do this, romfs keeps getting set to itself all the time for some reason
         // which causes the file tree to be regenerated on every click which is janky

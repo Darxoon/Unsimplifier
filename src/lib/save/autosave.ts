@@ -10,6 +10,7 @@ let db: DB
 
 export interface SaveFile {
 	name: string
+	filePath: string
 	dataType: DataType
 	content: ArrayBuffer
 	isCompressed: boolean

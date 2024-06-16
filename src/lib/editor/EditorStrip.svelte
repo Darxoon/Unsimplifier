@@ -87,26 +87,30 @@
 	}
 	
 	function windowToSaveFiles(windowTabs: Tab[]): SaveFile[] {
-		return windowTabs.flatMap(tab => {
+		let saveFiles: SaveFile[] = []
+		
+		for (const tab of windowTabs) {
 			const { name, isCompressed } = tab
 			const { content } = tab
 			
 			if (content.type === "cardList") {
-				const { dataType, binary } = content
+				const { dataType, binary, filePath } = content
 				
-				return {
+				saveFiles.push({
 					name,
+					filePath,
 					dataType,
 					isCompressed,
 					content: serializeElfBinary(dataType, binary)
-				}
+				})
 			} else if (content.type === "docs") {
 				// TODO
-				return []
 			} else {
 				throw new Error("Unknown page type")
 			}
-		})
+		}
+		
+		return saveFiles
 	}
 	
 	export function getTab(tabId: Symbol) {

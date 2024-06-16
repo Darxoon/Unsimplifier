@@ -141,7 +141,7 @@ export async function compress(buffer: ArrayBuffer, compressionRatio = 5): Promi
 	})
 }
 
-export function createFileTab(fileName: string, binary: ElfBinary, dataType: DataType, isCompressed: boolean): Tab {
+export function createFileTab(fileName: string, filePath: string, binary: ElfBinary, dataType: DataType, isCompressed: boolean): Tab {
 	return {
 		id: Symbol(),
 		name: fileName,
@@ -149,6 +149,7 @@ export function createFileTab(fileName: string, binary: ElfBinary, dataType: Dat
 		isCompressed,
 		content: {
 			type: "cardList",
+			filePath,
 			binary,
 			dataType,
 		}
