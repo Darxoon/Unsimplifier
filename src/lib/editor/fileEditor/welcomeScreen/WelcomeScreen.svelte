@@ -98,7 +98,7 @@
         const content = isCompressed ? await decompress(await contentPromise) : await contentPromise
         const binary = parseElfBinary(dataType, content)
         
-        dispatch('open', new OpenWindowEvent(fileName, {
+        dispatch('open', new OpenWindowEvent(fileName, true, {
             type: "cardList",
             binary,
             dataType,

@@ -111,7 +111,7 @@
 				</div>
 			{/if}
 			<div class="allValues nested tabbable">
-				{#each binary.data[FILE_TYPES[dataType].objectType] as arr, i}
+				{#each binary.data[FILE_TYPES[dataType].dataDivision] as arr, i}
 					{#each arr.objects ?? arr.children ?? arr as obj, j}
 						{#if hideNulls ? obj[fieldName] !== null : true}
 							<div class="index">

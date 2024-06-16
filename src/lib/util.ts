@@ -77,26 +77,6 @@ export function downloadText(data: string, fileName: string, mimeType: string = 
 	downloadBlob(blob, fileName, mimeType)
 };
 
-export function getFileContent(file: File, verbose = true): Promise<ArrayBuffer> {
-	return new Promise<ArrayBuffer>((resolve, reject) => {
-		const fileReader = new FileReader()
-		
-		fileReader.onload = function(e) {
-			if (verbose) {
-				console.log("read file", fileReader.result)
-			}
-			
-			resolve(fileReader.result as ArrayBuffer)
-		}
-
-		fileReader.onerror = function(e) {
-			reject(e)
-		}
-		
-		fileReader.readAsArrayBuffer(file)
-	})
-}
-
 export function openFolderSelector() {
 	console.log("opening file")
 

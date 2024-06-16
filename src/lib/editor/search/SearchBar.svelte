@@ -17,7 +17,9 @@
 	let searchInput: HTMLInputElement = undefined
 </script>
 
-<div class="card search" on:click={() => searchInput.click()} on:keydown={() => searchInput.click()}>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="card search" on:click={() => searchInput.focus()} on:keydown={() => searchInput.focus()}>
+    <div class="icon"><i data-feather="search"></i></div>
     &nbsp;
     <input type="text" class="input" placeholder="Search" size="1"
         bind:this={searchInput} bind:value={searchTerm}>
@@ -61,5 +63,12 @@
             opacity: 0;
         }
     }
+    
+    .icon {
+		margin: auto 0 auto -2px;
+		height: 24px;
+		width: 24px;
+		float: left;
+	}
 </style>
 

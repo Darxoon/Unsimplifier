@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ElfBinary } from "paper-mario-elfs/elfBinary";
-	import { DataType } from "paper-mario-elfs/dataType";
+	import type { DataType } from "paper-mario-elfs/dataType";
 	import { FILE_TYPES } from "paper-mario-elfs/fileTypes";
 	import { toReadableString } from "$lib/util";
 	import { createEventDispatcher, onDestroy, onMount } from "svelte";
@@ -37,7 +37,7 @@
 	
 	// SetBattle contains both Stage Definitions and Battles
 	// to differentiate between the two, Custom Colors are only used for Stage Definitions
-	$: usesCustomColors = dataType != DataType.SetBattle || dynTitle.startsWith('Stage Definition')
+	$: usesCustomColors = dynTitle.startsWith('Stage Definition')
 	$: actualBackgroundColor = usesCustomColors ? backgroundColor : defaultDataTypeColor
 	$: actualLabelHighlightColor = usesCustomColors ? labelHighlightColor : defaultObjectEditorHighlight
 	
@@ -94,7 +94,7 @@
 	}
 	
 	function showFieldMenu(dataType: DataType, fieldName: string) {
-		let objects = binary.data[FILE_TYPES[dataType].objectType]
+		let objects = binary.data[FILE_TYPES[dataType].dataDivision]
 		
 		// find sub array if necessary
 		let containsSubArrays = objects.find(v => 'children' in v || v instanceof Array) != undefined

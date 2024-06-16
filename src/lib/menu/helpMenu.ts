@@ -21,17 +21,33 @@ export function getHelpMenu(): MenuCategory {
 					link.click()
 				}
 			},
+			// {
+			// 	name: "Open documentation",
+			// 	onClick: () => {
+			// 		editorStrip.appendTab({
+			// 			id: Symbol(),
+			// 			name: "Home - Documentation",
+			// 			children: [],
+			// 			isCompressed: false,
+			// 			content: {
+			// 				type: "docs",
+			// 			}
+			// 		})
+			// 	}
+			// },
 			{
 				name: "About",
 				onClick: () => {
 					showModal(TextAlert, {
-						title: "About Origami Wand",
+						title: "About Unsimplifier",
 						content: `
 Made by Darxoon
 
+for the Paper Mario community
+
 Additional help by [HunterXuman](https://twitter.com/HunterXuman/)
 
-GitHub: [](https://github.com/darxoon/origamiwand)`
+GitHub: [](https://github.com/Darxoon/Unsimplifier)`
 					})
 				},
 			},

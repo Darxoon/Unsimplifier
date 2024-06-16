@@ -105,11 +105,6 @@
 		</ul>
 	</div>
 	
-	<div class="control-group">
-		<input id="stripFileInput" type="checkbox" bind:checked={stripFile}>
-		<label for="stripFileInput">Strip file and insert watermark (may break the file)</label>
-	</div>
-	
 	<div class="buttons">
 		<button class="modalbtn" on:click={cancel}>Cancel</button>
 		<button class="modalbtn" on:click={download}>Download</button>

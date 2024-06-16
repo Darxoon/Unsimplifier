@@ -88,11 +88,13 @@ function addMetadataRecursive(dataType: DataType, allMetadata: Map<DataType, Met
 	allMetadata.set(dataType, FILE_TYPES[dataType].metadata)
 	
 	// recursively add all child types too
-	let childTypes = Object.values(FILE_TYPES[dataType].childTypes)
-	
-	if (childTypes.length > 0) {
-		for (const childType of childTypes) {
-			addMetadataRecursive(childType, allMetadata)
+	if (FILE_TYPES[dataType].childTypes) {
+		let childTypes = Object.values(FILE_TYPES[dataType].childTypes)
+		
+		if (childTypes.length > 0) {
+			for (const childType of childTypes) {
+				addMetadataRecursive(childType, allMetadata)
+			}
 		}
 	}
 }

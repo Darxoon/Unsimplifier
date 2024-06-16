@@ -42,7 +42,7 @@
 		
 		console.log('opening', objects)
 		
-		dispatch("open", new OpenWindowEvent(title, {
+		dispatch("open", new OpenWindowEvent(title, false, {
 			type: "cardList",
 			binary,
 			dataType: targetDataType,

@@ -1,5 +1,5 @@
 import type { MenuCategory } from "$lib/types"
-import { compress, decompress, downloadBlob, getFileContent } from "../util"
+import { compress, decompress, downloadBlob } from "../util"
 
 export function getZstdMenu(): MenuCategory {
 	return {
@@ -25,9 +25,11 @@ function decompressFileSelector() {
 	fileSelector.setAttribute('multiple', 'multiple')
 	fileSelector.click()
 	
-	fileSelector.addEventListener('change', async (e: any) => {
-		for (const file of e.target.files) {
-			const content = await getFileContent(file)
+	fileSelector.addEventListener('change', async (e: Event) => {
+		let files = (e.target as HTMLInputElement).files
+		
+		for (const file of files) {
+			const content = await file.arrayBuffer()
 			const decompressed = await decompress(content)
 			
 			const newFileName = file.name.replaceAll('.zstd', '').replaceAll('.zst', '')
@@ -47,9 +49,11 @@ function compressFileSelector() {
 	fileSelector.setAttribute('multiple', 'multiple')
 	fileSelector.click()
 	
-	fileSelector.addEventListener('change', async (e: any) => {
-		for (const file of e.target.files) {
-			const content = await getFileContent(file)
+	fileSelector.addEventListener('change', async (e: Event) => {
+		let files = (e.target as HTMLInputElement).files
+		
+		for (const file of files) {
+			const content = await file.arrayBuffer()
 			const compressed = await compress(content)
 			
 			console.log('compressing', file.name, file.name + '.zst')

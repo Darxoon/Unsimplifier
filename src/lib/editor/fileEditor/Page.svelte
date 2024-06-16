@@ -1,5 +1,6 @@
 <script lang="ts">
     import CardListEditor from "./CardListEditor.svelte";
+    import Documentation from "./docs/Documentation.svelte";
     import type { PageContent } from "./page";
     
     export let content: PageContent
@@ -30,4 +31,6 @@
         
         tabVisible={tabVisible}
         on:open bind:this={contentElement} />
+{:else if content.type == "docs"}
+    <Documentation />
 {/if}

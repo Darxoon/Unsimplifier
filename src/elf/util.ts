@@ -68,7 +68,7 @@ export function duplicateObjectInBinary<T extends object>(binary: ElfBinary, dat
 			
 			if (fieldType === "symbol" && fieldValue != null) {
 				const childDataType = FILE_TYPES[dataType].childTypes[fieldName]
-				const childObjectType = FILE_TYPES[childDataType].objectType
+				const childObjectType = FILE_TYPES[childDataType].dataDivision
 				
 				if (!binary.data[childObjectType].includes(fieldValue)) {
 					throw new Error("Cannot clone object " + fieldValue + " because it doesn't exist in the binary")

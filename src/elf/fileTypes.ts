@@ -23,7 +23,7 @@ export function isNumber(fieldType: PropertyType): boolean {
 	return NUMBER_TYPES.includes(fieldType)
 }
 
-export class Property<T extends PropertyType> {
+export class Property<T extends PropertyType = PropertyType> {
 	type: T
 	description?: string
 	hidden: boolean
@@ -85,9 +85,32 @@ are currently not known with certainty.`,
 	
 }
 
+type TypeDefinition = {
+	[fieldName: string]: PropertyType | Property | DataTypeMetadata
+} & { __?: DataTypeMetadata }
+
+interface DataTypeMetadata {
+	parent?: object // TODO: proper type definition when I need it
+	
+	displayName?: string
+	dynamicDisplayName?: (obj: any) => string
+	identifyingField?: string
+	dataDivision?: DataDivision
+	
+	// for future sub-types
+	// childTypes
+	// childField
+	// childFieldLabel
+	// countSymbol
+	// entryPoints
+	// nestedAllValues
+}
+
 const typedefs = {
 	[DataType.Npc]: {
-		__displayName: "NPC",
+		__: {
+			displayName: "NPC",
+		},
 		
 		stage: "string",
 		id: "string",
@@ -167,6 +190,10 @@ const typedefs = {
 		field_0x17c: "int",
 	},
 	[DataType.Item]: {
+		__: {
+			displayName: "Item",
+		},
+		
 		stage: "string",
 		id: "string",
 		type: "string",
@@ -199,8 +226,8 @@ const typedefs = {
 		field_0x8c: "int",
 		field_0x90: "int",
 		field_0x94: "int",
-	}
-} as const
+	},
+} as const satisfies {[dataType: number]: TypeDefinition}
 
 
 function mapObject<A, B>(obj: {[key: string]: A}, fn: (value: [string, A], index: number) => [string, B]): {[key: string]: B} {
@@ -212,118 +239,111 @@ function filterObject<A>(obj: {[key: string]: A}, fn: (value: [string, A], index
 
 interface FileTypeRegistry {
 	typedef: Typedef<PropertyType>
-	metadata: Typedef<Property<PropertyType>>
-	fieldOffsets: Typedef<string | number>
+	metadata: Typedef<Property>
+	fieldOffsets: Typedef<number> & {[offset: number]: string}
 	size: number
 	displayName: string
 	getDynamicDisplayName: (obj: any) => string
-	childTypes: {[fieldName: string]: DataType}
-	childFieldLabel: string
-	childField: string
 	identifyingField: string
-	countSymbol: string
-	nestedAllValues: boolean
-	objectType: DataDivision
-	entryPoints: {[objectType: number]: any}
+	dataDivision: DataDivision
+	
+	// for future sub-types
+	childTypes?: Typedef<DataType>
+	childFieldLabel?: string
+	childField?: string
+	countSymbol?: string
+	nestedAllValues?: boolean
+	entryPoints?: {[objectType: number]: any}
 	
 	instantiate(): object
 }
 
+console.time('generating FILE_TYPES')
+
 // @ts-ignore
-export const FILE_TYPES = mapObject(typedefs, ([dataTypeString, typedef]) => [dataTypeString, generateTypedefFor(parseInt(dataTypeString), typedef, typedef)])
+export const FILE_TYPES = mapObject(typedefs, ([dataTypeString, typedef]) => [dataTypeString, generateTypedefFor(typedef)])
 
+console.timeEnd('generating FILE_TYPES')
 
-function generateTypedefFor<T extends PropertyType>(dataType: DataType, typedef: Typedef<T | Property<T>>, 
-	extendedTypedef: Typedef<any>): FileTypeRegistry {
+function generateTypedefFor(typedef: TypeDefinition): FileTypeRegistry {
+	let metadata: DataTypeMetadata = typedef.__ ?? {}
 	
-	if (typedef.__parent) {
-		return generateTypedefFor(dataType, extendedTypedef.__parent as Typedef<T|Property<T>>, extendedTypedef)
+	while (metadata.parent) {
+		typedef = {...metadata.parent, ...typedef}
+		metadata = typedef.__ ?? {}
 	}
 	
+	const { displayName, dynamicDisplayName, dataDivision, identifyingField } = metadata
 	
-	let filteredTypedef = filterObject(typedef, ([fieldName]) => !fieldName.startsWith("__"))
+	let fields = new Map(Object.entries(typedef).flatMap(([fieldName, fieldType]) => {
+		if (fieldType instanceof Property) {
+			return [[fieldName, fieldType]]
+		} else if (typeof fieldType == 'string') {
+			return [[fieldName, new Property(fieldType)]]
+		} else {
+			return []
+		}
+	}))
 	
-	const displayName = extendedTypedef.__displayName as string ?? DataType[dataType]
+	let fieldTypes = Object.fromEntries(
+		[...fields.entries()].map(([fieldName, property]) => [fieldName, property.type])
+	)
 	
-	let typedefWithoutMetadata = mapObject(filteredTypedef, ([fieldName, definition]) => [
-		fieldName,
-		definition instanceof Property ? definition.type : definition,
-	])
+	let fieldMetadata: Typedef<Property> = {}
 	
-	let unfilteredMetadata = mapObject(filteredTypedef, ([fieldName, definition]) => {
-		let description: string | undefined = defaultDescriptions[fieldName]
+	for (const [fieldName, property] of fields) {
+		let description = (property.description ?? defaultDescriptions[fieldName])
 			?.replaceAll("{type}", displayName)
-			?.replaceAll("{type_lowercase}", displayName.toLowerCase())
+			?.replaceAll("{type_lowercase}", displayName?.toLowerCase())
 		
-		if (definition instanceof Property && definition.description) {
-			definition.description = definition.description?.replaceAll("{standard}", description)
-			return [fieldName, definition]
-		}
-		
-		if (!description)
-			return [fieldName, definition]
+		const { type, tabName, noSpaces, hidden } = property
+		fieldMetadata[fieldName] = new Property(type, description, { hidden, noSpaces, tabName })
+	}
 	
-		if (typeof definition === 'string')
-			return [fieldName, new Property(definition, description)]
-		else {
-			definition.description = description
-			return [fieldName, definition]
-		}
-	})
-	
-	
-	const { fieldOffsets, size } = generateOffsets(filteredTypedef)
+	const { fieldOffsets, size } = generateOffsets(fieldTypes)
 	
 	return {
-		typedef: typedefWithoutMetadata,
-				
-		metadata: filterObject(unfilteredMetadata, ([, definition]) => definition instanceof Property) as Typedef<Property<T>>,
+		typedef: fieldTypes,
+		metadata: fieldMetadata,
 				
 		fieldOffsets,
 		size,
 		
 		displayName,
-		getDynamicDisplayName: extendedTypedef.__dynamicDisplayName ?? (() => displayName),
+		getDynamicDisplayName: dynamicDisplayName ?? (() => displayName),
+		identifyingField: identifyingField ?? "id",
+		dataDivision: dataDivision ?? dataDivisions.main,
 		
-		// @ts-ignore
-		childTypes: extendedTypedef.__childTypes as {[fieldName: string]: DataType} ?? {},
-		
-		childField: extendedTypedef.__childField as string | undefined,
-		
-		childFieldLabel: extendedTypedef.__childFieldLabel as string | undefined,
-		
-		identifyingField: extendedTypedef.__importantField as string ?? "id",
-		
-		countSymbol: extendedTypedef.__countSymbol as string | undefined,
-		
-		nestedAllValues: extendedTypedef.__nestedAllValues as boolean ?? false,
-		objectType: extendedTypedef.__objectType ?? dataDivisions.main,
-		
-		entryPoints: extendedTypedef.__entryPoints ?? {},
+		// for future sub-types
+		// childTypes: typedef.__childTypes as {[fieldName: string]: DataType} ?? {},
+		// childField: typedef.__childField as string | undefined,
+		// childFieldLabel: typedef.__childFieldLabel as string | undefined,
+		// countSymbol: typedef.__countSymbol as string | undefined,
+		// nestedAllValues: typedef.__nestedAllValues as boolean ?? false,
+		// entryPoints: typedef.__entryPoints ?? {},
 		
 		instantiate(): object {
 			let result = {}
 			result[VALUE_UUID] = ValueUuid()
-			for (const [fieldName, type] of Object.entries(filteredTypedef)) {
-				let typeString = type instanceof Property ? type.type : type as string
-				result[fieldName] = typeString === "string" || typeString === "symbol"
+			
+			for (const [fieldName, type] of Object.entries(fieldTypes)) {
+				result[fieldName] = type === "string" || type === "symbol"
 					? null
-					: typeString === "Vector3"
+					: type === "Vector3"
 						? Vector3.ZERO
-						: typeString === "pointer"
-							? Pointer.NULL
-							: typeString.startsWith("bool")
-								? false
-								: 0
+						: type.startsWith("bool")
+							? false
+							: 0
 			}
+			
 			return result
 		},
 	}
 }
 
 		
-function generateOffsets(typedef: object) {
-	let result = {}
+function generateOffsets(typedef: Typedef<PropertyType>) {
+	let result: Typedef<number> & {[offset: number]: string} = {}
 	let offset = 0
 	for (const [fieldName, fieldType] of Object.entries(typedef)) {
 		result[fieldName] = offset
@@ -341,13 +361,12 @@ function generateOffsets(typedef: object) {
 			int: 4,
 			long: 8,
 			bool32: 4,
-			// @ts-ignore
-		}[typeof fieldType === 'object' ? fieldType.type : fieldType]
+		}[fieldType]
 		
 		if (isNaN(offset)) {
 			throw new Error(`Field Offset is NaN, field name: ${fieldName}, field type: ${fieldType}`)
 		}
 	}
 
-	return { fieldOffsets: result as Typedef<string | number>, size: offset }
+	return { fieldOffsets: result, size: offset }
 }

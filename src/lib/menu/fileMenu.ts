@@ -4,8 +4,8 @@ import TextAlert from "$lib/modal/TextAlert.svelte"
 import DataTypePrompt from "$lib/modals/DataTypePrompt.svelte"
 import SaveAsDialog from "$lib/modals/SaveAsDialog.svelte"
 import { globalEditorStrip, loadedAutosave } from "$lib/stores"
-import { compress, decompress, downloadBlob, getFileContent, createFileTab, downloadText } from "$lib/util"
-import { Pointer, type ElfBinary } from "paper-mario-elfs/elfBinary"
+import { compress, decompress, downloadBlob, createFileTab, downloadText } from "$lib/util"
+import { Pointer, type ElfBinary, type DataDivision } from "paper-mario-elfs/elfBinary"
 import { DataType } from "paper-mario-elfs/dataType"
 import parseElfBinary, { EmptyFileError } from "paper-mario-elfs/parser"
 import serializeElfBinary from "paper-mario-elfs/serializer"
@@ -14,9 +14,26 @@ import type { MenuCategory } from "$lib/types"
 import { Vector3 } from "paper-mario-elfs/misc"
 import type { Symbol } from "paper-mario-elfs/types"
 import { getRomfsVfs } from "$lib/save/projects"
+import yaml from 'js-yaml'
+import { FILE_TYPES, type Instance } from "paper-mario-elfs/fileTypes"
+import { VALUE_UUID, type UuidTagged, ValueUuid, DATA_TYPE } from "paper-mario-elfs/valueIdentifier"
+import { enumerate } from "paper-mario-elfs/util"
 
 let editorStrip: EditorStrip
 globalEditorStrip.subscribe(value => editorStrip = value)
+
+/**
+ * Symbol without its methods
+ */
+interface PlainSymbol {
+	name: string
+	isNameMangled: boolean
+	info: number
+	visibility: number
+	sectionHeaderIndex: number
+	location: Pointer
+	size: number
+}
 
 export function getFileMenu(): MenuCategory {
 	return {
@@ -54,7 +71,25 @@ export function getFileMenu(): MenuCategory {
 }
 
 export async function openFileToEditor(file: File) {
-	const contentPromise = getFileContent(file)
+	if (file.name.endsWith('.yaml')) {
+		await openYamlToEditor(file)
+			.catch(async (e: Error) => {
+				await showModal(TextAlert, {
+					title: "Error",
+					content: `
+Invalid Unsimplifier Yaml file
+
+(reason: ${e.message})`,
+				})
+				throw e
+			})
+	} else {
+		await openElfToEditor(file)
+	}
+}
+
+export async function openElfToEditor(file: File) {
+	const contentPromise = file.arrayBuffer()
 	
 	const {dataType, isCompressed} = await showModal(DataTypePrompt, {
 		fileName: file.name,
@@ -76,14 +111,8 @@ export async function openFileToEditor(file: File) {
 		if (e instanceof EmptyFileError) {
 			showModal(TextAlert, {
 				title: "Opening File",
-				content: "File is empty. Generating a new file instead."
+				content: "File is empty."
 			})
-				.then(() => {
-					showModal(TextAlert, {
-						title: "Error",
-						content: "Error: Not implemented yet."
-					})
-				})
 		}
 		
 		throw e
@@ -92,16 +121,150 @@ export async function openFileToEditor(file: File) {
 	editorStrip.appendTab(createFileTab(file.name, binary, dataType, isCompressed))
 }
 
+export async function openYamlToEditor(file: File) {
+	const romfs = getRomfsVfs()
+	const text = await file.text()
+	
+	const [metadata, data, symbolTable] = yaml.loadAll(text)
+	
+	// metadata
+	if (!(typeof metadata == 'object'
+		&& 'base_file_path' in metadata
+		&& 'data_type' in metadata
+		&& 'compressed' in metadata
+		&& typeof metadata.base_file_path == 'string'
+		&& typeof metadata.data_type == 'string'
+		&& typeof metadata.compressed == 'boolean'))
+		throw new Error('Invalid yaml file, first document (metadata) does not match requirements')
+	
+	const { data_type: dataTypeString, base_file_path: baseFilePath, compressed } = metadata
+	const dataType = DataType[dataTypeString]
+	
+	let baseFile = (await romfs).getFileContent('/' + baseFilePath, false)
+	
+	// data
+	if (!(typeof data == 'object'))
+		throw new Error('Invalid yaml file, second document (data section) is not a dict')
+	
+	// TODO: support for data types with other data divisions than 'main'
+	const dataDivisions: DataDivision[] = ['main']
+	let resultData: {[dataDivision in DataDivision]?: UuidTagged[]} = {}
+	
+	for (const dataDivision of dataDivisions) {
+		if (!(dataDivision in data && data[dataDivision] instanceof Array))
+			throw new Error(`Invalid yaml file, data division ${dataDivision} does not exist or is invalid`)
+		
+		const curDataType = dataType
+		const yamlItems = data[dataDivision] as unknown[]
+		let elfItems: UuidTagged[] = []
+		
+		for (const [item, i] of enumerate(yamlItems)) {
+			if (!(typeof item == 'object'))
+				throw new Error(`Invalid yaml file, object ${i} in ${dataDivision} is invalid`)
+			
+			let obj: UuidTagged = {
+				[VALUE_UUID]: ValueUuid(),
+				[DATA_TYPE]: curDataType,
+			}
+			
+			for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[curDataType].typedef)) {
+				if (!(fieldName in item))
+					throw new Error(`Invalid yaml file, object ${i} in ${dataDivision} is missing field ${fieldName}`)
+				
+				const yamlValue: unknown = item[fieldName]
+				
+				switch (fieldType) {
+					case "string":
+						if (typeof yamlValue != 'string' && yamlValue != null)
+							throw new Error(
+`Invalid yaml file, expected string for ${fieldName} \
+in ${dataDivision} object ${i} but got ${yamlValue}`)
+						
+						obj[fieldName] = yamlValue
+						break
+					case "bool8":
+					case "bool32":
+						if (typeof yamlValue != 'boolean')
+							throw new Error(
+`Invalid yaml file, expected boolean for ${fieldName} \
+in ${dataDivision} object ${i} but got ${yamlValue}`)
+						
+						obj[fieldName] = yamlValue
+						break
+					case "byte":
+					case "short":
+					case "int":
+					case "long":
+						if (typeof yamlValue != 'number' || Math.round(yamlValue) != yamlValue)
+							throw new Error(
+`Invalid yaml file, expected ${fieldType} for ${fieldName} \
+in ${dataDivision} object ${i} but got ${yamlValue}`)
+						
+						obj[fieldName] = yamlValue
+						break
+					case "float":
+					case "double":
+						if (typeof yamlValue != 'number')
+							throw new Error(
+`Invalid yaml file, expected ${fieldType} for ${fieldName} \
+in ${dataDivision} object ${i} but got ${yamlValue}`)
+						
+						obj[fieldName] = yamlValue
+						break
+					case "Vector3":
+						if (typeof yamlValue != 'object')
+							throw new Error(
+`Invalid yaml file, expected Vector3 for ${fieldName} \
+in ${dataDivision} object ${i} but got ${yamlValue}`)
+						
+						const { x, y, z } = yamlValue as { x: number, y: number, z: number }
+						
+						if (typeof x != 'number' || typeof y != 'number' || typeof z != 'number')
+							throw new Error(`Invalid yaml file, invalid Vector3 ${fieldName} in ${dataDivision} object ${i}`)
+						
+						obj[fieldName] = new Vector3(x, y, z)
+						break
+					default:
+						throw new Error(`Invalid field type ${fieldType} (object ${i} in ${dataDivision})`)
+				}
+			}
+			
+			elfItems.push(obj)
+		}
+		
+		resultData[dataDivision] = elfItems
+	}
+	
+	// symbol table
+	let modifiedSymbols = []
+	let newSymbols = []
+	
+	if (symbolTable != undefined) {
+		throw new Error("WIP")
+	}
+	
+	// apply changes to base file
+	const binary = parseElfBinary(dataType, await decompress(await baseFile))
+	
+	binary.data = resultData
+	
+	// TODO: apply modifications to symbol table
+	
+	let outFileName = file.name.slice(0, file.name.lastIndexOf('.')) + (compressed ? '.elf.zst' : '.elf')
+	
+	editorStrip.appendTab(createFileTab(outFileName, binary, dataType, compressed))
+}
+
 function openFileSelector() {
 	console.log("opening file")
 
 	const fileSelector = document.createElement('input')
 	fileSelector.setAttribute('type', 'file')
+	fileSelector.setAttribute('accept', ".elf,.elf.zst,.yaml")
 	fileSelector.click()
 	
 	fileSelector.addEventListener('change', async (e: any) => {
 		const file: File = e.target.files[0]
-		
 		await openFileToEditor(file)
 	})
 }
@@ -145,7 +308,7 @@ async function saveYaml() {
 		return
 	}
 
-	const { name, content } = tab
+	const { name, content, isCompressed } = tab
 	
 	if (content.type != "cardList") {
 		// TODO: ideally, this menu option should just be grayed out in the first place
@@ -182,18 +345,20 @@ will be solved.`
 	const baseFile = await (await romfs).getFileContent('/' + filePath, false)
 	const baseBinary = parseElfBinary(dataType, await decompress(baseFile))
 	
-	let yaml = toYaml(binary, baseBinary, filePath, dataType)
+	console.log('isCompressed', tab)
+	let yaml = toYaml(binary, baseBinary, filePath, dataType, isCompressed)
 	
 	downloadText(yaml, outFileName, 'application/x-yaml')
 }
 
-function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, dataType: DataType) {
+function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, dataType: DataType, compressed: boolean) {
 	let out = ""
 	
 	// first section: metadatadata
 	out += "---\n# Metadata (do not modify)\n"
 	out += "base_file_path: " + basePath + "\n",
 	out += "data_type: " + DataType[dataType] + "\n",
+	out += "compressed: " + compressed + "\n",
 	
 	// second section: data
 	out += "---\n# Content of the elf file\n"
@@ -217,19 +382,6 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 	const symbols = binary.symbolTable
 	
 	// collect data
-	/**
-	 * Symbol without its methods
-	 */
-	interface PlainSymbol {
-		name: string
-		isNameMangled: boolean
-		info: number
-		visibility: number
-		sectionHeaderIndex: number
-		location: Pointer
-		size: number
-	}
-	
 	let modifiedSymbols: ({ index: number } & PlainSymbol)[] = []
 	
 	for (let i = 0; i < baseSymbols.length; i++) {

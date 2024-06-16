@@ -1,6 +1,5 @@
 import { createFileSystem } from "./vfs";
 import romfsdata from "./romfsdata.json";
-import { getFileContent } from "$lib/util";
 import { sha256 } from "js-sha256";
 
 export async function getRomfsVfs() {
@@ -44,7 +43,7 @@ export async function loadFilesToRomfsStore(files: File[], progressCallback: (st
         if (file == undefined)
             throw new Error(`File 'romfs/${name}' does not exist! Did you select the correct folder?`)
         
-        const content: ArrayBuffer = await getFileContent(file, false)
+        const content: ArrayBuffer = await file.arrayBuffer()
         const hash = sha256(content)
         
         if (baseHash !== hash) {

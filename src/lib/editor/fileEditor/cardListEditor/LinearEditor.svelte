@@ -13,7 +13,6 @@
 	export let binary: ElfBinary
 	export let dataType: DataType
 	export let overrideObjects: UuidTagged[] | undefined = undefined
-	// TODO: move this into the future tab switch component
 	export let tabVisible: boolean
 	
 	let initialized = tabVisible
@@ -27,9 +26,7 @@
 	
 	let searchResultObjectBuffer: UuidTagged[]
 	
-	// TODO: move this logic out into a parent component specifically for parent files which own their elf binary
-	// for better separation of concerns
-	$: objects = overrideObjects ?? binary.data[FILE_TYPES[dataType].objectType]
+	$: objects = overrideObjects ?? binary.data[FILE_TYPES[dataType].dataDivision]
 	$: index = createIndex(objects)
 	
 	$: if (tabVisible) initialized = true
@@ -105,7 +102,7 @@
 		
 		for (const fieldName of symbolFields) {
 			let fieldType = FILE_TYPES[dataType].childTypes[fieldName]
-			let dataDivision = FILE_TYPES[fieldType].objectType
+			let dataDivision = FILE_TYPES[fieldType].dataDivision
 			console.log('symbol', fieldName, DataType[fieldType], dataDivision)
 			
 			let lastBaseObject = binary.data[dataDivision].findLast(value => typeof value === "object" && value.symbolName != undefined)

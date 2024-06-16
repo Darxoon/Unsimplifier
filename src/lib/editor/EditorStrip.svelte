@@ -100,7 +100,8 @@
 					isCompressed,
 					content: serializeElfBinary(dataType, binary)
 				}
-			} else if (content.type === "welcomeScreen") {
+			} else if (content.type === "docs") {
+				// TODO
 				return []
 			} else {
 				throw new Error("Unknown page type")
@@ -172,7 +173,7 @@
 					let { detail } = e
 					
 					if (detail instanceof OpenWindowEvent) {
-						const { title, parentTab, content } = detail
+						const { title, parentTab, content, isCompressed } = detail
 						
 						// triple equals because if parentTab is null that means that this probably was intended
 						if (parentTab === undefined) {
@@ -187,7 +188,7 @@
 							id: childID,
 							parentId: parentTab?.id,
 							name: title,
-							isCompressed: false,
+							isCompressed,
 							children: [],
 							content,
 						})

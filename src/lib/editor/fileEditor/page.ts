@@ -11,4 +11,8 @@ export interface CardList {
     overrideObjects?: UuidTagged[]
 }
 
-export type PageContent = CardList
+export interface Docs {
+    type: "docs"
+}
+
+export type PageContent = CardList | Docs
