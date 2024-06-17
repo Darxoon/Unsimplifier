@@ -11,7 +11,7 @@ const config = {
 
 	kit: {
 		paths: {
-			base: isDevVersion ? "" : "/OrigamiWand",
+			base: isDevVersion ? "" : "/Unsimplifier",
 		},
 		adapter: adapter({
 			pages: 'build',

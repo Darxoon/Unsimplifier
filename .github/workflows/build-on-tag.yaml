@@ -1,4 +1,4 @@
-name: Build OrigamiWand Releases
+name: Build Unsimplifier Releases
 
 on:
   push:
@@ -27,12 +27,12 @@ jobs:
       id: get_latest_tag
       run: echo "TAG_NAME=$(git tag)" >> $GITHUB_ENV
       
-    - name: Build OrigamiWand
+    - name: Build Unsimplifier
       run: PUBLIC_OW_VERSION="$TAG_NAME" PUBLIC_VERSION_TIMESTAMP=$(date +%s)000 PUBLIC_IS_DEV_VERSION=0 PUBLIC_DEBUG=0 npm run build
     
     - name: Upload build folder
       uses: actions/upload-artifact@v4
       with:
-        name: OrigamiWand-build
+        name: Unsimplifier-build
         path: build
         
