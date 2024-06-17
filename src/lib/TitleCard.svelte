@@ -27,7 +27,7 @@
 				{/each}
 			</ul>
 			<span class="build_timestamp_wrapper">
-				<li class="build_timestamp">Last built {buildDate.toLocaleDateString("en-UK", { dateStyle: "long" })}</li>
+				<div class="build_timestamp">Last built {buildDate.toLocaleDateString("en-UK", { dateStyle: "long" })}</div>
 			</span>
 		</div>
 	</div>

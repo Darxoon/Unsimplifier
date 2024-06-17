@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { FileSystem } from "$lib/save/vfs";
     import { waitAnimationFrame } from "$lib/util";
-    import { dirname } from "path-browserify";
+    import path from "path-browserify";
     import { afterUpdate, createEventDispatcher, onMount } from "svelte";
 
     interface FsItem {
@@ -64,9 +64,6 @@
     async function readRawRomfsList(outFiles: FsItem[], startPath: string = "/", indentation = -1): Promise<void> {
         let dir = await romfs.getDirectoryMetadata(startPath)
         
-        if (fileTree == undefined)
-            console.error('unde')
-        
         if (dir.name) {
             outFiles.push({
                 path: dir.path,
@@ -77,6 +74,9 @@
                     ?? dir.directories.length == 0,
             })
         }
+        
+        dir.directories.sort((a, b) => path.basename(a).localeCompare(path.basename(b)))
+        dir.files.sort((a, b) => a.name.localeCompare(b.name))
         
         for (const child of dir.directories) {
             await readRawRomfsList(outFiles, child, indentation + 1)

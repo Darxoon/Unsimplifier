@@ -15,8 +15,6 @@ export class FileSystem {
 	
 	// inspect fs
 	public async getDirectoryMetadata(dir: string): Promise<Directory> {
-		debugger //to test path module
-		
 		const { isRoot, directories, files } = await this.db.directory.get(dir)
 		const name = path.basename(dir)
 		
