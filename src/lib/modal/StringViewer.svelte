@@ -5,11 +5,12 @@
 	export let inline: boolean = false
 	export let nopadding: boolean = false
 	
+	type NewlineObject = {type: "newline", text: string}
 	type LinkObject = {type: "link", text: string, href: string, newTab: boolean}
 	type MarkupObject = {type: "code" | "bold", text: string}
 	type BulletObject = {type: "bullet", text: string}
 	
-	type TextSlice = string | LinkObject | MarkupObject | BulletObject
+	type TextSlice = string | NewlineObject | LinkObject | MarkupObject | BulletObject
 	
 	$: paragraphs = text.split(/(?:\n+[ \t]*(?=\* ))|(?:\n\n+)/g).map(parseParagraph)
 	
@@ -21,9 +22,16 @@
 		for (const match of matches) {
 			const [ content, label, newTabIndicator, href, codeBlockContent, boldContent ] = match
 			
+			if (paragraph.slice(sectionStart, match.index).includes('  \n')) {
+				let segments = paragraph.slice(sectionStart, match.index).split('  \n')
+				arr.push(segments[0])
+				arr.push(...segments.slice(1).map(text => ({ type: "newline", text } as const)))
+			} else {
+				arr.push(paragraph.slice(sectionStart, match.index))
+			}
+			
 			// code block
 			if (codeBlockContent) {
-				arr.push(paragraph.slice(sectionStart, match.index))
 				arr.push({
 					type: "code",
 					text: codeBlockContent,
@@ -33,7 +41,6 @@
 			
 			// bold
 			else if (boldContent) {
-				arr.push(paragraph.slice(sectionStart, match.index))
 				arr.push({
 					type: "bold",
 					text: boldContent,
@@ -43,7 +50,6 @@
 			
 			// link
 			else if (href) {
-				arr.push(paragraph.slice(sectionStart, match.index))
 				arr.push({
 					type: "link",
 					text: label || href,
@@ -54,8 +60,15 @@
 			}
 		}
 		
-		if (sectionStart < paragraph.length)
-			arr.push(paragraph.slice(sectionStart))
+		if (sectionStart < paragraph.length) {
+			if (paragraph.slice(sectionStart).includes('  \n')) {
+				let segments = paragraph.slice(sectionStart).split('  \n')
+				arr.push(segments[0])
+				arr.push(...segments.slice(1).map(text => ({ type: "newline", text } as const)))
+			} else {
+				arr.push(paragraph.slice(sectionStart))
+			}	
+		}
 		
 		return arr
 	}
@@ -74,6 +87,7 @@
 	{#each paragraphs as paragraph}
 		{#if typeof paragraph[0] === 'string' && paragraph[0].trimStart().includes('* ')}
 			<li>
+				<!-- TODO: with Svelte 5 this would make more sense to be rewritten as a Snippet -->
 				<InnerParagraphDisplay paragraph={removeBulletStar(paragraph)} />
 			</li>
 		{:else if inline}

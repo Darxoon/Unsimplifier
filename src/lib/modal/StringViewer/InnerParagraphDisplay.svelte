@@ -1,9 +1,10 @@
 <script lang="ts">
+	type NewlineObject = {type: "newline", text: string}
     type LinkObject = {type: "link", text: string, href: string, newTab: boolean}
 	type MarkupObject = {type: "code" | "bold", text: string}
 	type BulletObject = {type: "bullet", text: string}
 	
-	type TextSlice = string | LinkObject | MarkupObject | BulletObject
+	type TextSlice = string | NewlineObject | LinkObject | MarkupObject | BulletObject
     
     export let paragraph: TextSlice[]
 </script>
@@ -17,6 +18,8 @@
         <pre>{part.text}</pre>
     {:else if typeof part === 'object' && part.type == 'bold'}
         <strong>{part.text}</strong>
+    {:else if typeof part === 'object' && part.type == 'newline'}
+        <br>{part.text}
     {:else}
         {part}
     {/if}
