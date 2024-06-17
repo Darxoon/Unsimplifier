@@ -136,14 +136,14 @@ Anyway, have fun using this tool!`
 	<meta property="og:type" content="website">
 	<meta property="og:title" content="Unsimplifier">
 	<meta property="og:description" content="Editor for Paper Mario: The Thousand Year Door Remake">
-	<meta property="og:image" content="https://darxoon.neocities.org/res/origamiwand.png">
+	<meta property="og:image" content="https://darxoon.neocities.org/res/unsimplifier.png">
 
 	<meta name="twitter:card" content="summary_large_image">
 	<meta property="twitter:domain" content="darxoon.neocities.org">
 	<meta property="twitter:url" content="https://darxoon.neocities.org/Unsimplifier/">
 	<meta name="twitter:title" content="Unsimplifier">
 	<meta name="twitter:description" content="Editor for Paper Mario: The Thousand Year Door Remake">
-	<meta name="twitter:image" content="https://darxoon.neocities.org/res/origamiwand.png">
+	<meta name="twitter:image" content="https://darxoon.neocities.org/res/unsimplifier.png">
 </svelte:head>
 
 <!-- TODO: consider whether this element should get a role after all -->
