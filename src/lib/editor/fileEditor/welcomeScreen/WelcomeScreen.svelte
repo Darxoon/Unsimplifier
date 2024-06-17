@@ -162,7 +162,8 @@ ${filePath}. Please report this to the developer (Darxoon)
                     
                     <p>To use this tool, you need a copy of the Paper Mario: TTYD Remake
                         and either the&nbsp;emulator <a href="https://www.ryujinx.org/">Ryujinx</a> or a homebrewed
-                        Nintendo Switch with <a href="https://nh-server.github.io/switch-guide/">Atmosphere</a>.</p>
+                        Nintendo Switch with <a href="https://nh-server.github.io/switch-guide/">Atmosphere</a>
+                        in order to create a RomFS dump. (Skip the following step if you already have one)</p>
                     
                     <p>If you are using <em>Atmosphere</em>, install
                         <a href="https://github.com/DarkMatterCore/nxdumptool/releases">NXDumpTool</a> and extract
@@ -177,7 +178,7 @@ ${filePath}. Please report this to the developer (Darxoon)
                         
                     <p><input type="file" bind:this={folderSelector} on:change={uploadRomfs} multiple></p>
                     
-                    <p>(it will not get uploaded, only stored locally in your browser)</p>
+                    <p>(it will not be uploaded, only stored locally in your browser)</p>
                     
                     {#if setupLabelOverride}
                         <p>{setupLabelOverride}</p>

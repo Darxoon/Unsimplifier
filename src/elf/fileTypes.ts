@@ -154,7 +154,7 @@ const typedefs = {
 		walkOrigin: "Vector3",
 		walkRadius: "Vector3",
 		field_0xd8: "float",
-		field_0xdc: "float",
+		field_0xdc: "int",
 		chaseOrigin: "Vector3",
 		chaseRadius: "Vector3",
 		field_0xf8: "int",

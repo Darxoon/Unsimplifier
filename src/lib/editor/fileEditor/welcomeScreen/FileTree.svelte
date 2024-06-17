@@ -83,7 +83,8 @@
         }
         
         for (const file of dir.files) {
-            if (!onlyShowSupported || supportedFiles.some(name => file.name.includes(name))) {
+            // TODO: remove ItemList hack once it gets supported
+            if (!onlyShowSupported || (supportedFiles.some(name => file.name.includes(name)) && !file.name.includes('ItemList'))) {
                 outFiles.push({
                     path: file.path,
                     name: file.name,

@@ -35,7 +35,13 @@ export function getViewMenu(): MenuCategory {
 				onClick: () => {
 					let tab = editorStrip.activeTab()
 					
-					if (tab.content.type === "cardList") {
+					if (tab == null) {
+						showModal(TextAlert, {
+							title: "All Field Descriptions",
+							content: `This menu requires an active file to be open.  
+Please open one before trying again.`
+						})
+					} else if (tab.content.type === "cardList") {
 						const { dataType } = tab.content
 						viewAllDescriptions(dataType)
 					} else {

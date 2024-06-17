@@ -20,7 +20,12 @@
 </script>
 
 <Alert title="All User Notes">
-	<div class="wrapper tabbable" bind:this={wrapper}>
+	<div class="wrapper tabbable" class:empty={allNotes.length == 0} bind:this={wrapper}>
+		{#if allNotes.length == 0}
+			<p>You can add notes by hovering over a field name if you have an active file open
+				and clicking on •••, then typing something into the Personal Notes box.</p>
+			<p>Nothing here yet.</p>
+		{/if}
 		{#each allNotes as [id, content], i}
 			<div class="element">
 				<b>{FILE_TYPES[DataType[id[0]]].displayName + ' > ' + toReadableString(id[1])}:</b>
@@ -37,6 +42,9 @@
 		
 		min-width: 32rem;
 		min-height: 14rem;
+	}
+	.empty {
+		max-width: min-content;
 	}
 	.element {
 		margin: 0 1rem 1rem 0;
