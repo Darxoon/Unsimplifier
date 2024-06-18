@@ -64,10 +64,19 @@ type UnfilteredInstance<T extends number> = {
 	-readonly [p in keyof RawTypedef<T>]: StrToType<RawTypedef<T>[p] extends Property<infer U> ? U : RawTypedef<T>[p]>
 }
 
-export type Instance<T extends number> = Pick<
-	UnfilteredInstance<T>, 
-	{[p in keyof UnfilteredInstance<T>]: UnfilteredInstance<T>[p] extends never ? never : p}[keyof UnfilteredInstance<T>]
-> & UuidTagged
+type GetMetadata<T extends number> = '__' extends keyof RawTypedef<T> ? RawTypedef<T>['__'] : {}
+type GetParent<T extends number> = 'parent' extends keyof GetMetadata<T>
+	? GetMetadata<T>['parent'] extends number ? UnfilteredInstance<GetMetadata<T>['parent']>
+	: undefined
+	: undefined
+
+type RemoveNever<T> = Pick<T, {[p in keyof T]: T[p] extends never ? never : p}[keyof T]>
+
+export type Instance<T extends number> = (GetParent<T> extends undefined
+	? RemoveNever<UnfilteredInstance<T>>
+	: RemoveNever<GetParent<T> & UnfilteredInstance<T>>
+) & UuidTagged
+// this is fine :)
 
 const defaultDescriptions: Typedef<string> = {
 	stage: "The stage that the {type} is on. It's the same for every {type} in the same file.",
@@ -90,7 +99,7 @@ type TypeDefinition = {
 } & { __?: DataTypeMetadata }
 
 interface DataTypeMetadata {
-	parent?: object // TODO: proper type definition when I need it
+	parent?: DataType
 	
 	displayName?: string
 	dynamicDisplayName?: (obj: any) => string
@@ -298,6 +307,13 @@ const typedefs = {
 		field_0x150: "int",
 		field_0x154: "int",
 	},
+	[DataType.Aobj]: {
+		__: {
+			displayName: "Aobj",
+			// same as Mobj
+			parent: DataType.Mobj,
+		}
+	}
 } as const satisfies {[dataType: number]: TypeDefinition}
 
 
@@ -337,11 +353,13 @@ export const FILE_TYPES = mapObject(typedefs, ([dataTypeString, typedef]) => [da
 console.timeEnd('generating FILE_TYPES')
 
 function generateTypedefFor(typedef: TypeDefinition): FileTypeRegistry {
-	let metadata: DataTypeMetadata = typedef.__ ?? {}
+	let metadata: DataTypeMetadata = {...typedef.__}
 	
 	while (metadata.parent) {
-		typedef = {...metadata.parent, ...typedef}
-		metadata = typedef.__ ?? {}
+		let parent = typedefs[metadata.parent]
+		delete metadata.parent
+		typedef = {...parent, ...typedef}
+		metadata = {...parent.__, ...metadata}
 	}
 	
 	const { displayName, dynamicDisplayName, dataDivision, identifyingField } = metadata

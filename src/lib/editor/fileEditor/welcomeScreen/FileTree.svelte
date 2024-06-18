@@ -16,6 +16,7 @@
         "data_Npc",
         "data_Item",
         "data_Mobj",
+        "data_Aobj",
     ]
     
     const dispatch = createEventDispatcher()

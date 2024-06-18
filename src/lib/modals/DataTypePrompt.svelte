@@ -19,6 +19,7 @@
 		"data_Npc": DataType.Npc,
 		"data_Item": DataType.Item,
 		"data_Mobj": DataType.Mobj,
+		"data_Aobj": DataType.Aobj,
 	}
 	
 	onMount(() => {
@@ -62,6 +63,7 @@
 		<option value="Npc">NPC Placement (data_Npc)</option>
 		<option value="Item">Item Placement (data_Item)</option>
 		<option value="Mobj">Mobj Placement (data_Mobj)</option>
+		<option value="Aobj">Aobj Placement (data_Aobj)</option>
 	</select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">
