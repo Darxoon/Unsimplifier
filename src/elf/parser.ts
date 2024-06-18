@@ -305,7 +305,7 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 			let targetSymbol = symbolTable[relocation.infoHigh]
 			obj[fieldName] = targetSymbol.name
 		} else {
-			throw new Error(`Relocation to non-pointer field ${fieldName}: ${fieldType} at offset 0x${offset.toString(16)} (${DataType[dataType]})`)
+			throw new Error(`Field '${fieldName}' should be string or pointer, not '${fieldType}' (at offset 0x${offset.toString(16)}, ${DataType[dataType]})`)
 		}
 	}
 }
