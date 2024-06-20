@@ -162,6 +162,23 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			data = null
 			break
 		
+		case DataType.MapId: {
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+			
+			const dataView = new DataView(dataSection.content)
+			
+			let mainSymbol = findSymbol("wld::fld::data::s_data")
+			let countSymbol = findSymbol("wld::fld::data::kNum")
+			
+			let count = dataView.getInt32(countSymbol.location.value, true)
+			
+			data = {}
+			data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.MapId, count)
+			
+			break
+		}
+		
 		// parse .data section by data type
 		default: {
 			const dataSection = findSection('.data')
@@ -230,15 +247,22 @@ function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
 	}
 	
 	for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
-		
 		switch (fieldType) {
 			case "string":
+				if (reader.readInt32() != 0)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a string when it contains non-pointer data`)
+				if (reader.readInt32() != 0)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a string when it contains non-pointer data`)
+				
 				result[fieldName] = null
-				reader.position += 8
 				break
 			case "symbol":
+				if (reader.readInt32() != 0)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data`)
+				if (reader.readInt32() != 0)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data`)
+				
 				result[fieldName] = null
-				reader.position += 8
 				break
 			case "Vector3":
 				result[fieldName] = new Vector3(reader.readFloat32(), reader.readFloat32(), reader.readFloat32())
@@ -271,7 +295,6 @@ function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
 			default:
 				throw new Error(`Unknown data type ${JSON.stringify(fieldType)}`)
 		}
-		
 	}
 	
 	return result

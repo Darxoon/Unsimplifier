@@ -332,6 +332,36 @@ const typedefs = {
 		field_0x48: "int",
 		field_0x4c: "int",
 	},
+	[DataType.MapId]: {
+		__: {
+			displayName: "Map",
+		},
+		
+		id: "string",
+		field_0x8: "string",
+		field_0x10: "string",
+		field_0x18: "string",
+		battleStage: "string",
+		field_0x28: "string",
+		field_0x30: "string",
+		field_0x38: "string",
+		field_0x40: "int",
+		field_0x44: "int",
+		field_0x48: "string",
+		field_0x50: "string",
+		field_0x58: "int",
+		field_0x5c: "int",
+		field_0x60: "int",
+		field_0x64: "int",
+		field_0x68: "string",
+		field_0x70: "int",
+		field_0x74: "int",
+		field_0x78: "int",
+		field_0x7c: "int",
+		field_0x80: "string",
+		field_0x88: "string",
+		field_0x90: "string",
+	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
 

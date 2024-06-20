@@ -8,6 +8,9 @@ export enum DataType {
 	Aobj,
 	Bshape,
 	
+	// registries
+	MapId,
+	
 	// this is the end of the actual file types
 	TypeAmount,
 }

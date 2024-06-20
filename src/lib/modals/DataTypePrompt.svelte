@@ -21,6 +21,7 @@
 		"data_Mobj": DataType.Mobj,
 		"data_Aobj": DataType.Aobj,
 		"data_Bshape": DataType.Bshape,
+		"MapId": DataType.MapId,
 	}
 	
 	onMount(() => {
@@ -66,6 +67,8 @@
 		<option value="Mobj">Mobj Placement (data_Mobj)</option>
 		<option value="Aobj">Aobj Placement (data_Aobj)</option>
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
+		
+		<option value="MapId">Map Registry (MapId)</option>
 	</select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">

@@ -54,6 +54,10 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		return sections.find(section => section.name == sectionName)
 	}
 	
+	function findSectionIndex(sectionName: string): number {
+		return sections.findIndex(section => section.name == sectionName)
+	}
+	
 	function findSymbol(name: string): Symbol {
 		return binary.symbolTable.find(symbol => symbol.name === name)
 	}
@@ -75,6 +79,21 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		stringRelocations.set(".data", dataStringRelocations)
 		
 		switch (dataType) {
+			case DataType.MapId: {
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+				}
+				
+				serializeObjects(data, DataType.MapId, binary.data.main, { padding: 1 })
+				
+				// count symbol
+				symbolLocationReference.set("wld::fld::data::kNum", new Pointer(dataWriter.size))
+				dataWriter.writeInt32(binary.data.main.length)
+				
+				break
+			}
+			
 			default: {
 				let data: SerializeContext = {
 					writer: dataWriter,
@@ -433,6 +452,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	let dataView = new DataView(output)
 	dataView.setBigInt64(0x28, BigInt(sectionHeaderTableLocation), true)
 	dataView.setInt16(0x3C, sections.length, true)
+	dataView.setInt16(0x3E, findSectionIndex(".shstrtab"), true)
 	
 	
 	

@@ -18,6 +18,7 @@
         "data_Mobj",
         "data_Aobj",
         "data_Bshape",
+        "MapId",
     ]
     
     const dispatch = createEventDispatcher()
