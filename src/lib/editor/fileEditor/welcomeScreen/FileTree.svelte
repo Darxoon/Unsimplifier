@@ -3,10 +3,12 @@
     import { waitAnimationFrame } from "$lib/util";
     import path from "path-browserify";
     import { afterUpdate, createEventDispatcher, onMount } from "svelte";
+    import areaNames from "./areaNames.json"
 
     interface FsItem {
         path: string
         name: string
+        intuitiveName?: string
         indentation: number
         isFile: boolean
         isCollapsed: boolean
@@ -71,6 +73,7 @@
             outFiles.push({
                 path: dir.path,
                 name: dir.name,
+                intuitiveName: areaNames[dir.name],
                 indentation,
                 isFile: false,
                 isCollapsed: fileTree?.find(item => item.name == dir.name)?.isCollapsed
@@ -174,7 +177,10 @@
                 {#if !item.isFile}
                     <i data-feather="chevron-down" class="arrow"></i>
                 {/if}
-                {item.name}
+                <span>{item.name}</span>
+                {#if item.intuitiveName}
+                    <span class="intuitiveName">{item.intuitiveName}</span>
+                {/if}
             </li>
         {/each}
     </ul>
@@ -199,6 +205,7 @@
     }
     
     .tree li {
+        position: relative;
         user-select: none;
         cursor: pointer;
     }
@@ -213,6 +220,13 @@
     
     .file {
         --padding-left: 24px;
+    }
+    
+    .intuitiveName {
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
     }
     
     .arrow {
