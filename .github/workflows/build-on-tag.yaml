@@ -30,6 +30,9 @@ jobs:
     - name: Build Unsimplifier
       run: PUBLIC_OW_VERSION="$TAG_NAME" PUBLIC_VERSION_TIMESTAMP=$(date +%s)000 PUBLIC_IS_DEV_VERSION=0 PUBLIC_DEBUG=0 npm run build
     
+    - name: Embed current version number in build
+      run: echo "$TAG_NAME" > build/versionnr.txt
+    
     - name: Upload build folder
       uses: actions/upload-artifact@v4
       with:
