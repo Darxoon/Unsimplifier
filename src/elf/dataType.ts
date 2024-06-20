@@ -6,6 +6,7 @@ export enum DataType {
 	Item,
 	Mobj,
 	Aobj,
+	Bshape,
 	
 	// this is the end of the actual file types
 	TypeAmount,

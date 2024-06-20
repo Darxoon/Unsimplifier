@@ -17,6 +17,7 @@
         "data_Item",
         "data_Mobj",
         "data_Aobj",
+        "data_Bshape",
     ]
     
     const dispatch = createEventDispatcher()

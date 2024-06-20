@@ -301,7 +301,7 @@ const typedefs = {
 		interactScript: "string",
 		field_0x130: "string",
 		damageScript: "string",
-		flurrieBlowScript: "string",
+		field_0x140: new Property("string", "Script function; seems to be used for flurrie blowing and spring jumps?"),
 		field_0x148: "int",
 		field_0x14c: "int",
 		field_0x150: "int",
@@ -313,7 +313,25 @@ const typedefs = {
 			// same as Mobj
 			parent: DataType.Mobj,
 		}
-	}
+	},
+	[DataType.Bshape]: {
+		__: {
+			displayName: "Bshape",
+		},
+		
+		stage: "string",
+		id: "string",
+		position: "Vector3",
+		rotation: "Vector3",
+		field_0x28: "int",
+		cubeSize: "Vector3",
+		field_0x38: "int",
+		field_0x3c: "int",
+		field_0x40: "int",
+		field_0x44: "int",
+		field_0x48: "int",
+		field_0x4c: "int",
+	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
 
