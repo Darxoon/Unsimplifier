@@ -63,14 +63,16 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	}
 	
 	// We will start with the .data and .rodata section.
-	// These sections contain various stuff depending on the data type.
+	// These sections contain the main content, which can be various stuff depending on the data type,
+	// which is why a lot of data types have their own serializers.
 	
-	// To handle pointers, all pointers are split into three categories: strings, raw pointers and symbols.
+	// To handle pointers, all pointers are split into two categories: strings and pointers to symbols.
 	// For every pointer, there is the offset of the field the pointer is in stored in relation to the entire section,
-	// along with either the string, target object or symbol name it is pointing to. Depending on the type of the pointer,
+	// along with either the string or symbol name it is pointing to. Depending on the type of the pointer,
 	// this is stored into either stringRelocations or symbolRelocations.
 	
-	// In addition, the program also stores all strings that are used separately in allStrings to be able to iterate over it easier.
+	// In addition, the program also stores all strings that are used separately in the Set allStrings to be able to
+	// iterate over it in the end and to deduplicate strings in the process.
 	
 	{
 		let dataWriter = new BinaryWriter()

@@ -67,7 +67,7 @@
 			}
 			
 			p {
-				margin: auto 0 auto 2rem;
+				margin: auto 0 auto 1.5rem;
 				font-size: 15pt;
 				transform: translateY(2px);
 				overflow-x: hidden;

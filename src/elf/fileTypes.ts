@@ -339,28 +339,40 @@ const typedefs = {
 		
 		id: "string",
 		field_0x8: "string",
-		field_0x10: "string",
-		field_0x18: "string",
+		field_0x10: new Property("string", "Always the exact same as `id`"),
+		groupName: "string",
 		battleStage: "string",
-		field_0x28: "string",
-		field_0x30: "string",
+		assetDirectory: new Property("string", "Directory inside romfs that contains this map's asset group"),
+		assetName: new Property("string", `
+File name of all asset files for this map.
+
+For example, for the asset name 'gor_01', this field would reference:
+ * <assetDir>/gor_01.bfres.zst
+ * <assetDir>/gor_01.cam.zst
+ * <assetDir>/gor_01.csb.zst
+ * etc.`),
 		field_0x38: "string",
 		field_0x40: "int",
 		field_0x44: "int",
-		field_0x48: "string",
+		scriptLocation: new Property("string", "Path to script file relative to `romfs/script/wld/fld/map/`"),
 		field_0x50: "string",
 		field_0x58: "int",
 		field_0x5c: "int",
-		field_0x60: "int",
+		linkNumber: new Property("int", `
+Two maps are linked together if they have the same number and aren't if they do not,
+although this check will be skipped and the group name will be compared instead
+if this number is 0.
+
+Used for the loading of new maps (?)`),
 		field_0x64: "int",
-		field_0x68: "string",
+		field_0x68: new Property("string", `Either has the value null or "グループ" (english: group)`),
 		field_0x70: "int",
 		field_0x74: "int",
 		field_0x78: "int",
 		field_0x7c: "int",
-		field_0x80: "string",
-		field_0x88: "string",
-		field_0x90: "string",
+		field_0x80: new Property("string", "Only used by the first 5 out of 6 `jon` maps and points ot `jon_00` there"),
+		field_0x88: new Property("string", "Only used by the first 5 out of 6 `jon` maps and points ot `jon_00` there"),
+		field_0x90: new Property("string", "Only used by the first 5 out of 6 `jon` maps and points ot `jon_00` there"),
 	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
