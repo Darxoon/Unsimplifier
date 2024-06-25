@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { afterUpdate } from "svelte";
 	import type { ElfBinary } from "paper-mario-elfs/elfBinary";
-	import { DataType } from "paper-mario-elfs/dataType";
+	import type { DataType } from "paper-mario-elfs/dataType";
 	import { FILE_TYPES } from "paper-mario-elfs/fileTypes";
-	import ObjectEditor from "$lib/editor/objectEditor/ObjectEditor.svelte"
+	import { Symbol } from "paper-mario-elfs/types";
 	import type { SearchIndex } from "$lib/editor/search/searchIndex";
     import FileToolbar from "./FileToolbar.svelte";
     import BasicObjectArray from "./BasicObjectArray.svelte";
     import type { UuidTagged } from "paper-mario-elfs/valueIdentifier";
-    import { incrementName, mangleIdentifier } from "paper-mario-elfs/nameMangling";
+    import { incrementName } from "paper-mario-elfs/nameMangling";
 
 	export let binary: ElfBinary
 	export let dataType: DataType
@@ -98,40 +98,50 @@
 	function createObject(dataType: DataType) {
 		let object = FILE_TYPES[dataType].instantiate()
 		
-		let symbolFields = Object.keys(FILE_TYPES[dataType].childTypes).filter(key => FILE_TYPES[dataType].typedef[key] == "symbol")
-		
-		for (const fieldName of symbolFields) {
-			let fieldType = FILE_TYPES[dataType].childTypes[fieldName]
-			let dataDivision = FILE_TYPES[fieldType].dataDivision
-			console.log('symbol', fieldName, DataType[fieldType], dataDivision)
+		for (const fieldName of Object.keys(object)) {
+			let fieldType = FILE_TYPES[dataType].typedef[fieldName]
+			console.log(fieldName, fieldType)
 			
-			let lastBaseObject = binary.data[dataDivision].findLast(value => typeof value === "object" && value.symbolName != undefined)
-			
-			if (!lastBaseObject)
+			if (fieldType != "symbol" && fieldType != "symbolAddr")
 				continue
 			
-			let symbolName = incrementName(lastBaseObject.symbolName)
-			
-			let childObject: any = { symbolName }
-			
-			if ('item' in lastBaseObject) {
-				childObject.item = FILE_TYPES[fieldType].instantiate()
-			}
-			
-			if ('children' in lastBaseObject) {
-				childObject.children = []
-			}
-			
-			object[fieldName] = childObject
-			
-			// also create symbol
-			let baseSymbolIndex = binary.findSymbolIndex(lastBaseObject.symbolName)
-			let newSymbol = binary.symbolTable[baseSymbolIndex].clone()
-			newSymbol.name = symbolName
-			binary.symbolTable.push(newSymbol)
+			object[fieldName] = createSymbolObject()
 		}
 		
+		// TODO: implement a 'name index' to make this work with sub types that don't have a data division
+		let identifyingField = FILE_TYPES[dataType].identifyingField
+		object[identifyingField] = "unnamed"
+		
+		let allObjects = binary.data[FILE_TYPES[dataType].dataDivision]
+		
+		while (allObjects && allObjects.find(item => item[identifyingField] == object[identifyingField])) {
+			object[identifyingField] = incrementName(object[identifyingField])
+		}
+		
+		console.log('created new', object)
+		
 		return object
+	}
+	
+	function createSymbolObject() {
+		let symbolName = "new_symbol_" + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+		
+		// TODO: make sure these values are correct for future data types
+		let symbol = new Symbol()
+		symbol.name = symbolName
+		symbol.info = 1
+		symbol.sectionHeaderIndex = 3
+		binary.symbolTable.push(new Symbol)
+		
+		return {
+			symbolName,
+			children: [],
+		}
+	}
+	
+	function handleCreateContent({ obj, fieldName }: { obj: UuidTagged, fieldName: string }) {
+		obj[fieldName] = createSymbolObject()
+		objects = objects
 	}
 	
 	function deleteAll() {
@@ -156,7 +166,12 @@
 				(out of {objects.length} objects):</div>
 		{/if}
 		
-		<BasicObjectArray on:open bind:this={arrayComponent} binary={binary} dataType={dataType} referenceObjects={objects}
+		{#if objects.length == 0}
+			<p>No content here yet. Create one with 'Add new object'</p>
+		{/if}
+		
+		<BasicObjectArray on:open on:createContent={e => handleCreateContent(e.detail)}
+			bind:this={arrayComponent} binary={binary} dataType={dataType} referenceObjects={objects}
 			objects={searchResults ? searchResultObjects : objects} highlightedFields={highlightedFields} />
 	</div>
 	
@@ -169,6 +184,11 @@
 {/if}
 
 <style lang="scss">
+	p {
+		color: white;
+		text-align: center;
+	}
+	
 	.resultlabel {
 		font-size: 17pt;
 		color: white;

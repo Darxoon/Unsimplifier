@@ -21,6 +21,7 @@
         "data_Aobj",
         "data_Bshape",
         "MapId",
+        "data_ItemList",
     ]
     
     const dispatch = createEventDispatcher()
@@ -89,8 +90,7 @@
         }
         
         for (const file of dir.files) {
-            // TODO: remove ItemList hack once it gets supported
-            if (!onlyShowSupported || (supportedFiles.some(name => file.name.includes(name)) && !file.name.includes('ItemList'))) {
+            if (!onlyShowSupported || (supportedFiles.some(name => file.name.includes(name)))) {
                 outFiles.push({
                     path: file.path,
                     name: file.name,

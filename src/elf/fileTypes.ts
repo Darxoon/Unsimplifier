@@ -1,7 +1,7 @@
 import { dataDivisions, Pointer, type DataDivision } from "./elfBinary";
 import { DataType } from "./dataType";
 import { Vector3 } from "./misc";
-import { ValueUuid, VALUE_UUID, type UuidTagged } from "./valueIdentifier";
+import { ValueUuid, VALUE_UUID, type UuidTagged, DATA_TYPE } from "./valueIdentifier";
 
 export type Typedef<T> = {[fieldName: string]: T}
 
@@ -14,7 +14,7 @@ export interface PropertyOptions {
 	noSpaces?: boolean
 }
 
-export type PropertyType = "string" | "symbol" | "Vector3" | "float"
+export type PropertyType = "string" | "symbol" | "symbolAddr" | "Vector3" | "float"
 	| "double" | "byte" | "bool8" | "bool32" | "short" | "int" | "long"
 
 const NUMBER_TYPES = ["float", "double", "byte", "short", "int", "long"]
@@ -45,7 +45,7 @@ type RawTypedef<T extends number> = (typeof typedefs)[T]
 type StrToType<T> = 
 	T extends "string" ? string
 	: T extends "symbol" ? any
-	: T extends "pointer" ? any
+	: T extends "symbolAddr" ? any
 	: T extends "Vector3" ? Vector3
 	
 	: T extends "float" ? number
@@ -102,17 +102,15 @@ interface DataTypeMetadata {
 	parent?: DataType
 	
 	displayName?: string
-	dynamicDisplayName?: (obj: any) => string
 	identifyingField?: string
-	dataDivision?: DataDivision
+	dataDivision?: DataDivision | null
+	
+	childTypes?: Typedef<DataType>,
 	
 	// for future sub-types
-	// childTypes
 	// childField
 	// childFieldLabel
 	// countSymbol
-	// entryPoints
-	// nestedAllValues
 }
 
 const typedefs = {
@@ -371,6 +369,28 @@ Used for the loading of new maps (?)`),
 		field_0x88: new Property("string", "Only used by the first 5 out of 6 `jon` maps and points ot `jon_00` there"),
 		field_0x90: new Property("string", "Only used by the first 5 out of 6 `jon` maps and points ot `jon_00` there"),
 	},
+	[DataType.ItemList]: {
+		__: {
+			displayName: "Item Table",
+			childTypes: {
+				items: DataType.ListItem,
+			},
+		},
+		
+		id: "string",
+		items: new Property("symbolAddr", undefined, { tabName: "ItemTable {id}" }),
+	},
+	[DataType.ListItem]: {
+		__: {
+			displayName: "Item",
+			identifyingField: "type",
+			dataDivision: null,
+		},
+		
+		type: "string",
+		holdWeight: "int",
+		dropWeight: "int",
+	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
 
@@ -387,7 +407,6 @@ interface FileTypeRegistry {
 	fieldOffsets: Typedef<number> & {[offset: number]: string}
 	size: number
 	displayName: string
-	getDynamicDisplayName: (obj: any) => string
 	identifyingField: string
 	dataDivision: DataDivision
 	
@@ -405,11 +424,11 @@ interface FileTypeRegistry {
 console.time('generating FILE_TYPES')
 
 // @ts-ignore
-export const FILE_TYPES = mapObject(typedefs, ([dataTypeString, typedef]) => [dataTypeString, generateTypedefFor(typedef)])
+export const FILE_TYPES = mapObject(typedefs, ([dataTypeString, typedef]) => [dataTypeString, generateTypedefFor(parseInt(dataTypeString), typedef)])
 
 console.timeEnd('generating FILE_TYPES')
 
-function generateTypedefFor(typedef: TypeDefinition): FileTypeRegistry {
+function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTypeRegistry {
 	let metadata: DataTypeMetadata = {...typedef.__}
 	
 	while (metadata.parent) {
@@ -419,7 +438,7 @@ function generateTypedefFor(typedef: TypeDefinition): FileTypeRegistry {
 		metadata = {...parent.__, ...metadata}
 	}
 	
-	const { displayName, dynamicDisplayName, dataDivision, identifyingField } = metadata
+	const { displayName, dataDivision, identifyingField, childTypes } = metadata
 	
 	let fields = new Map(Object.entries(typedef).flatMap(([fieldName, fieldType]) => {
 		if (fieldType instanceof Property) {
@@ -456,24 +475,23 @@ function generateTypedefFor(typedef: TypeDefinition): FileTypeRegistry {
 		size,
 		
 		displayName,
-		getDynamicDisplayName: dynamicDisplayName ?? (() => displayName),
 		identifyingField: identifyingField ?? "id",
-		dataDivision: dataDivision ?? dataDivisions.main,
+		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
+		
+		childTypes: childTypes ?? {},
 		
 		// for future sub-types
-		// childTypes: typedef.__childTypes as {[fieldName: string]: DataType} ?? {},
 		// childField: typedef.__childField as string | undefined,
 		// childFieldLabel: typedef.__childFieldLabel as string | undefined,
 		// countSymbol: typedef.__countSymbol as string | undefined,
-		// nestedAllValues: typedef.__nestedAllValues as boolean ?? false,
-		// entryPoints: typedef.__entryPoints ?? {},
 		
 		instantiate(): object {
 			let result = {}
 			result[VALUE_UUID] = ValueUuid()
+			result[DATA_TYPE] = dataType
 			
 			for (const [fieldName, type] of Object.entries(fieldTypes)) {
-				result[fieldName] = type === "string" || type === "symbol"
+				result[fieldName] = type === "string" || type === "symbol" || type === "symbolAddr"
 					? null
 					: type === "Vector3"
 						? Vector3.ZERO
@@ -497,6 +515,7 @@ function generateOffsets(typedef: Typedef<PropertyType>) {
 		offset += {
 			string: 8,
 			symbol: 8,
+			symbolAddr: 8,
 			pointer: 8,
 			Vector3: 12,
 			float: 4,

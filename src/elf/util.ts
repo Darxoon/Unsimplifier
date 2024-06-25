@@ -66,20 +66,14 @@ export function duplicateObjectInBinary<T extends object>(binary: ElfBinary, dat
 		for (const [fieldName, fieldValue] of Object.entries(obj) as [string, unknown][]) {
 			const fieldType = FILE_TYPES[dataType].typedef[fieldName]
 			
-			if (fieldType === "symbol" && fieldValue != null) {
+			if (fieldType === "symbol" || fieldType === "symbolAddr" && fieldValue != null) {
 				const childDataType = FILE_TYPES[dataType].childTypes[fieldName]
-				const childObjectType = FILE_TYPES[childDataType].dataDivision
-				
-				if (!binary.data[childObjectType].includes(fieldValue)) {
-					throw new Error("Cannot clone object " + fieldValue + " because it doesn't exist in the binary")
-				}
 				
 				if (typeof fieldValue != "object" || !("symbolName" in fieldValue) || typeof fieldValue.symbolName != "string") {
 					throw new Error("Cannot clone object " + fieldValue + " because it's of an invalid type")
 				}
 				
-				let clonedChild = duplicateObjectInBinary<object & Record<"symbolName", unknown>>(binary, 
-					childDataType, binary.data[childObjectType], fieldValue, false)
+				let clonedChild = duplicateObjectInBinary(binary,  childDataType, null, fieldValue, false)
 				
 				// also duplicate symbol
 				let clonedSymbol = duplicateSymbolInBinary(binary, binary.findSymbol(fieldValue.symbolName))
@@ -109,8 +103,10 @@ export function duplicateObjectInBinary<T extends object>(binary: ElfBinary, dat
 			
 	
 	// insert clone into array
-	let objectIndex = containingArray.indexOf(obj)
-	containingArray.splice(objectIndex + 1, 0, clone)
+	if (containingArray) {
+		let objectIndex = containingArray.indexOf(obj)
+		containingArray.splice(objectIndex + 1, 0, clone)
+	}
 	
 	return clone
 }

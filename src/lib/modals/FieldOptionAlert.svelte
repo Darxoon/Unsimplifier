@@ -9,6 +9,7 @@
 
 	import StringViewer from "../modal/StringViewer.svelte";
 	import TabbedAlert from "../modal/TabbedAlert.svelte"
+    import { DATA_TYPE, type UuidTagged } from "paper-mario-elfs/valueIdentifier";
 
 	export let dataType: DataType
 	export let objects: any[]
@@ -23,16 +24,45 @@
 	let notes: string
 	
 	$: fieldType = FILE_TYPES[dataType].typedef[fieldName]
-	$: nestedAllValues = FILE_TYPES[dataType].nestedAllValues
+	$: allGlobalValues = FILE_TYPES[dataType].dataDivision == null && scanAllGlobalValues()
 	
 	$: if (notes) localStorage[globalFieldId + ".description"] = notes
 	
 	onMount(() => {
 		notes = localStorage[globalFieldId + ".description"]
 	})
+	
+	type GlobalValuesEntry = readonly [UuidTagged, number, number]
+	
+	function scanAllGlobalValues() {
+		let result: GlobalValuesEntry[] = []
+		scanArrayForGlobalValues(binary.data.main, result)
+		
+		console.log(result)
+		return result
+	}
+	
+	function scanArrayForGlobalValues(array: any[], result: GlobalValuesEntry[]) {
+		for (const item of array) {
+			for (const fieldValue of Object.values(item)) {
+				if (typeof fieldValue == 'object' && 'symbolName' in fieldValue && 'children' in fieldValue) {
+					
+					if (fieldValue.children[0] && fieldValue.children[0][DATA_TYPE] == dataType) {
+						result.push(
+							...(fieldValue.children as UuidTagged[])
+								.map((child, i) => [child, array.indexOf(item), i] as const)
+						)
+					}
+					
+					scanArrayForGlobalValues(fieldValue.children as unknown[], result)
+					
+				}
+			}
+		}
+	}
 </script>
 
-<TabbedAlert title={title} selectedIndex={0} tabNames={nestedAllValues 
+<TabbedAlert title={title} selectedIndex={0} tabNames={allGlobalValues 
 		? ["General Information", "All Local Values", "All Global Values"]
 		: ["General Information", "All Values"]}>
 	<div class="info">
@@ -99,8 +129,8 @@
 			{/each}
 		</div>
 	</div>
-	{#if nestedAllValues}
-		<div>
+	{#if allGlobalValues}
+		<div><!-- TODO: Make this a Svelte 5 snippet in the future to reduce repetition -->
 			{#if fieldType === "string"}
 				<div class="hideNullContainer">
 					<input type="checkbox" name="hideNull" on:change={e => {
@@ -111,20 +141,18 @@
 				</div>
 			{/if}
 			<div class="allValues nested tabbable">
-				{#each binary.data[FILE_TYPES[dataType].dataDivision] as arr, i}
-					{#each arr.objects ?? arr.children ?? arr as obj, j}
-						{#if hideNulls ? obj[fieldName] !== null : true}
-							<div class="index">
-								{i}&nbsp;/&nbsp;{j}
-							</div>
-							<div class="fieldName" class:highlight={j > 0 ? j % 2 == 1 : i % 2 == 1}>
-								{obj[FILE_TYPES[dataType].identifyingField]}
-							</div>
-							<div class="field">
-								<InputField key={fieldName} value={obj[fieldName]} readonly={true} />
-							</div>
-						{/if}
-					{/each}
+				{#each allGlobalValues as [obj, i, j]}
+					{#if hideNulls ? obj[fieldName] !== null : true}
+						<div class="index">
+							{i}&nbsp;/&nbsp;{j}
+						</div>
+						<div class="fieldName" class:highlight={j > 0 ? j % 2 == 1 : i % 2 == 1}>
+							{obj[FILE_TYPES[dataType].identifyingField]}
+						</div>
+						<div class="field">
+							<InputField key={fieldName} value={obj[fieldName]} readonly={true} />
+						</div>
+					{/if}
 				{/each}
 			</div>
 		</div>

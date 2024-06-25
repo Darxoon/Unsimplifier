@@ -381,8 +381,13 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 	
 	// second section: data
 	out += "---\n# Content of the elf file\n"
-		
+	
+	let symbolNameRegistry: Map<DataDivision, Map<string, string>> = new Map()
+	
 	for (const [ dataDivision, items ] of Object.entries(binary.data)) {
+		let symbolNames: Map<string, string> = new Map()
+		symbolNameRegistry.set(dataDivision as DataDivision, symbolNames)
+		
 		out += dataDivision + ":\n"
 		
 		let isFirst = true
@@ -392,13 +397,15 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 			} else {
 				out += '  \n'
 			}
-			out += '  - ' + objToYaml(obj, 2)
+			out += '  - ' + objToYaml(obj, 2, symbolNames)
 		}
 	}
 	
-	// third section: symbol table	
+	// get symbol table diff
 	const baseSymbols = baseBinary.symbolTable
 	const symbols = binary.symbolTable
+	
+	console.log(baseSymbols.length, symbols.length)
 	
 	// collect data
 	let modifiedSymbols: ({ index: number } & PlainSymbol)[] = []
@@ -418,7 +425,20 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 		newSymbols.push(symbols[i])
 	}
 	
-	// print data
+	// third section: symbol name registry
+	if (symbolNameRegistry.size > 0 || modifiedSymbols.length > 0 || newSymbols.length > 0) {
+		out += "\n---\n# Symbol Names\n"
+		
+		for (const [dataDivision, symbolNames] of symbolNameRegistry) {
+			out += dataDivision + ':\n'
+			
+			for (const [id, symbolName] of symbolNames) {
+				out += `  ${id}: ${stringToYaml(symbolName, 1)}\n`
+			}
+		}
+	}
+	
+	// fourth section: symbol table	
 	if (modifiedSymbols.length > 0 || newSymbols.length > 0) {
 		out += "\n---\n# Symbol Table\n"
 	}
@@ -444,7 +464,7 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 
 const PLAIN_STRING_NOT_ALLOWED = ['!', '&', '*', '- ', ': ', '? ', '{', '}', '[', ']',' ,', '#', '|', '>', '@', '`', '"', '\'', '//']
 
-function objToYaml(obj: any, indentation: number, numbersAsFloats = false): string {
+function objToYaml(obj: any, indentation: number, symbolNames?: Map<string, string>, numbersAsFloats = false): string {
 	if (typeof obj !== "object")
 		throw new TypeError(`${obj} needs to be an object`)
 	
@@ -459,9 +479,10 @@ function objToYaml(obj: any, indentation: number, numbersAsFloats = false): stri
 		
 		out += fieldName + ':'
 		
+		// special values
 		if (fieldValue instanceof Vector3) {
 			const { x, y, z } = fieldValue
-			out += '\n' + "  ".repeat(indentation + 1) + objToYaml({ x, y, z }, indentation + 1, true)
+			out += '\n' + "  ".repeat(indentation + 1) + objToYaml({ x, y, z }, indentation + 1, symbolNames, true)
 			continue
 		}
 		
@@ -470,39 +491,41 @@ function objToYaml(obj: any, indentation: number, numbersAsFloats = false): stri
 			continue
 		}
 		
-		if (fieldValue instanceof Array || typeof fieldValue == 'object' && fieldValue !== null) {
-			// TODO: implement
-			debugger
-			throw new Error('TODO', fieldValue)
+		if (fieldValue instanceof Array) {
+			out += '\n'
+			
+			for (const item of fieldValue) {
+				out += "  ".repeat(indentation + 1) + '- ' + objToYaml(item, indentation + 2, symbolNames)
+			}
+			continue
 		}
 		
+		if (typeof fieldValue == 'object' && fieldValue !== null) {
+			if ('symbolName' in fieldValue && 'children' in fieldValue && fieldValue.children instanceof Array) {
+				// TODO: use identifyingField here
+				const id = obj.id as string
+				
+				if (symbolNames.has(id))
+					throw new Error(`Duplicate id ${id} in file`)
+				
+				symbolNames.set(id, fieldValue.symbolName as string)
+				
+				out += '\n'
+				
+				for (const item of fieldValue.children) {
+					out += "  ".repeat(indentation + 1) + '- ' + objToYaml(item, indentation + 2, symbolNames)
+				}
+			} else {
+				out += '\n' + "  ".repeat(indentation + 1) + objToYaml(fieldValue, indentation + 1, symbolNames)
+			}
+			continue
+		}
+		
+		// plain values
 		out += ' '
 		
 		if (typeof fieldValue == 'string') {
-			// strings are hella complex wow
-			let requiresQuotedString = fieldValue.includes(': ')
-				|| fieldValue.includes(' #')
-				|| fieldValue.includes('\t')
-				|| fieldValue != fieldValue.trim()
-				|| !PLAIN_STRING_NOT_ALLOWED.every(str => !fieldValue.startsWith(str))
-			
-			if (requiresQuotedString) {
-				// in "quotes"
-				out += JSON.stringify(fieldValue)
-			} else if (fieldValue.includes('\n')) {
-				// multiline (|- ...)
-				out += "|-\n"
-				let lines = fieldValue.split('\n')
-				
-				for (const line of lines.slice(0, -1)) {
-					out += "  ".repeat(indentation + 1) + line + '\n'
-				}
-				
-				out += "  ".repeat(indentation + 1) + lines.at(-1)
-			} else {
-				// plain
-				out += fieldValue
-			}
+			out += stringToYaml(fieldValue, indentation)
 		}
 		
 		else if (typeof fieldValue == 'number' && numbersAsFloats) {
@@ -521,6 +544,34 @@ function objToYaml(obj: any, indentation: number, numbersAsFloats = false): stri
 	}
 	
 	return out
+}
+
+function stringToYaml(str: string, indentation: number): string {
+	// strings are hella complex wow
+	let requiresQuotedString = str.includes(': ')
+	|| str.includes(' #')
+	|| str.includes('\t')
+	|| str != str.trim()
+	|| !PLAIN_STRING_NOT_ALLOWED.every(str => !str.startsWith(str))
+
+	if (requiresQuotedString) {
+		// in "quotes"
+		return JSON.stringify(str)
+	} else if (str.includes('\n')) {
+		// multiline (|- ...)
+		let out = "|-\n"
+		let lines = str.split('\n')
+		
+		for (const line of lines.slice(0, -1)) {
+			out += "  ".repeat(indentation + 1) + line + '\n'
+		}
+		
+		out += "  ".repeat(indentation + 1) + lines.at(-1)
+		return out
+	} else {
+		// plain
+		return str
+	}
 }
 
 function floatToString(x: number): string {

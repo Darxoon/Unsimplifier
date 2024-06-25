@@ -10,7 +10,9 @@ export enum DataType {
 	
 	// registries
 	MapId,
+	ItemList,
 	
-	// this is the end of the actual file types
+	// this is the end of the actual file types and start of sub types
 	TypeAmount,
+	ListItem,
 }

@@ -9,6 +9,9 @@
     import Debouncer from "./Debouncer.svelte";
     import { onMount } from "svelte";
     import { PUBLIC_DEBUG } from "$env/static/public";
+    import { toReadableString } from "$lib/util";
+    import { showModal } from "$lib/modal/modal";
+    import FieldOptionAlert from "$lib/modals/FieldOptionAlert.svelte";
 
 	export let binary: ElfBinary
 	export let objects: UuidTagged[]
@@ -34,10 +37,11 @@
 			throw new Error("Not all objects have a UUID")
 		}
 		
-		// TODO: replace with opt-in entry-specific data type handling
 		if (isDebug && !objects.every(value => value[DATA_TYPE] == dataType)) {
 			debugger
-			throw new Error("Objects of inconsistent data types passed to BasicObjectArray of data type " + DataType[dataType])
+			let irregular = objects.find(item => item[DATA_TYPE] != dataType)
+			throw new Error("Objects of inconsistent data types passed to BasicObjectArray of data type " + DataType[dataType]
+				+ `, found ${DataType[irregular[DATA_TYPE]]} at index ${objects.indexOf(irregular)}`)
 		}
 	})
 	
@@ -54,6 +58,17 @@
 				top: document.body.scrollHeight,
 			})
 		}
+	}
+	
+	function showFieldMenu(fieldName: string) {
+		showModal(FieldOptionAlert, {
+			title: `Field '${toReadableString(fieldName)}'`,
+			fieldName,
+			
+			dataType,
+			binary,
+			objects,
+		})
 	}
 	
 	export function collapseAll() {
@@ -76,28 +91,6 @@
 		objects = objects
 	}
 	
-	// TODO: move this up to ElfEditor
-	function createContent({ obj, fieldName, resolve, reject }: { obj: UuidTagged, fieldName: string, resolve: Function, reject: Function }) {
-		// find object with symbol
-		let cloneSource = objects.find(v => v[fieldName] != undefined)
-		
-		if (cloneSource == undefined) {
-			return reject(new Error("Could not create content, there is other object with content to orientate by"))
-		}
-		
-		let sourceSymbol = binary.findSymbol(cloneSource[fieldName].symbolName)
-		let duplicateSymbol = duplicateSymbolInBinary(binary, sourceSymbol)
-		
-		obj[fieldName] = {
-			symbolName: duplicateSymbol.name,
-			children: [],
-		}
-		
-		objects = objects
-		
-		resolve()
-	}
-	
 	function titleOf(obj: any) {
 		let { displayName, identifyingField } = FILE_TYPES[dataType]
 		let index = referenceObjects.indexOf(obj)
@@ -116,6 +109,6 @@
 {#each objectSlice as obj, i (obj[VALUE_UUID])}
 	<ObjectEditor bind:this={objectEditors[i]} bind:obj={obj} bind:open={areEditorsOpen[i]}
 		on:open on:duplicate={() => duplicateObject(obj)} on:delete={() => deleteObject(i)}
-		on:appear={() => appear(i)} on:createContent={e => createContent(e.detail)}
+		on:appear={() => appear(i)} on:showFieldMenu={e => showFieldMenu(e.detail)} on:createContent
 		binary={binary} dataType={dataType} title={titleOf(obj)} highlightedFields={highlightedFields?.get(obj)} />
 {/each}

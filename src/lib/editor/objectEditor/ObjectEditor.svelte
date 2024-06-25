@@ -33,11 +33,10 @@
 	
 	$: entries = Object.entries(obj)
 	$: objectId = obj[FILE_TYPES[dataType].identifyingField]
-	$: dynTitle = title.replaceAll('{dynamic}', FILE_TYPES[dataType].getDynamicDisplayName(obj))
 	
 	// SetBattle contains both Stage Definitions and Battles
 	// to differentiate between the two, Custom Colors are only used for Stage Definitions
-	$: usesCustomColors = dynTitle.startsWith('Stage Definition')
+	$: usesCustomColors = false
 	$: actualBackgroundColor = usesCustomColors ? backgroundColor : defaultDataTypeColor
 	$: actualLabelHighlightColor = usesCustomColors ? labelHighlightColor : defaultObjectEditorHighlight
 	
@@ -93,47 +92,8 @@
 				?.getBoundingClientRect()?.y || entryLabelElements.length - 1 <= i);
 	}
 	
-	function showFieldMenu(dataType: DataType, fieldName: string) {
-		let objects = binary.data[FILE_TYPES[dataType].dataDivision]
-		
-		// find sub array if necessary
-		let containsSubArrays = objects.find(v => 'children' in v || v instanceof Array) != undefined
-		
-		if (containsSubArrays)
-			objects = objects.find(arr => (arr instanceof Array ? arr : arr.children).includes(obj))
-		
-		if ('children' in objects)
-			objects = objects.children as any[]
-		
-		
-		// TODO: In future, make this handled by
-		// BasicObjectArray by using a dispatch to prevent this ^
-		
-		showModal(FieldOptionAlert, {
-			title: `Field '${toReadableString(fieldName)}'`,
-			fieldName,
-			
-			dataType,
-			binary,
-			objects,
-		})
-	}
-	
-	async function createContent(obj: any, fieldName: string) {
-		let resolve, reject
-		const promise = new Promise((innerResolve, innerReject) => {
-			resolve = innerResolve
-			reject = innerReject
-		})
-		
-		dispatch('createContent', { obj, fieldName, resolve, reject })
-		
-		try {
-			await promise
-		} catch (e) {
-			fieldErrors[fieldName] = e
-			console.error(e)
-		}
+	function createContent(obj: any, fieldName: string) {
+		dispatch('createContent', { obj, fieldName })
 	}
 	
 	function onTitleClick() {
@@ -164,7 +124,7 @@
 	<div class="title" class:rotated={open}
 		on:click={onTitleClick} on:keypress={keyPress} tabindex="0" role="button">
 		
-		<i data-feather="chevron-down" class="icon-arrow"></i><span class="titleLabel">{dynTitle}</span>
+		<i data-feather="chevron-down" class="icon-arrow"></i><span class="titleLabel">{title}</span>
 		
 		{#if showButtons}
 			<ButtonStrip on:duplicate on:delete></ButtonStrip>
@@ -184,12 +144,12 @@
 					{toReadableString(field).replaceAll(' ', '\xa0')}
 					
 					<FieldIcons fieldName={field} dataType={dataType} shown={areIconsShown(i, mouseY)} 
-						on:showMenu={e => showFieldMenu(dataType, field)} />
+						on:showMenu={e => dispatch('showFieldMenu', field)} />
 				</div>
 				
 				<!-- Value Input -->
 				<div class="value">
-					{#if FILE_TYPES[dataType].typedef[field] === "symbol"}
+					{#if FILE_TYPES[dataType].typedef[field] === "symbol" || FILE_TYPES[dataType].typedef[field] === "symbolAddr"}
 						<CrossObjectLink binary={binary} targetObjects={value} sourceDataType={dataType} objectId={objectId}
 							targetDataType={FILE_TYPES[dataType].childTypes[field]}
 							tabTitle={FILE_TYPES[dataType].metadata[field]?.tabName} error={fieldErrors[field]}

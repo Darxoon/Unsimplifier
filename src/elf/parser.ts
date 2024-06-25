@@ -150,12 +150,6 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		return symbol
 	}
 	
-	// TODO: useful for future symbolAddr
-	// function findLinkedToSymbol(section: Section, location: Pointer): Symbol {
-	// 	let relocation = allRelocations.get(section.name).get(location.value)
-	// 	return symbolTable.find(s => s.location.equals(relocation.targetOffset))
-	// }
-	
 	// parse data according to data type
 	switch (dataType) {
 		case DataType.None:
@@ -174,7 +168,50 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let count = dataView.getInt32(countSymbol.location.value, true)
 			
 			data = {}
-			data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.MapId, count)
+			data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.MapId, { count })
+			
+			break
+		}
+		
+		case DataType.ItemList: {
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+			
+			// use special relocations for main table because it's at the end of file
+			let tableRelocs = peekable(allRelocations.get(".data"))
+			
+			let mainSymbol = findSymbol("wld::btl::data::s_Data")
+			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, DataType.ItemList, { count: -1, relocations: tableRelocs })
+			
+			debugger
+			
+			for (const table of itemTables) {
+				const { items: symbolName } = table
+				
+				if (symbolName == undefined)
+					continue
+				
+				let symbol = findSymbol(symbolName)
+				let children = parseSymbol(dataSection, stringSection, symbol, DataType.ListItem, { count: -1 })
+				
+				let items = {
+					symbolName,
+					children,
+				}
+				
+				table.items = items
+			}
+			
+			// idea to abstract loop ^^^ away:
+			// applyChildren(dataSection, stringSection, itemTables, [
+			// 	items: {
+			// 		dataType: DataType.ListItem,
+			// 		count: -1,
+			// 	},
+			// ])
+			
+			data = {}
+			data.main = itemTables
 			
 			break
 		}
@@ -204,7 +241,14 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	return binary
 	
 	
-	function parseSymbol<T extends DataType>(containingSection: Section, stringSection: Section, symbol: Symbol, dataType: T, count?: number) {
+	interface ParseSymbolProps {
+		count?: number
+		relocations?: Peekable<[number, Relocation]>
+	}
+	
+	function parseSymbol<T extends DataType>(section: Section, stringSection: Section, symbol: Symbol, dataType: T, properties?: ParseSymbolProps) {
+		let { count, relocations } = properties
+		
 		// if count is smaller than zero, calculate size like normal and subtract negative value from it
 		let subtract = 0
 		
@@ -215,13 +259,18 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		
 		count = count ?? symbol.size / FILE_TYPES[dataType].size - subtract
 		
-		return parseRange(containingSection, stringSection, symbol.location, count, dataType)
+		return parseRange(section, stringSection, symbol.location, count, dataType, relocations)
 	}
 	
-	function parseRange<T extends DataType>(section: Section, stringSection: Section, startOffset: number | Pointer, count: number, dataType: T) {
+	function parseRange<T extends DataType>(
+		section: Section, stringSection: Section, startOffset: number | Pointer,
+		count: number, dataType: T, relocations?: Peekable<[number, Relocation]>,
+	) {
 		const initialReaderPosition = section.reader.position
 		let reader = section.reader
-		let relocations = allRelocationIters.get(section.name)
+		let allowSkippingRelocations = relocations != undefined
+		
+		relocations = relocations ?? allRelocationIters.get(section.name)
 		
 		reader.position = typeof startOffset == 'number' ? startOffset : startOffset.value
 		
@@ -230,7 +279,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		for (let i = 0; i < count && reader.position < reader.arrayBuffer.byteLength; i++) {
 			let offset = reader.position
 			let obj = objFromReader(reader, dataType) as Instance<T>
-			applyRelocations(obj, offset, relocations, symbolTable, stringSection, dataType)
+			applyRelocations(obj, offset, relocations, symbolTable, stringSection, dataType, allowSkippingRelocations)
 			
 			result.push(obj)
 		}
@@ -261,6 +310,14 @@ function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
 					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data`)
 				if (reader.readInt32() != 0)
 					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data`)
+				
+				result[fieldName] = null
+				break
+			case "symbolAddr":
+				if (reader.readInt32() != 0)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbolAddr when it contains non-pointer data`)
+				if (reader.readInt32() != 0)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbolAddr when it contains non-pointer data`)
 				
 				result[fieldName] = null
 				break
@@ -301,14 +358,23 @@ function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
 }
 
 function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
-	relocations: Peekable<[number, Relocation]>, symbolTable: Symbol[], stringSection: Section, dataType: T): void {
+	relocations: Peekable<[number, Relocation]>, symbolTable: Symbol[], stringSection: Section,
+	dataType: T, allowSkippingRelocations: boolean): void {
 	
 	if (relocations.peek() == null) {
 		return
 	}
 	
-	if (relocations.peek()[0] < offset) {
-		throw new Error("Skipping relocations")
+	if (allowSkippingRelocations) {
+		// consume iterator until fitting relocation found
+		while (relocations.peek()[0] < offset) {
+			relocations.next()
+		}
+	} else {
+		// skipping relocations not allowed (default) so throw error
+		if (relocations.peek()[0] < offset && !allowSkippingRelocations) {
+			throw new Error("Skipping relocations")
+		}
 	}
 	
 	const size = FILE_TYPES[dataType].size
@@ -327,6 +393,14 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 		} else if (fieldType == "symbol") {
 			let targetSymbol = symbolTable[relocation.infoHigh]
 			obj[fieldName] = targetSymbol.name
+		} else if (fieldType == "symbolAddr") {
+			let symbolOffset = relocation.targetOffset
+			let symbol = symbolTable.find(sym => sym.location.equals(symbolOffset) && sym.info == 1)
+			
+			if (symbol == undefined)
+				throw new Error(`Couldn't find symbol with the offset ${symbolOffset}`)
+			
+			obj[fieldName] = symbol.name
 		} else {
 			throw new Error(`Field '${fieldName}' should be string or pointer, not '${fieldType}' (at offset 0x${offset.toString(16)}, ${DataType[dataType]})`)
 		}

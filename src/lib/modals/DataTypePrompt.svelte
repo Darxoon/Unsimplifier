@@ -22,6 +22,7 @@
 		"data_Aobj": DataType.Aobj,
 		"data_Bshape": DataType.Bshape,
 		"MapId": DataType.MapId,
+		"data_ItemList": DataType.ItemList,
 	}
 	
 	onMount(() => {
@@ -69,6 +70,7 @@
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
 		
 		<option value="MapId">Map Registry (MapId)</option>
+		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 	</select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">
