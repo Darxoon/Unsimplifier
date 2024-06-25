@@ -1,6 +1,6 @@
 import { ElfBinary, Pointer } from "./elfBinary";
 import { DataType } from "./dataType";
-import { FILE_TYPES } from "./fileTypes";
+import { FILE_TYPES, type Instance } from "./fileTypes";
 import { BinaryWriter } from "./misc";
 import { Relocation, Section, Symbol } from "./types";
 import { noUndefinedMap } from "./util";
@@ -42,8 +42,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	const allRelocations: Map<SectionName, Relocation[]> = new Map()
 	const stringRelocations: Map<SectionName, Map<number, string>> = new Map()
 	const symbolRelocations: Map<SectionName, Map<number, SymbolName>> = new Map()
-	
-	const objectOffsets: WeakMap<object, Pointer> = new WeakMap()
+	const symbolAddrRelocations: Map<SectionName, Map<number, SymbolName>> = new Map()
 	
 	// TODO: use noUndefinedMap only in development builds
 	const symbolLocationReference: Map<string, Pointer> = noUndefinedMap(new Map())
@@ -96,6 +95,40 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				break
 			}
 			
+			case DataType.ItemList: {
+				const dataSymbols = new Map()
+				symbolRelocations.set('.data', dataSymbols)
+				const dataSymbolAddrs = new Map()
+				symbolAddrRelocations.set('.data', dataSymbolAddrs)
+				
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+					symbolRelocations: dataSymbols,
+					symbolAddrRelocations: dataSymbolAddrs,
+				}
+				
+				for (const itemTable of binary.data.main as Instance<DataType.ItemList>[]) {
+					debugger
+					allStrings.add(itemTable.id)
+					
+					const items = itemTable.items as {children: Instance<DataType.ListItem>[], symbolName: string}
+					const { children, symbolName } = items
+					
+					// no symbol name as the names are unpredictable here (.compoundliteral.<???>)
+					// also ItemList does not store its item count
+					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
+					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ListItem].size)
+					
+					serializeObjects(data, DataType.ListItem, children, { padding: 1 })
+				}
+				
+				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
+				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[DataType.ItemList].size)
+				serializeObjects(data, DataType.ItemList, binary.data.main, { padding: 1 })
+				break
+			}
+			
 			default: {
 				let data: SerializeContext = {
 					writer: dataWriter,
@@ -114,13 +147,13 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			writer: BinaryWriter
 			stringRelocations: Map<number, string>
 			symbolRelocations?: Map<number, SymbolName>
+			symbolAddrRelocations?: Map<number, SymbolName>
 		}
 		
 		interface SerializeObjectsProperties {
 			padding?: number
 			paddingItem?: UuidTagged
 			addStrings?: boolean
-			symbolWrapper?: { symbolName: string, children?: any, item?: any }
 		}
 		
 		/**
@@ -132,15 +165,8 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		 * @param addStrings If set to false, then the strings in the objects won't be added to the allStrings set.
 		 */
 		function serializeObjects(sectionElements: SerializeContext, dataType: DataType, objects: object[], properties: SerializeObjectsProperties = {}) {
-			const { writer, stringRelocations, symbolRelocations } = sectionElements
-			const { padding: paddingAmount = 0, paddingItem, addStrings = true, symbolWrapper } = properties
-			
-			if (symbolWrapper)
-				objectOffsets.set(symbolWrapper, new Pointer(writer.size))
-			
-			if (objects.length == 0 && !symbolWrapper) {
-				objectOffsets.set(objects, new Pointer(writer.size))
-			}
+			const { writer, stringRelocations, symbolRelocations, symbolAddrRelocations } = sectionElements
+			const { padding: paddingAmount = 0, paddingItem, addStrings = true } = properties
 			
 			if (paddingAmount > 0) {
 				let padding = Array.from({ length: paddingAmount }, paddingItem ? () => paddingItem : FILE_TYPES[dataType].instantiate)
@@ -152,8 +178,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			}
 			
 			for (const instance of objects) {
-				objectOffsets.set(instance, new Pointer(writer.size))
-				
 				for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
 					let fieldValue = instance[fieldName]
 					
@@ -170,6 +194,12 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 						case "symbol": 
 							if (fieldValue != null)
 								symbolRelocations.set(writer.size, fieldValue.symbolName)
+							
+							writer.writeBigInt64(0n)
+							break
+						case "symbolAddr":
+							if (fieldValue != null)
+								symbolAddrRelocations.set(writer.size, fieldValue.symbolName)
 							
 							writer.writeBigInt64(0n)
 							break
@@ -379,6 +409,25 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			for (const [location, targetSymbol] of sectionSymbolRelocations) {
 				let targetSymbolIndex = binary.symbolTable.findIndex(symbol => symbol.name === targetSymbol)
 				rawRelocations.push(new Relocation(new Pointer(location), DEFAULT_RELOCATION_TYPE, targetSymbolIndex, Pointer.ZERO))
+			}
+		}
+	}
+	
+	{
+		// symbol addr relocations
+		const targetSectionIndex = sections.findIndex(section => section.name === ".data")
+		const targetSectionSymbolIndex = binary.symbolTable.findIndex(symbol => symbol.info == 3
+			&& symbol.sectionHeaderIndex == targetSectionIndex)
+		
+		for (const [sectionName, sectionSymbolRelocations] of symbolAddrRelocations) {
+			if (!allRelocations.has(sectionName))
+				allRelocations.set(sectionName, [])
+			
+			let rawRelocations: Relocation[] = allRelocations.get(sectionName)
+			
+			for (const [location, targetSymbolName] of sectionSymbolRelocations) {
+				let targetSymbol = binary.symbolTable.find(symbol => symbol.name === targetSymbolName)
+				rawRelocations.push(new Relocation(new Pointer(location), DEFAULT_RELOCATION_TYPE, targetSectionSymbolIndex, targetSymbol.location))
 			}
 		}
 	}

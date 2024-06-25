@@ -12,7 +12,7 @@ import serializeElfBinary from "paper-mario-elfs/serializer"
 import stripBinary from "paper-mario-elfs/strip"
 import type { MenuCategory } from "$lib/types"
 import { Vector3 } from "paper-mario-elfs/misc"
-import type { Symbol } from "paper-mario-elfs/types"
+import { Symbol } from "paper-mario-elfs/types"
 import { getRomfsVfs } from "$lib/save/projects"
 import yaml from 'js-yaml'
 import { FILE_TYPES, type Instance } from "paper-mario-elfs/fileTypes"
@@ -26,13 +26,13 @@ globalEditorStrip.subscribe(value => editorStrip = value)
  * Symbol without its methods
  */
 interface PlainSymbol {
-	name: string
-	isNameMangled: boolean
-	info: number
-	visibility: number
-	sectionHeaderIndex: number
-	location: Pointer
-	size: number
+	name?: string
+	isNameMangled?: boolean
+	info?: number
+	visibility?: number
+	sectionHeaderIndex?: number
+	location?: Pointer
+	size?: number
 }
 
 export function getFileMenu(): MenuCategory {
@@ -126,7 +126,8 @@ export async function openYamlToEditor(file: File) {
 	const romfs = getRomfsVfs()
 	const text = await file.text()
 	
-	const [metadata, data, symbolTable] = yaml.loadAll(text)
+	const [metadata, data, symbolNameTable, symbolTable] = yaml.loadAll(text)
+	console.log(yaml.loadAll(text))
 	
 	// metadata
 	if (!(typeof metadata == 'object'
@@ -141,7 +142,54 @@ export async function openYamlToEditor(file: File) {
 	const { data_type: dataTypeString, base_file_path: baseFilePath, compressed } = metadata
 	const dataType = DataType[dataTypeString]
 	
-	let baseFile = (await romfs).getFileContent('/' + baseFilePath, false)
+	let baseFile = await (await romfs).getFileContent('/' + baseFilePath, false)
+	let binary = parseElfBinary(dataType, await decompress(baseFile))
+	
+	// symbol table
+	if (symbolTable) {
+		const { modified_symbols: modifiedSymbols, new_symbols: newSymbols } = symbolTable as { modified_symbols?: unknown, new_symbols?: unknown}
+		
+		if (modifiedSymbols) {
+			for (const yamlSymbol of modifiedSymbols as ({ index: number } & PlainSymbol)[]) {
+				console.log(`modifying symbol ${yamlSymbol.index} previously\
+with name '${binary.symbolTable[yamlSymbol.index].name}' and now '${yamlSymbol.name}'`)
+				
+				let symbol = binary.symbolTable[yamlSymbol.index]
+				
+				
+				if (yamlSymbol.name != undefined)
+					symbol.name = yamlSymbol.name
+				if (yamlSymbol.isNameMangled != undefined)
+					symbol.isNameMangled = yamlSymbol.isNameMangled
+				if (yamlSymbol.info != undefined)
+					symbol.info = yamlSymbol.info
+				if (yamlSymbol.visibility != undefined)
+					symbol.visibility = yamlSymbol.visibility
+				if (yamlSymbol.sectionHeaderIndex != undefined)
+					symbol.sectionHeaderIndex = yamlSymbol.sectionHeaderIndex
+				if (yamlSymbol.location != undefined)
+					symbol.location = yamlSymbol.location
+				if (yamlSymbol.size != undefined)
+					symbol.size = yamlSymbol.size
+			}
+		}
+		
+		if (newSymbols instanceof Array) {
+			for (const yamlSymbol of newSymbols as PlainSymbol[]) {
+				console.log(`adding symbol '${yamlSymbol.name}'`)
+				
+				let symbol = new Symbol()
+				symbol.name = yamlSymbol.name
+				symbol.isNameMangled = yamlSymbol.isNameMangled
+				symbol.info = yamlSymbol.info
+				symbol.visibility = yamlSymbol.visibility
+				symbol.sectionHeaderIndex = yamlSymbol.sectionHeaderIndex
+				symbol.location = yamlSymbol.location
+				symbol.size = yamlSymbol.size
+				binary.symbolTable.push(symbol)
+			}
+		}
+	}
 	
 	// data
 	if (!(typeof data == 'object'))
@@ -155,108 +203,10 @@ export async function openYamlToEditor(file: File) {
 		if (!(dataDivision in data && data[dataDivision] instanceof Array))
 			throw new Error(`Invalid yaml file, data division '${dataDivision}' does not exist or is invalid`)
 		
-		const curDataType = dataType
-		const yamlItems = data[dataDivision] as unknown[]
-		let elfItems: UuidTagged[] = []
-		
-		for (const [item, i] of enumerate(yamlItems)) {
-			if (!(typeof item == 'object'))
-				throw new Error(`Invalid yaml file, object ${i} in '${dataDivision}' is invalid`)
-			
-			let obj: UuidTagged = {
-				[VALUE_UUID]: ValueUuid(),
-				[DATA_TYPE]: curDataType,
-			}
-			
-			for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[curDataType].typedef)) {
-				let yamlValue: unknown
-				
-				if (fieldName in item)
-					yamlValue = item[fieldName]
-				else {
-					let defaultFieldName = 'field_0x' + FILE_TYPES[curDataType].fieldOffsets[fieldName].toString(16)
-					
-					if (defaultFieldName in item)
-						yamlValue = item['field_0x' + FILE_TYPES[curDataType].fieldOffsets[fieldName].toString(16)]
-					else
-						throw new Error(
-`Invalid yaml file, object ${i} in '${dataDivision}' \
-is missing field '${fieldName}' or '${defaultFieldName}'`)
-				}
-				
-				switch (fieldType) {
-					case "string":
-						if (typeof yamlValue != 'string' && yamlValue != null)
-							throw new Error(
-`Invalid yaml file, expected string for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
-						
-						obj[fieldName] = yamlValue
-						break
-					case "bool8":
-					case "bool32":
-						if (typeof yamlValue != 'boolean')
-							throw new Error(
-`Invalid yaml file, expected boolean for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
-						
-						obj[fieldName] = yamlValue
-						break
-					case "byte":
-					case "short":
-					case "int":
-					case "long":
-						if (typeof yamlValue != 'number' || Math.round(yamlValue) != yamlValue)
-							throw new Error(
-`Invalid yaml file, expected ${fieldType} for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
-						
-						obj[fieldName] = yamlValue
-						break
-					case "float":
-					case "double":
-						if (typeof yamlValue != 'number')
-							throw new Error(
-`Invalid yaml file, expected ${fieldType} for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
-						
-						obj[fieldName] = yamlValue
-						break
-					case "Vector3":
-						if (typeof yamlValue != 'object')
-							throw new Error(
-`Invalid yaml file, expected Vector3 for '${fieldName}' \
-in '${dataDivision}' object ${i} but got ${yamlValue}`)
-						
-						const { x, y, z } = yamlValue as { x: number, y: number, z: number }
-						
-						if (typeof x != 'number' || typeof y != 'number' || typeof z != 'number')
-							throw new Error(`Invalid yaml file, invalid Vector3 '${fieldName}' in '${dataDivision}' object ${i}`)
-						
-						obj[fieldName] = new Vector3(x, y, z)
-						break
-					default:
-						throw new Error(`Invalid field type ${fieldType} (object ${i} in '${dataDivision}')`)
-				}
-			}
-			
-			elfItems.push(obj)
-		}
-		
-		resultData[dataDivision] = elfItems
-	}
-	
-	// symbol table
-	let modifiedSymbols = []
-	let newSymbols = []
-	
-	if (symbolTable != undefined) {
-		throw new Error("WIP")
+		resultData[dataDivision] = parseYamlItems(dataType, data[dataDivision] as unknown[], dataDivision, symbolNameTable, binary)
 	}
 	
 	// apply changes to base file
-	const binary = parseElfBinary(dataType, await decompress(await baseFile))
-	
 	binary.data = resultData
 	
 	// TODO: apply modifications to symbol table
@@ -264,6 +214,132 @@ in '${dataDivision}' object ${i} but got ${yamlValue}`)
 	let outFileName = file.name.slice(0, file.name.lastIndexOf('.')) + (compressed ? '.elf.zst' : '.elf')
 	
 	editorStrip.appendTab(createFileTab(outFileName, baseFilePath, binary, dataType, compressed))
+}
+
+function parseYamlItems(dataType: DataType, yamlItems: unknown[],
+	dataDivision: DataDivision, symbolNameTable: unknown, baseBinary: ElfBinary): UuidTagged[] {
+	
+	let elfItems: UuidTagged[] = []
+	
+	for (const [item, i] of enumerate(yamlItems)) {
+		if (!(typeof item == 'object'))
+			throw new Error(`Invalid yaml file, object ${i} in '${dataDivision}' is invalid`)
+		
+		let obj: UuidTagged = {
+			[VALUE_UUID]: ValueUuid(),
+			[DATA_TYPE]: dataType,
+		}
+		
+		for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
+			let yamlValue: unknown
+			
+			if (fieldName in item)
+				yamlValue = item[fieldName]
+			else {
+				let defaultFieldName = 'field_0x' + FILE_TYPES[dataType].fieldOffsets[fieldName].toString(16)
+				
+				if (defaultFieldName in item)
+					yamlValue = item['field_0x' + FILE_TYPES[dataType].fieldOffsets[fieldName].toString(16)]
+				else
+					throw new Error(
+`Invalid yaml file, object ${i} in '${dataDivision}' \
+is missing field '${fieldName}' or '${defaultFieldName}'`)
+			}
+			
+			switch (fieldType) {
+				case "string":
+					if (typeof yamlValue != 'string' && yamlValue != null)
+						throw new Error(
+`Invalid yaml file, expected string for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+					
+					obj[fieldName] = yamlValue
+					break
+				case "bool8":
+				case "bool32":
+					if (typeof yamlValue != 'boolean')
+						throw new Error(
+`Invalid yaml file, expected boolean for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+					
+					obj[fieldName] = yamlValue
+					break
+				case "byte":
+				case "short":
+				case "int":
+				case "long":
+					if (typeof yamlValue != 'number' || Math.round(yamlValue) != yamlValue)
+						throw new Error(
+`Invalid yaml file, expected ${fieldType} for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+					
+					obj[fieldName] = yamlValue
+					break
+				case "float":
+				case "double":
+					if (typeof yamlValue != 'number')
+						throw new Error(
+`Invalid yaml file, expected ${fieldType} for '${fieldName}' \
+in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+					
+					obj[fieldName] = yamlValue
+					break
+				case "Vector3":
+					if (typeof yamlValue != 'object')
+						throw new Error(
+`Invalid yaml file, expected Vector3 for '${fieldName}' \
+in '${dataDivision}' object ${i} but got ${yamlValue}`)
+					
+					const { x, y, z } = yamlValue as { x: number, y: number, z: number }
+					
+					if (typeof x != 'number' || typeof y != 'number' || typeof z != 'number')
+						throw new Error(`Invalid yaml file, invalid Vector3 '${fieldName}' in '${dataDivision}' object ${i}`)
+					
+					obj[fieldName] = new Vector3(x, y, z)
+					break
+				case "symbol":
+				case "symbolAddr": {
+					if (!(yamlValue instanceof Array))
+						throw new Error(`Invalid yaml file, invalid child array '${fieldName}' in '${dataDivision}' object ${i}`)
+					
+					let symbolName = symbolNameTable[dataDivision][item[FILE_TYPES[dataType].identifyingField]]
+					
+					if (symbolName == undefined) {
+						symbolName = "new_symbol_" + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
+					}
+					
+					let childObj = {
+						symbolName,
+						children: parseYamlItems(
+							FILE_TYPES[dataType].childTypes[fieldName],
+							yamlValue,
+							dataDivision,
+							symbolNameTable,
+							baseBinary,
+						),
+					}
+					
+					if (baseBinary.findSymbol(childObj.symbolName) == null) {
+						let symbol = new Symbol()
+						symbol.name = childObj.symbolName
+						symbol.info = 1
+						symbol.sectionHeaderIndex = 3
+						baseBinary.symbolTable.push(symbol)
+					}
+					
+					obj[fieldName] = childObj
+					
+					break
+				}
+				default:
+					throw new Error(`Invalid field type ${fieldType} (object ${i} in '${dataDivision}')`)
+			}
+		}
+		
+		elfItems.push(obj)
+	}
+	
+	return elfItems
 }
 
 function openFileSelector() {
@@ -365,7 +441,19 @@ will be solved.`
 	const baseBinary = parseElfBinary(dataType, await decompress(baseFile))
 	
 	console.log('isCompressed', tab)
-	let yaml = toYaml(binary, baseBinary, filePath, dataType, isCompressed)
+	
+	try {
+		var yaml = toYaml(binary, baseBinary, filePath, dataType, isCompressed)
+	} catch (e) {
+		await showModal(TextAlert, {
+			title: "Saving Error",
+			content: `
+Unfortunately, there has been an error while saving the YAML file.
+
+Reason: ${e.message}`
+		})
+		return
+	}
 	
 	downloadText(yaml, outFileName, 'application/x-yaml')
 }
@@ -415,6 +503,12 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 			console.log(symbols[i], baseSymbols[i])
 			
 			let clone = { index: i, ...symbols[i] }
+			
+			for (const [fieldName, fieldValue] of Object.entries(clone)) {
+				if (baseSymbols[i][fieldName] == fieldValue && fieldName != 'name')
+					delete clone[fieldName]
+			}
+			
 			modifiedSymbols.push(clone)
 		}
 	}
@@ -506,7 +600,7 @@ function objToYaml(obj: any, indentation: number, symbolNames?: Map<string, stri
 				const id = obj.id as string
 				
 				if (symbolNames.has(id))
-					throw new Error(`Duplicate id ${id} in file`)
+					throw new Error(`There are two or more objects with the ID '${id}' (${DataType[obj[DATA_TYPE]]})`)
 				
 				symbolNames.set(id, fieldValue.symbolName as string)
 				

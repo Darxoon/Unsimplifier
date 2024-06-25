@@ -1,7 +1,7 @@
 import type { ElfBinary } from "./elfBinary"
 import { DataType } from "./dataType"
 import { FILE_TYPES } from "./fileTypes"
-import { demangle, incrementName, mangleIdentifier } from "./nameMangling"
+import { demangle, incrementName } from "./nameMangling"
 import type { Symbol } from "./types"
 import { ValueUuid, VALUE_UUID } from "./valueIdentifier"
 
@@ -115,11 +115,11 @@ export function duplicateSymbolInBinary(binary: ElfBinary, originalSymbol: Symbo
 	let clonedSymbol = originalSymbol.clone()
 	
 	// the new symbol is given a (probably) unique name to prevent symbol name collisions, which are the root of all evil
-	let clonedSymbolName = incrementName(demangle(originalSymbol.name)) + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-	clonedSymbol.name = mangleIdentifier(clonedSymbolName)
+	let clonedSymbolName = incrementName(originalSymbol.name) + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
+	clonedSymbol.name = clonedSymbolName
 	binary.symbolTable.push(clonedSymbol)
 	
-	console.log("Duplicating symbol", demangle(originalSymbol.name), "new name:", clonedSymbolName)
+	console.log("Duplicating symbol", originalSymbol.name, "new name:", clonedSymbolName)
 	
 	return clonedSymbol
 }
