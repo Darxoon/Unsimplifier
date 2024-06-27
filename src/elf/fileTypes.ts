@@ -427,13 +427,19 @@ The AngelScript namespace for the common instance functions inside the Script Fi
 		field_0x60: "string",
 		field_0x68: "int",
 		field_0x6c: "int",
-		landingSfx: "string",
-		jumpedOnSfx: "string",
-		hammerSfx: "string",
-		jumpSfx: "string",
+		landingSfx: new Property("string", `
+The sfx played when a character lands.`),
+		jumpedOnSfx: new Property("string", `
+The sfx played when a character is jumped on.`),
+		hammerSfx: new Property("string", `
+The sfx played when a character is hit with a hammer.`),
+		jumpSfx: new Property("string", `
+The sfx played when a character jumps.`),
 		field_0x90: "string",
-		field_0x98: "string",
-		talkSfx: "string",
+		hurtSfx: new Property("string", `
+The sfx played when a character is hurt.`),
+		talkSfx: new Property("string", `
+The sfx played when a character talks.`),
 		field_0xa8: "int",
 		field_0xac: "int",
 		field_0xb0: "int",
@@ -444,8 +450,10 @@ The AngelScript namespace for the common instance functions inside the Script Fi
 		field_0xc4: "int",
 		field_0xc8: "int",
 		field_0xcc: "int",
-		field_0xd0: "string",
-		field_0xd8: "string",
+		walkingEffect: new Property("string", `
+The effect emitter set used when the character walks.`),
+		landingEffect: new Property("string", `
+The effect emitter set used when the character lands from a jump.`),
 		field_0xe0: "string",
 		field_0xe8: "int",
 		field_0xec: "int",
