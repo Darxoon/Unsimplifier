@@ -135,7 +135,9 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					stringRelocations: dataStringRelocations,
 				}
 				
-				serializeObjects(data, dataType, binary.data.main)
+				let padding = FILE_TYPES[dataType].defaultPadding
+				
+				serializeObjects(data, dataType, binary.data.main, { padding })
 				
 				break
 			}

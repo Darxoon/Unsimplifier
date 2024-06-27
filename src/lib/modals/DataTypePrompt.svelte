@@ -23,6 +23,7 @@
 		"data_Bshape": DataType.Bshape,
 		"MapId": DataType.MapId,
 		"data_ItemList": DataType.ItemList,
+		"data_character_npc": DataType.CharacterNpc,
 	}
 	
 	onMount(() => {
@@ -69,6 +70,7 @@
 		<option value="Aobj">Aobj Placement (data_Aobj)</option>
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
 		
+		<option value="CharacterNpc">NPC Registry (data_character_npc)</option>
 		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 	</select>

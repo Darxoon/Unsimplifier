@@ -160,7 +160,7 @@
 	<!-- TODO: do the same on delete button in object editors -->
 	<FileToolbar on:add={addObject} on:clear={deleteAll} searchIndex={index} bind:searchTerm={searchTerm} bind:searchResults={searchResults} />
 	
-	<div class="listing" style="--content-height: {objects?.length * 61}px;">
+	<div class="listing" style="--content-height: {objects?.length * 60 + 80}px;">
 		{#if searchResults}
 			<div class="resultlabel">Showing {searchResultObjects.length} results
 				(out of {objects.length} objects):</div>

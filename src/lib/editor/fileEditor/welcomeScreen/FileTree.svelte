@@ -22,6 +22,7 @@
         "data_Bshape",
         "MapId",
         "data_ItemList",
+        "data_character_npc",
     ]
     
     const dispatch = createEventDispatcher()

@@ -104,6 +104,9 @@ interface DataTypeMetadata {
 	displayName?: string
 	identifyingField?: string
 	dataDivision?: DataDivision | null
+	textVars?: {[key: string]: string}
+	
+	defaultPadding?: number
 	
 	childTypes?: Typedef<DataType>,
 	
@@ -391,6 +394,69 @@ Used for the loading of new maps (?)`),
 		holdWeight: "int",
 		dropWeight: "int",
 	},
+	[DataType.CharacterNpc]: {
+		__: {
+			displayName: "Npc Definition",
+			defaultPadding: 1,
+			textVars: {
+				model: 'data_model_npc'
+			},
+		},
+		
+		id: "string",
+		model: new Property("string", "Referencing models in 'data/model/{model}.elf.zst'"),
+		field_0x10: "int",
+		field_0x14: "int",
+		field_0x18: "int",
+		field_0x1c: "int",
+		// TODO: add examples of functions in the instance script file
+		scriptFileName: "string",
+		scriptNamespace: new Property("string", `
+The AngelScript namespace for the common instance functions inside the Script File (see Script File Name).`),
+		field_0x30: "int",
+		field_0x34: "int",
+		field_0x38: "int",
+		field_0x3c: "int",
+		field_0x40: "int",
+		field_0x44: "int",
+		field_0x48: "int",
+		field_0x4c: "int",
+		field_0x50: "int",
+		field_0x54: "int",
+		field_0x58: "int",
+		field_0x5c: "int",
+		field_0x60: "string",
+		field_0x68: "int",
+		field_0x6c: "int",
+		landingSfx: "string",
+		jumpedOnSfx: "string",
+		hammerSfx: "string",
+		jumpSfx: "string",
+		field_0x90: "string",
+		field_0x98: "string",
+		talkSfx: "string",
+		field_0xa8: "int",
+		field_0xac: "int",
+		field_0xb0: "int",
+		field_0xb4: "int",
+		field_0xb8: "int",
+		field_0xbc: "int",
+		field_0xc0: "int",
+		field_0xc4: "int",
+		field_0xc8: "int",
+		field_0xcc: "int",
+		field_0xd0: "string",
+		field_0xd8: "string",
+		field_0xe0: "string",
+		field_0xe8: "int",
+		field_0xec: "int",
+		field_0xf0: "int",
+		field_0xf4: "int",
+		field_0xf8: "int",
+		field_0xfc: "int",
+		field_0x100: "int",
+		field_0x104: "int",
+	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
 
@@ -409,6 +475,8 @@ interface FileTypeRegistry {
 	displayName: string
 	identifyingField: string
 	dataDivision: DataDivision
+	defaultPadding: number
+	textVars: {[key: string]: string}
 	
 	// for future sub-types
 	childTypes?: Typedef<DataType>
@@ -438,7 +506,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		metadata = {...parent.__, ...metadata}
 	}
 	
-	const { displayName, dataDivision, identifyingField, childTypes } = metadata
+	const { displayName, dataDivision, identifyingField, childTypes, defaultPadding, textVars } = metadata
 	
 	let fields = new Map(Object.entries(typedef).flatMap(([fieldName, fieldType]) => {
 		if (fieldType instanceof Property) {
@@ -457,9 +525,25 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 	let fieldMetadata: Typedef<Property> = {}
 	
 	for (const [fieldName, property] of fields) {
-		let description = (property.description ?? defaultDescriptions[fieldName])
-			?.replaceAll("{type}", displayName)
-			?.replaceAll("{type_lowercase}", displayName?.toLowerCase())
+		let description = property.description ?? defaultDescriptions[fieldName]
+		
+		if (description) {
+			if (textVars) {
+				let vars = {
+					'type': displayName,
+					'type_lowercase': displayName?.toLowerCase(),
+					...textVars,
+				}
+				
+				for (const [key, value] of Object.entries(vars)) {
+					description = description.replaceAll('{' + key + '}', value)
+				}
+			} else {
+				description = description
+					.replaceAll("{type}", displayName)
+					.replaceAll("{type_lowercase}", displayName?.toLowerCase())
+			}
+		}
 		
 		const { type, tabName, noSpaces, hidden } = property
 		fieldMetadata[fieldName] = new Property(type, description, { hidden, noSpaces, tabName })
@@ -477,6 +561,9 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		displayName,
 		identifyingField: identifyingField ?? "id",
 		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
+		textVars: textVars ?? {},
+		
+		defaultPadding: defaultPadding ?? 0,
 		
 		childTypes: childTypes ?? {},
 		

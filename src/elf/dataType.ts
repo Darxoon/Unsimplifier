@@ -9,6 +9,7 @@ export enum DataType {
 	Bshape,
 	
 	// registries
+	CharacterNpc,
 	MapId,
 	ItemList,
 	

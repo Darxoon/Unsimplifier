@@ -17,14 +17,16 @@
 	export let fieldName: string
 	export let title: string
 	
-	let hideNulls = false
+	$: fieldType = FILE_TYPES[dataType].typedef[fieldName]
+	$: allGlobalValues = FILE_TYPES[dataType].dataDivision == null && scanAllGlobalValues()
+	$: hideNulls = fieldType === "string"
+	
+	$: forceMaxHeight = hideNulls && objects.length * 35 + 18 * 16 >= window.visualViewport.height
 	
 	$: globalFieldId = DataType[dataType] + "/" + fieldName
 	
 	let notes: string
 	
-	$: fieldType = FILE_TYPES[dataType].typedef[fieldName]
-	$: allGlobalValues = FILE_TYPES[dataType].dataDivision == null && scanAllGlobalValues()
 	
 	$: if (notes) localStorage[globalFieldId + ".description"] = notes
 	
@@ -97,23 +99,17 @@
 	<div>
 		{#if fieldType === "string"}
 			<div class="hideNullContainer">
-				<input type="checkbox" id="hideNull" on:change={e => {
-					// @ts-ignore
-					hideNulls = e.target.checked
-				}}>
+				<input type="checkbox" id="hideNull" bind:checked={hideNulls}>
 				<label for="hideNull">Hide all "null" values</label>
 			</div>
 		{/if}
 		{#if isNumber(fieldType)}
 			<div class="hideNullContainer">
-				<input type="checkbox" id="hideNull" on:change={e => {
-					// @ts-ignore
-					hideNulls = e.target.checked
-				}}>
+				<input type="checkbox" id="hideNull" bind:checked={hideNulls}>
 				<label for="hideNull">Hide all zeroes</label>
 			</div>
 		{/if}
-		<div class="allValues local tabbable">
+		<div class="allValues local tabbable" class:forceMaxHeight={forceMaxHeight}>
 			{#each objects as obj, i}
 				{#if hideNulls ? obj[fieldName] !== null && obj[fieldName] != 0 || obj[fieldName] === "" : true}
 					<div class="index">
@@ -133,10 +129,7 @@
 		<div><!-- TODO: Make this a Svelte 5 snippet in the future to reduce repetition -->
 			{#if fieldType === "string"}
 				<div class="hideNullContainer">
-					<input type="checkbox" name="hideNull" on:change={e => {
-						// @ts-ignore
-						hideNulls = e.target.checked
-					}}>
+					<input type="checkbox" name="hideNull" bind:checked={hideNulls}>
 					<label for="hideNull">Hide all "null" values</label>
 				</div>
 			{/if}
@@ -159,7 +152,7 @@
 	{/if}
 </TabbedAlert>
 
-<style lang="scss">
+<style>
 	.hideNullContainer {
 		margin: 0 0 12px -4px;
 	}
@@ -170,6 +163,14 @@
 		max-height: calc(100vh - 18rem);
 		min-width: min(48rem, 70vw);
 		overflow-y: auto;
+	}
+	
+	.allValues.forceMaxHeight {
+		min-height: calc(100vh - 18rem);
+		
+		/* if it has more than 1000 items, welp  */
+		/* necessary so that the entries don't spread across the entire box height */
+		grid-template-rows: repeat(1000, min-content);
 	}
 	
 	.allValues.local :nth-child(6n-1) {
