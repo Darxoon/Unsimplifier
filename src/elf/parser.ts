@@ -110,7 +110,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	
 	
 	if (sections.filter(section => section.name == '.data').length === 0) {
-		throw new EmptyFileError("No .data section existant")
+		throw new EmptyFileError("The file is empty. Open a different one instead and clear out its contents")
 	}
 	
 	// for most of the file formats, the data is stored in the .data section
