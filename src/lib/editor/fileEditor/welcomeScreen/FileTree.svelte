@@ -23,6 +23,8 @@
         "MapId",
         "data_ItemList",
         "data_character_npc",
+        "data_character_mobj",
+        "data_character_party",
     ]
     
     const dispatch = createEventDispatcher()

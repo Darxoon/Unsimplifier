@@ -10,6 +10,8 @@ export enum DataType {
 	
 	// registries
 	CharacterNpc,
+	CharacterMobj,
+	CharacterParty,
 	MapId,
 	ItemList,
 	

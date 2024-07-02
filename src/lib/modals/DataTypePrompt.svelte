@@ -24,6 +24,8 @@
 		"MapId": DataType.MapId,
 		"data_ItemList": DataType.ItemList,
 		"data_character_npc": DataType.CharacterNpc,
+		"data_character_mobj": DataType.CharacterMobj,
+		"data_character_party": DataType.CharacterParty,
 	}
 	
 	onMount(() => {
@@ -71,6 +73,8 @@
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
 		
 		<option value="CharacterNpc">NPC Registry (data_character_npc)</option>
+		<option value="CharacterMobj">Mobj Registry (data_character_mobj)</option>
+		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 	</select>
