@@ -3,6 +3,7 @@
     import SearchBar from "../../search/SearchBar.svelte";
     import type { SearchIndex } from "../../search/searchIndex";
     import { nonnativeButton } from "$lib/nonnativeButton";
+    import { PlusIcon, XIcon } from "svelte-feather-icons";
 	
 	export let searchIndex: SearchIndex
 	export let searchTerm: string = ""
@@ -13,11 +14,11 @@
 
 <div class="toolbar">
 	<div class="card btn" use:nonnativeButton={() => dispatch('add')}>
-		<div class="icon"><i data-feather="plus"></i></div>
+		<div class="icon"><PlusIcon /></div>
 		<span>Add new Object</span>
 	</div>
 	<div class="card btn" use:nonnativeButton={() => dispatch('clear')}>
-		<div class="icon"><i data-feather="x"></i></div>
+		<div class="icon"><XIcon /></div>
 		Delete all Objects
 	</div>
 	<SearchBar index={searchIndex} bind:searchTerm={searchTerm} bind:results={searchResults} />

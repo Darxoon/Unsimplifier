@@ -55,7 +55,7 @@ export function duplicateObjectInBinary<T extends object>(binary: ElfBinary, dat
 		let clone = {...obj}
 		Object.setPrototypeOf(clone, Object.getPrototypeOf(obj))
 		
-		clone[VALUE_UUID] = ValueUuid()
+		clone[VALUE_UUID] = ValueUuid(`cloned ${DataType[dataType]} ${clone[FILE_TYPES[dataType].identifyingField]}`)
 		
 		if (incrementId && FILE_TYPES[dataType].identifyingField == "id") {
 			// @ts-ignore

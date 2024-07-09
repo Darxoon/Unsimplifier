@@ -12,8 +12,7 @@
 	import ButtonStrip from './ButtonStrip.svelte';
 	import FieldIcons from './FieldIcons.svelte';
 	import ObjectEditorTailExpander from './ObjectEditorTailExpander.svelte';
-	import { showModal } from "$lib/modal/modal";
-	import FieldOptionAlert from "$lib/modals/FieldOptionAlert.svelte";
+    import { ChevronDownIcon } from "svelte-feather-icons";
 	
 	// TODO: try using event maps
 	const dispatch = createEventDispatcher()
@@ -60,9 +59,6 @@
 	}
 	
 	onMount(() => {
-		// @ts-ignore
-		feather.replace()
-		
 		window.addEventListener('scroll', viewportCheck)
 		window.addEventListener('mousemove', onMouseMove)
 		
@@ -124,7 +120,7 @@
 	<div class="title" class:rotated={open}
 		on:click={onTitleClick} on:keypress={keyPress} tabindex="0" role="button">
 		
-		<i data-feather="chevron-down" class="icon-arrow"></i><span class="titleLabel">{title}</span>
+		<ChevronDownIcon class="icon-arrow" /><span class="titleLabel">{title}</span>
 		
 		{#if showButtons}
 			<ButtonStrip on:duplicate on:delete></ButtonStrip>
@@ -188,14 +184,14 @@
 		user-select: none;
 		height: 20px;
 		
-		.icon-arrow {
+		:global(.icon-arrow) {
 			float: left;
 			
 			margin-top: -1px;
 			margin-right: 1px;
 		}
 		
-		&.rotated .icon-arrow {
+		&.rotated :global(.icon-arrow) {
 			transform: rotate(180deg);
 		}
 		

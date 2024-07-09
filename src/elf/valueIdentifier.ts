@@ -10,6 +10,6 @@ export interface UuidTagged {
 	[DATA_TYPE]: DataType
 }
 
-export function ValueUuid() {
-	return Symbol()
+export function ValueUuid(label: string) {
+	return Symbol(`UUID: ${label}`)
 }

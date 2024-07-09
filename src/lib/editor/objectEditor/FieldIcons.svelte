@@ -6,6 +6,7 @@
 	import { toReadableString } from "$lib/util";
     import { createEventDispatcher, onMount } from "svelte";
     import { nonnativeButton } from "$lib/nonnativeButton";
+    import { InfoIcon, MoreHorizontalIcon } from "svelte-feather-icons";
 	
     const dispatch = createEventDispatcher()
     
@@ -20,21 +21,16 @@
         })
     }
     
-    onMount(() => {
-        // @ts-ignore
-        feather.replace()
-    })
-    
     $: fieldDescription = FILE_TYPES[dataType].metadata[fieldName]?.description?.trim()
 </script>
 
 <div class="buttons" class:shown={shown}>
     <div class="button description" class:hidden={fieldDescription == undefined} use:nonnativeButton={showDescription}>
-        <i data-feather="info" class="icon-field"></i>
+        <InfoIcon class="icon-field" />
     </div>
     
     <div class="button options" use:nonnativeButton={() => dispatch('showMenu', { fieldName, dataType })}>
-        <i data-feather="more-horizontal" class="icon-field"></i>
+        <MoreHorizontalIcon class="icon-field" />
     </div>
 </div>
 
@@ -58,7 +54,7 @@
         
         &:hover { color: #777a80 }
         
-        .icon-field {
+        :global(.icon-field) {
             width: 18px;
             height: 18px;
             transform: translateY(1px);

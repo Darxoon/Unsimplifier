@@ -225,10 +225,8 @@ function parseYamlItems(dataType: DataType, yamlItems: unknown[],
 		if (!(typeof item == 'object'))
 			throw new Error(`Invalid yaml file, object ${i} in '${dataDivision}' is invalid`)
 		
-		let obj: UuidTagged = {
-			[VALUE_UUID]: ValueUuid(),
-			[DATA_TYPE]: dataType,
-		}
+		// @ts-expect-error
+		let obj: UuidTagged = {}
 		
 		for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
 			let yamlValue: unknown
@@ -335,6 +333,9 @@ in '${dataDivision}' object ${i} but got ${yamlValue}`)
 					throw new Error(`Invalid field type ${fieldType} (object ${i} in '${dataDivision}')`)
 			}
 		}
+		
+		obj[VALUE_UUID] = ValueUuid(`yaml ${DataType[dataType]} ${obj[FILE_TYPES[dataType].identifyingField]}`)
+		obj[DATA_TYPE] = dataType
 		
 		elfItems.push(obj)
 	}

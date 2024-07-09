@@ -5,6 +5,7 @@
     import { nonnativeButton } from "$lib/nonnativeButton";
     import { OpenWindowEvent } from "$lib/editor/events";
     import type { ElfBinary } from "paper-mario-elfs/elfBinary";
+    import { ExternalLinkIcon } from "svelte-feather-icons";
 
 	const dispatch = createEventDispatcher()
 	
@@ -22,11 +23,6 @@
 		editorElements.forEach(editor => editor.open = true)
 	}
 	
-	onMount(() => {
-		// @ts-ignore
-		feather.replace()
-	})
-	
 	$: items = Object.entries(dataTypeExtensions(DataTypeExtension.ComplexEditorCategory, dataType))
 </script>
 
@@ -39,7 +35,7 @@
 				dataType,
 			}))
 		}}>
-			<i data-feather="external-link" class="icon-link"></i>
+			<ExternalLinkIcon class="icon-link" />
 			<div style="user-select: none">
 				{label ?? name}
 			</div>
@@ -53,7 +49,7 @@
 		max-width: 56rem;
 		height: 20px;
 		
-		.icon-link {
+		:global(.icon-link) {
 			float: left;
 			margin-top: -2px;
 			margin-right: 6px;

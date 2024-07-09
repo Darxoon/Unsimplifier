@@ -11,6 +11,7 @@
     import { OpenWindowEvent } from "../events";
     import Page from "../fileEditor/Page.svelte";
     import WelcomeScreen from "../fileEditor/welcomeScreen/WelcomeScreen.svelte";
+    import { ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon } from "svelte-feather-icons";
 	
 	interface ContentComponent {
 		collapseAll(): void
@@ -228,19 +229,19 @@ Do you want to close those too?`,
 		<div class="card dockArea dockLeft" on:mouseup={() => onDockMouseUp('left')}
 			class:hidden={!dockAreaShown || disableSideDocking}>
 			
-			<i data-feather="chevron-left" class="icon-dock"></i>
+			<ChevronLeftIcon class="icon-dock" />
 		</div>
 		
 		<div class="card dockArea dockRight" on:mouseup={() => onDockMouseUp('right')}
 			class:hidden={!dockAreaShown || disableSideDocking}>
 			
-			<i data-feather="chevron-right" class="icon-dock"></i>
+			<ChevronRightIcon class="icon-dock" />
 		</div>
 		
 		<div class="card dockArea dockUp" on:mouseup={() => onDockMouseUp('origin')}
 			class:hidden={!dockAreaShown || tabs.includes($globalDraggedTab.tab)}>
 			
-			<i data-feather="chevron-up" class="icon-dock"></i>
+			<ChevronUpIcon class="icon-dock" />
 		</div>
 	</div>
 	
@@ -303,7 +304,7 @@ Do you want to close those too?`,
 				pointer-events: none;
 			}
 			
-			.icon-dock {
+			:global(.icon-dock) {
 				width: 100%;
 				height: 100%;
 			}

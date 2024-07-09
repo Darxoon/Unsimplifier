@@ -5,6 +5,7 @@
     import { type Tab, tabWasAccepted, globalDraggedTab } from "../globalDragging";
     import { browser } from "$app/environment";
     import logging from "$lib/logging";
+    import { XIcon } from "svelte-feather-icons";
 
 	export let tabs: Tab[]
 	export let activeIndex: number
@@ -51,9 +52,6 @@
 	onMount(() => {
 		document.addEventListener('mousemove', onMouseMove)
 		document.addEventListener('mouseup', onMouseUp)
-		
-		// @ts-ignore
-		feather.replace()
 	})
 	
 	onDestroy(() => {
@@ -78,9 +76,6 @@
 	
 	function afterDetached() {
 		console.log('afterDetached happening', debugIndex)
-		
-		// @ts-ignore
-		feather.replace()
 		
 		if ($tabWasAccepted) {
 			console.log('tab was accepted', debugIndex, $tabWasAccepted)
@@ -219,7 +214,7 @@
 		<li class="active">
 			<span class="tabName">Welcome</span>
 			<div class="close_button disabled white-x" role="button" aria-disabled="true">
-				<i data-feather="x" class="icon-close"></i>
+				<XIcon class="icon-close" />
 			</div>
 		</li>
 	{/if}
@@ -235,7 +230,7 @@
 			<!-- svelte-ignore a11y-no-static-element-interactions -- nonnativeButton gives it a role="button" -->
 			<div class="close_button" class:white-x={state == 'default' && immediateActiveIndex == i}
 				on:mousedown|stopPropagation={noop} use:nonnativeButton={() => dispatch('closeTab', tab)}>
-				<i data-feather="x" class="icon-close"></i>
+				<XIcon class="icon-close" />
 			</div>
 		</li>
 	{/each}
@@ -245,7 +240,7 @@
 		
 		<!-- decoration only -->
 		<div class="close_button dummy_close_button white-x">
-			<i data-feather="x" class="icon-close"></i>
+			<XIcon class="icon-close" />
 		</div>
 	</li>
 </ul>
@@ -323,7 +318,7 @@
 			color: #828282;
 		}
 		
-		.icon-close {
+		:global(.icon-close) {
 			width: 100%;
 			height: 100%;
 			stroke-width: 2.5px;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from "svelte";
+    import { CopyIcon, XIcon } from "svelte-feather-icons";
 	
 	const dispatch = createEventDispatcher()
 </script>
@@ -7,10 +8,10 @@
 <div class="buttons">
     <button class="icon duplicate" on:click|stopPropagation={() => {
         dispatch('duplicate')
-    }}><i data-feather="copy"></i></button>
+    }}><CopyIcon /></button>
     <button class="icon delete" on:click|stopPropagation={() => {
         dispatch('delete')
-    }}><i data-feather="x"></i></button>
+    }}><XIcon /></button>
 </div>
 
 <style>

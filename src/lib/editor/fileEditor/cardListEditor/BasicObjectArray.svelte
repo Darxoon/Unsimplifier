@@ -12,22 +12,28 @@
     import { toReadableString } from "$lib/util";
     import { showModal } from "$lib/modal/modal";
     import FieldOptionAlert from "$lib/modals/FieldOptionAlert.svelte";
-
+	
+	const INITIAL_COUNT_SHOWN = 60
+	
 	export let binary: ElfBinary
 	export let objects: UuidTagged[]
-	export let referenceObjects: UuidTagged[]
 	export let dataType: DataType
+	export let indices: Set<number> = undefined
 	export let highlightedFields: WeakMap<object, string[]> = undefined
 	
 	let objectEditors: ObjectEditor[] = []
 	let areEditorsOpen: boolean[] = []
-	let countShown = 60
+	let countShown = INITIAL_COUNT_SHOWN
 	
 	let debouncer: Debouncer
 	
-	$: objectSlice = objects.slice(0, countShown)
+	$: objectSlice = indices
+		? [...indices].slice(0, countShown).map(i => objects[i])
+		: objects.slice(0, countShown)
 	
 	$: if (objects && debouncer) debouncer.reset()
+	
+	$: if (indices) countShown = INITIAL_COUNT_SHOWN
 	
 	onMount(() => {
 		let isDebug = !!parseInt(PUBLIC_DEBUG)
@@ -44,7 +50,6 @@
 				+ `, found ${DataType[irregular[DATA_TYPE]]} at index ${objects.indexOf(irregular)}`)
 		}
 	})
-	
 	
 	export function scrollIntoView(object?: UuidTagged) {
 		let index = object ? objects.indexOf(object) : objects.length - 1
@@ -93,7 +98,7 @@
 	
 	function titleOf(obj: any) {
 		let { displayName, identifyingField } = FILE_TYPES[dataType]
-		let index = referenceObjects.indexOf(obj)
+		let index = objects.indexOf(obj)
 		return `${displayName} ${index}: ${obj[identifyingField]}`
 	}
 	
@@ -104,7 +109,7 @@
 	}
 </script>
 
-<Debouncer bind:this={debouncer} requiredDelaySeconds={2} autoStart={true} on:finished={() => countShown += 80} />
+<Debouncer bind:this={debouncer} requiredDelaySeconds={1} autoStart={true} on:finished={() => countShown += 80} />
 
 {#each objectSlice as obj, i (obj[VALUE_UUID])}
 	<ObjectEditor bind:this={objectEditors[i]} bind:obj={obj} bind:open={areEditorsOpen[i]}

@@ -1,6 +1,7 @@
 <script lang="ts">
     import fuzzysort from "fuzzysort"
     import type { IndexValue, SearchIndex } from "./searchIndex";
+    import { SearchIcon } from "svelte-feather-icons";
     
     export let index: SearchIndex
     export let searchTerm: string = ""
@@ -19,7 +20,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="card search" on:click={() => searchInput.focus()} on:keydown={() => searchInput.focus()}>
-    <div class="icon"><i data-feather="search"></i></div>
+    <div class="icon"><SearchIcon /></div>
     &nbsp;
     <input type="text" class="input" placeholder="Search" size="1"
         bind:this={searchInput} bind:value={searchTerm}>

@@ -1,9 +1,9 @@
 <script lang="ts">
     import type { FileSystem } from "$lib/save/vfs";
-    import { waitAnimationFrame } from "$lib/util";
     import path from "path-browserify";
     import { afterUpdate, createEventDispatcher, onMount } from "svelte";
     import areaNames from "./areaNames.json"
+    import { ChevronDownIcon } from "svelte-feather-icons";
 
     interface FsItem {
         path: string
@@ -51,20 +51,10 @@
         getRomfsList().then(async list => {
             fileTree = list
             console.log('updated romfs list')
-            
-            await waitAnimationFrame()
-            
-            // @ts-ignore
-            feather.replace()
         })
     }
     
     $: localStorage.setItem('romfs_list_cache', JSON.stringify(fileTree))
-    
-    onMount(() => {
-        // @ts-ignore
-        feather.replace()
-    })
     
     afterUpdate(() => {
         showMoreVisible = treeElement?.getBoundingClientRect().height >= 400
@@ -178,7 +168,7 @@
                 class:collapsed={item.isCollapsed} class:file={item.isFile} class="fs-item"
                 class:invisible={!itemsVisible[i]} role="menuitem" tabindex="0">
                 {#if !item.isFile}
-                    <i data-feather="chevron-down" class="arrow"></i>
+                    <ChevronDownIcon class="arrow" />
                 {/if}
                 <span>{item.name}</span>
                 {#if item.intuitiveName}
@@ -232,13 +222,13 @@
         text-align: center;
     }
     
-    .arrow {
+    :global(.arrow) {
         float: left;
         height: 20px;
         transform: translateY(1px);
     }
     
-    .collapsed .arrow {
+    .collapsed :global(.arrow) {
         transform: translateY(1px) rotateZ(-90deg);
     }
     

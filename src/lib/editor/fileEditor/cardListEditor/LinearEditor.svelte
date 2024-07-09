@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate } from "svelte";
 	import type { ElfBinary } from "paper-mario-elfs/elfBinary";
-	import type { DataType } from "paper-mario-elfs/dataType";
+	import { DataType } from "paper-mario-elfs/dataType";
 	import { FILE_TYPES } from "paper-mario-elfs/fileTypes";
 	import { Symbol } from "paper-mario-elfs/types";
 	import type { SearchIndex } from "$lib/editor/search/searchIndex";
@@ -22,27 +22,14 @@
 	let addingNewObject = false
 	let searchTerm = ""
 	let searchResults: SearchIndex
-	let searchResultObjects: UuidTagged[]
-	
-	let searchResultObjectBuffer: UuidTagged[]
 	
 	$: objects = overrideObjects ?? binary.data[FILE_TYPES[dataType].dataDivision]
 	$: index = createIndex(objects)
 	
 	$: if (tabVisible) initialized = true
 	
-	$: highlightedFields = searchResults && new WeakMap(
-		searchResultObjects.map(obj => [
-			obj, 
-			searchResults.filter(result => result.obj == obj).map(result => result.field),
-		]))
+	$: highlightedFields = searchResults && getHighlightedFields(searchResults)
 	
-	$: if (searchResults) {
-		searchResultObjects = []
-		searchResultObjectBuffer = [...new Set(searchResults.map(result => result.obj))]
-	} else {
-		searchResultObjects = null
-	}
 	
 	export function collapseAll() {
 		arrayComponent.collapseAll()
@@ -55,11 +42,13 @@
 	function createIndex(objects: UuidTagged[]) {
 		let index: SearchIndex = []
 		
-		for (const obj of objects) {
+		for (let i = 0; i < objects.length; i++) {
+			const obj = objects[i]
+			
 			for (const key in obj) {
 				if (Object.prototype.hasOwnProperty.call(obj, key) && typeof obj[key] == 'string') {
 					index.push({
-						obj,
+						index: i,
 						field: key,
 						value: obj[key],
 					})
@@ -71,19 +60,29 @@
 	}
 	
 	afterUpdate(() => {
-		// @ts-ignore
-		feather.replace()
-		
 		if (addingNewObject) {
 			addingNewObject = false
 			arrayComponent.scrollIntoView(objects[objects.length - 1])
 		}
-		
-		if (searchResultObjectBuffer) {
-			searchResultObjects = searchResultObjectBuffer
-			searchResultObjectBuffer = null
-		}
 	})
+	
+	function getHighlightedFields(searchResults: SearchIndex) {
+		let highlightedFields: WeakMap<UuidTagged, string[]> = new WeakMap()
+		
+		for (const index of new Set(searchResults.map(result => result.index))) {
+			let fields: string[] = []
+			
+			for (const result of searchResults) {
+				if (result.index == index) {
+					fields.push(result.field)
+				}
+			}
+			
+			highlightedFields.set(objects[index], fields)
+		}
+		
+		return highlightedFields
+	}
 	
 	function addObject() {
 		objects.push(createObject(dataType))
@@ -155,14 +154,11 @@
 
 {#if initialized}
 <div class="editor">
-	<!-- TODO: if objects contain symbol references, it's important that there is always one object left -->
-	<!-- Ask for confirmation in this case when pressing Delete All -->
-	<!-- TODO: do the same on delete button in object editors -->
 	<FileToolbar on:add={addObject} on:clear={deleteAll} searchIndex={index} bind:searchTerm={searchTerm} bind:searchResults={searchResults} />
 	
 	<div class="listing" style="--content-height: {objects?.length * 60 + 80}px;">
 		{#if searchResults}
-			<div class="resultlabel">Showing {searchResultObjects.length} results
+			<div class="resultlabel">Showing {searchResults.length} results
 				(out of {objects.length} objects):</div>
 		{/if}
 		
@@ -171,8 +167,8 @@
 		{/if}
 		
 		<BasicObjectArray on:open on:createContent={e => handleCreateContent(e.detail)}
-			bind:this={arrayComponent} binary={binary} dataType={dataType} referenceObjects={objects}
-			objects={searchResults ? searchResultObjects : objects} highlightedFields={highlightedFields} />
+			bind:this={arrayComponent} bind:objects={objects} binary={binary} dataType={dataType}
+			highlightedFields={highlightedFields} indices={searchResults && new Set(searchResults.map(result => result.index))} />
 	</div>
 	
 	<!-- TODO: use a dedicated special elf editor instead -->

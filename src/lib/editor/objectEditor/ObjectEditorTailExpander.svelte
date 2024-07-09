@@ -3,12 +3,12 @@
 	import type { DataType } from "paper-mario-elfs/dataType";
     import { FILE_TYPES } from "paper-mario-elfs/fileTypes";
     import type { UuidTagged } from "paper-mario-elfs/valueIdentifier";
-    import { afterUpdate } from "svelte";
 	
     import { toReadableString } from "$lib/util";
     import { nonnativeButton } from "$lib/nonnativeButton";
 	
     import ObjectEditor from "./ObjectEditor.svelte";
+    import { ChevronDownIcon } from "svelte-feather-icons";
 
 	export let dataType: DataType
 	export let visible: boolean
@@ -16,32 +16,19 @@
 	export let binary: ElfBinary = undefined
 	
 	let isOpen: boolean = false
-	let replace = false
 		
 	$: childField = FILE_TYPES[dataType].childField ?? undefined
 	$: childFieldLabel = FILE_TYPES[dataType].childFieldLabel ?? undefined
 	
 	$: childContent = "children" in child ? child.children as unknown[] : "item" in child ? child.item as object : child
 	
-	
 	$: childDataType = dataType ? FILE_TYPES[dataType].childTypes[childField] : undefined
-	
-	$: if (isOpen) replace = true
-	
-	// TODO: do this in ObjectEditor instead and disable it while loading a file for loading times using getContext
-	afterUpdate(() => {
-		if (replace) {
-			// @ts-ignore
-			feather.replace()
-			replace = false
-		}
-	})
 </script>
 
 	<div class="child_container" class:invisible={!visible}>
 		<div class="showChildren" use:nonnativeButton={() => isOpen = !isOpen}>
 			<div class:rotated={isOpen}>
-				<i data-feather="chevron-down" class="icon-children-arrow"></i>
+				<ChevronDownIcon class="icon-children-arrow" />
 			</div>
 			<span>{toReadableString(childFieldLabel ?? childField)}</span>
 		</div>
@@ -84,7 +71,7 @@
 				transform: rotate(180deg);
 			}
 			
-			.icon-children-arrow {
+			:global(.icon-children-arrow) {
 				width: 29px;
 				height: 29px;
 				stroke-width: 1.8px;

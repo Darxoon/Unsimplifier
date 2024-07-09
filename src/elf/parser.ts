@@ -281,6 +281,8 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let obj = objFromReader(reader, dataType) as Instance<T>
 			applyRelocations(obj, offset, relocations, symbolTable, stringSection, dataType, allowSkippingRelocations)
 			
+			obj[VALUE_UUID] = ValueUuid(DataType[dataType] + " " + obj[FILE_TYPES[dataType].identifyingField])
+			
 			result.push(obj)
 		}
 		
@@ -290,9 +292,9 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 }
 
 function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
-	let result = {
-		[VALUE_UUID]: ValueUuid(),
-		[DATA_TYPE]: dataType,
+	// @ts-expect-error
+	let result: UuidTagged = {
+		[DATA_TYPE]: dataType
 	}
 	
 	for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {

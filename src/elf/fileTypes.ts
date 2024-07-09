@@ -662,7 +662,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		
 		instantiate(): object {
 			let result = {}
-			result[VALUE_UUID] = ValueUuid()
+			result[VALUE_UUID] = ValueUuid('instantiate()')
 			result[DATA_TYPE] = dataType
 			
 			for (const [fieldName, type] of Object.entries(fieldTypes)) {

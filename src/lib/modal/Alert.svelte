@@ -3,6 +3,7 @@
 	import { hideActiveModal } from "./modal";
     import { nonnativeButton } from "$lib/nonnativeButton";
     import { HTML_FOCUSABLE_ELEMENTS } from "$lib/util";
+    import { XIcon } from "svelte-feather-icons";
 	
 	export let title: string
 	
@@ -97,9 +98,6 @@
 	}
 	
 	onMount(() => {
-		// @ts-ignore
-		feather.replace()
-		
 		document.addEventListener('keydown', onKeydown)
 		
 		// try focusing the first focusable element in the alert
@@ -129,7 +127,7 @@
 
 <div class="alert" bind:this={alertDiv}>
 	<div class="closeButton" use:nonnativeButton={close}>
-		<i data-feather="x"></i>
+		<XIcon />
 	</div>
 	
 	<h2>{title}</h2>
