@@ -25,7 +25,8 @@
     let setupProgress = "initializing"
     
     let checkboxId = "checkbox" + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-    let onlyShowSupported: boolean = true
+    let onlyShowSupported = true
+    let onlyShowUnsupported = false
     
     $: if (romfs) {
         localStorage.setItem('romfs_list_onlyshowsupported', onlyShowSupported ? 1 : 0)
@@ -44,6 +45,12 @@
             showSetup = true
         }
     })
+    
+    function toggleUnsupported(e: MouseEvent) {
+        e.preventDefault()
+        onlyShowUnsupported = !onlyShowUnsupported
+        console.log('only showing unsupported:', onlyShowUnsupported)
+    }
     
     function uploadRomfs(e: Event) {
         setupLabelOverride = ""
@@ -147,10 +154,19 @@ ${filePath}. Please report this to the developer (Darxoon)
                 <div class="card open-file">
                     <h2>Open a file</h2>
                                         
-                    <input type="checkbox" id={checkboxId} bind:checked={onlyShowSupported}>
-                    <label for={checkboxId}>Only show supported files</label>
+                    <input type="checkbox" id={checkboxId} bind:checked={onlyShowSupported} on:dblclick={toggleUnsupported}>
+                    <label for={checkboxId} on:dblclick={toggleUnsupported}>
+                        {#if onlyShowUnsupported}
+                            Only show UNsupported!!!
+                        {:else}
+                            Only show supported files
+                        {/if}
+                    </label>
                     
-                    <FileTree romfs={romfs} onlyShowSupported={onlyShowSupported} on:selectFile={e => openFile(e.detail)} />
+                    <FileTree romfs={romfs}
+                        onlyShowSupported={onlyShowSupported}
+                        onlyShowUnsupported={onlyShowUnsupported}
+                        on:selectFile={e => openFile(e.detail)} />
                 </div>
             </div>
         {:else}

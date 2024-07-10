@@ -33,6 +33,7 @@
     
     export let romfs: FileSystem | undefined
     export let onlyShowSupported: boolean
+    export let onlyShowUnsupported: boolean = false
     
     let prevRomfs: FileSystem
     let prevOnlyShowSupported: boolean
@@ -85,7 +86,8 @@
         }
         
         for (const file of dir.files) {
-            if (!onlyShowSupported || (supportedFiles.some(name => file.name.includes(name)))) {
+            let isSupported = supportedFiles.some(name => file.name.includes(name))
+            if (onlyShowUnsupported ? !isSupported : (!onlyShowSupported || isSupported)) {
                 outFiles.push({
                     path: file.path,
                     name: file.name,
