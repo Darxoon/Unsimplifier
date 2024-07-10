@@ -13,6 +13,8 @@ export enum DataType {
 	CharacterMobj,
 	CharacterParty,
 	CharacterItem,
+	CharacterAobj,
+	
 	MapId,
 	ItemList,
 	

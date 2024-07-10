@@ -500,8 +500,7 @@ The name of the mobj's script file, relative to \`romfs/script/wld/fld/mobj/\``)
 		field_0x84: "int",
 		field_0x88: "int",
 		field_0x8c: "int",
-		field_0x90: "int",
-		field_0x94: "int",
+		field_0x90: "string",
 		field_0x98: "int",
 		field_0x9c: "int",
 		field_0xa0: "int",
@@ -593,6 +592,12 @@ Specifies the type of the item. Possible values:
 		field_0x90: "string",
 		field_0x98: "int",
 		field_0x9c: "int",
+	},
+	[DataType.CharacterAobj]: {
+		__: {
+			parent: DataType.CharacterMobj,
+			displayName: "Aobj Definition",
+		},
 	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 

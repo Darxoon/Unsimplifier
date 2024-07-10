@@ -27,6 +27,7 @@
 		"data_character_mobj": DataType.CharacterMobj,
 		"data_character_party": DataType.CharacterParty,
 		"data_character_item": DataType.CharacterItem,
+		"data_character_aobj": DataType.CharacterAobj,
 	}
 	
 	onMount(() => {
@@ -77,6 +78,8 @@
 		<option value="CharacterMobj">Mobj Registry (data_character_mobj)</option>
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
+		<option value="CharacterAobj">Aobj Registry (data_character_aobj)</option>
+		
 		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 	</select>
