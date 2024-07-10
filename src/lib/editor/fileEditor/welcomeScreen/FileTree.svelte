@@ -25,6 +25,7 @@
         "data_character_npc",
         "data_character_mobj",
         "data_character_party",
+        "data_character_item",
     ]
     
     const dispatch = createEventDispatcher()

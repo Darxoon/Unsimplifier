@@ -395,7 +395,7 @@ Used for the loading of new maps (?)`),
 	},
 	[DataType.CharacterNpc]: {
 		__: {
-			displayName: "Npc Definition",
+			displayName: "NPC Definition",
 			defaultPadding: 1,
 			textVars: {
 				model: 'data_model_npc'
@@ -544,7 +544,56 @@ The name of the mobj's script file, relative to \`romfs/script/wld/fld/mobj/\``)
 		field_0xa0: "string",
 		field_0xa8: "string",
 		field_0xb0: "string",
-	}
+	},
+	[DataType.CharacterItem]: {
+		__: {
+			displayName: "Item Definition",
+			defaultPadding: 1,
+		},
+		
+		id: "string",
+		description: "string",
+		itemType: new Property("int", `
+Specifies the type of the item. Possible values:
+
+* 1 - Upgrade
+* 2 - Literal key (?)
+* 3 - Key item
+* 4 - Crystal star
+* 5 - Hearts, flowers, coins, etc.
+* 6, 7 - ?
+* 8 - Normal item (battle only)
+* 9, 10, 11 - Normal item
+* 12 - ?
+* 13 to 18 - Badge
+* 19 - ?
+`),
+		field_0x14: "int",
+		field_0x18: "string",
+		field_0x20: "string",
+		field_0x28: "string",
+		field_0x30: "string",
+		field_0x38: "string",
+		field_0x40: "short",
+		field_0x42: "short",
+		field_0x44: "short",
+		field_0x46: "short",
+		field_0x48: "short",
+		field_0x4a: "short",
+		field_0x4c: "int",
+		field_0x50: "int",
+		field_0x54: "int",
+		field_0x58: "string",
+		field_0x60: "string",
+		field_0x68: "string",
+		field_0x70: "string",
+		field_0x78: "string",
+		field_0x80: "string",
+		field_0x88: "string",
+		field_0x90: "string",
+		field_0x98: "int",
+		field_0x9c: "int",
+	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
 

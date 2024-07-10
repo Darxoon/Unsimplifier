@@ -216,6 +216,17 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 		
+		case DataType.CharacterItem: {
+			const dataSection = findSection('.data')
+			const dataStringSection = findSection('.rodata.str1.1')
+			
+			let count = dataSection.size / FILE_TYPES[dataType].size - 1
+			data = {}
+			data.main = parseRange(dataSection, dataStringSection, 0, count, dataType)
+			
+			break
+		}
+		
 		// parse .data section by data type
 		default: {
 			const dataSection = findSection('.data')

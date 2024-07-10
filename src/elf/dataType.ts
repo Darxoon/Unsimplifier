@@ -12,6 +12,7 @@ export enum DataType {
 	CharacterNpc,
 	CharacterMobj,
 	CharacterParty,
+	CharacterItem,
 	MapId,
 	ItemList,
 	
