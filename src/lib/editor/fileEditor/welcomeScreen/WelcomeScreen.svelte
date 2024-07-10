@@ -49,7 +49,17 @@
     function toggleUnsupported(e: MouseEvent) {
         e.preventDefault()
         onlyShowUnsupported = !onlyShowUnsupported
-        console.log('only showing unsupported:', onlyShowUnsupported)
+        if (onlyShowUnsupported) {
+            onlyShowSupported = true
+        }
+    }
+    
+    function disableUnsupported(e: MouseEvent) {
+        if (onlyShowUnsupported) {
+            e.preventDefault()
+            onlyShowUnsupported = false
+            onlyShowSupported = true
+        }
     }
     
     function uploadRomfs(e: Event) {
@@ -154,7 +164,10 @@ ${filePath}. Please report this to the developer (Darxoon)
                 <div class="card open-file">
                     <h2>Open a file</h2>
                                         
-                    <input type="checkbox" id={checkboxId} bind:checked={onlyShowSupported} on:dblclick={toggleUnsupported}>
+                    <input type="checkbox" id={checkboxId} class:unsupported={onlyShowUnsupported}
+                        bind:checked={onlyShowSupported}
+                        on:dblclick={toggleUnsupported}
+                        on:click={disableUnsupported}>
                     <label for={checkboxId} on:dblclick={toggleUnsupported}>
                         {#if onlyShowUnsupported}
                             Only show UNsupported!!!
@@ -235,6 +248,10 @@ ${filePath}. Please report this to the developer (Darxoon)
         
         .open-file {
             flex: 2;
+        }
+        
+        .unsupported {
+            filter: sepia(1) saturate(20) hue-rotate(-43deg) contrast(2);
         }
     }
     

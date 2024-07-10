@@ -37,6 +37,7 @@
     
     let prevRomfs: FileSystem
     let prevOnlyShowSupported: boolean
+    let prevOnlyShowUnsupported: boolean
     let fileTree: FsItem[] = JSON.parse(localStorage.getItem('romfs_list_cache'))
     
     let treeElement: HTMLUListElement
@@ -44,12 +45,14 @@
     let showMoreVisible = true
     
     $: itemsVisible = fileTree && calculateItemsVisible(fileTree)
+    $: console.log('onlyShowUnsupported2', onlyShowUnsupported)
     
-    $: if (romfs && (romfs != prevRomfs || prevOnlyShowSupported != onlyShowSupported)) {
+    $: if (romfs && (romfs != prevRomfs || prevOnlyShowSupported != onlyShowSupported || prevOnlyShowUnsupported != onlyShowUnsupported)) {
         // if I don't do this, romfs keeps getting set to itself all the time for some reason
         // which causes the file tree to be regenerated on every click which is janky
         prevRomfs = romfs
         prevOnlyShowSupported = onlyShowSupported
+        prevOnlyShowUnsupported = onlyShowUnsupported
         
         getRomfsList().then(async list => {
             fileTree = list
