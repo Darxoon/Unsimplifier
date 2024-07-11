@@ -45,7 +45,6 @@
     let showMoreVisible = true
     
     $: itemsVisible = fileTree && calculateItemsVisible(fileTree)
-    $: console.log('onlyShowUnsupported2', onlyShowUnsupported)
     
     $: if (romfs && (romfs != prevRomfs || prevOnlyShowSupported != onlyShowSupported || prevOnlyShowUnsupported != onlyShowUnsupported)) {
         // if I don't do this, romfs keeps getting set to itself all the time for some reason

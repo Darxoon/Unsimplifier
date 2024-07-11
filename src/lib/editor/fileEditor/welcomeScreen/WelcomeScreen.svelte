@@ -13,6 +13,8 @@
     import { OpenWindowEvent } from "$lib/editor/events";
     import { romfsInitialized } from "$lib/stores";
     import TextAlert from "$lib/modal/TextAlert.svelte";
+    import { addToRecentFiles, type RecentFile, recentFiles } from "$lib/save/recent";
+    import { openYamlToEditor } from "$lib/menu/fileMenu";
     
     const dispatch = createEventDispatcher()
     
@@ -23,6 +25,8 @@
     let loadingRomfs = false
     let setupLabelOverride: string = ""
     let setupProgress = "initializing"
+    
+    let recentFilesShort = true
     
     let checkboxId = "checkbox" + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
     let onlyShowSupported = true
@@ -96,16 +100,18 @@
         })
     }
     
-    async function openFile(filePath: string) {
+    async function openFile(filePath: string, dataType?: DataType, isCompressed?: boolean, addToRecent?: boolean = true) {
         if (!romfs)
             return
         
         let contentPromise = romfs.getFileContent(filePath, false)
         const fileName = path.basename(filePath)
         
-        const {dataType, isCompressed} = await showModal(DataTypePrompt, {
-            fileName,
-        })
+        if (dataType == undefined || isCompressed == undefined) {
+            ({ dataType, isCompressed } = await showModal(DataTypePrompt, {
+                fileName,
+            }))
+        }
 
         if (!dataType) {
             return
@@ -128,12 +134,36 @@ ${filePath}. Please report this to the developer (Darxoon)
             throw e
         }
         
+        if (addToRecent) {
+            addToRecentFiles({
+                label: filePath.split('/').slice(-2).join('/'),
+                dataType,
+                filePath,
+            })
+        }
+        
         dispatch('open', new OpenWindowEvent(fileName, true, {
             type: "cardList",
             binary,
             dataType,
             filePath: filePath.slice(1),
         }))
+    }
+    
+    function openRecentFile(file: RecentFile) {
+        const { filePath, yamlContent, saveId, dataType } = file
+        
+        if (filePath) {
+            openFile(filePath, dataType, true, false)
+        } else if (yamlContent) {
+            openYamlToEditor(yamlContent, path.basename(filePath))
+        } else if (saveId) {
+            showModal(TextAlert, {
+                title: "Not Implemented",
+                content: "Can't load recent files originally loaded through `File > Open` yet :(",
+            })
+            throw new Error("TODO")
+        }
     }
 </script>
 
@@ -158,12 +188,23 @@ ${filePath}. Please report this to the developer (Darxoon)
                     <div class="card recent">
                         <h2>Recent Files</h2>
                         
-                        <p>WIP</p>
+                        {#if $recentFiles && $recentFiles.length > 0}
+                            <ul>
+                                {#each recentFilesShort ? $recentFiles.slice(0, 3) : $recentFiles as item}
+                                    <li><button class="item" on:click={() => openRecentFile(item)}>{item.label}</button></li>
+                                {/each}
+                            </ul>
+                            {#if recentFilesShort && $recentFiles.length > 3}
+                                <button class="show-more" on:click={() => recentFilesShort = false}>Show more...</button>
+                            {/if}
+                        {:else}
+                            <p>Nothing here yet</p>
+                        {/if}
                     </div>
                 </div>
                 <div class="card open-file">
                     <h2>Open a file</h2>
-                                        
+                    
                     <input type="checkbox" id={checkboxId} class:unsupported={onlyShowUnsupported}
                         bind:checked={onlyShowSupported}
                         on:dblclick={toggleUnsupported}
@@ -243,7 +284,43 @@ ${filePath}. Please report this to the developer (Darxoon)
         }
         
         .recent {
-            margin-top: 1.5rem
+            margin-top: 1.5rem;
+            
+            p {
+                margin-bottom: 0.5rem;
+            }
+            
+            ul {
+                margin-bottom: 0.4rem;
+            }
+            
+            .item {
+                font: inherit;
+                border: none;
+                background: none;
+                padding: 0;
+                
+                color: LinkText;
+                text-decoration: underline;
+                cursor: pointer;
+                
+                vertical-align: top;
+                text-align: left;
+            }
+            
+            .item:active {
+                color: ActiveText;
+            }
+            
+            .show-more {
+                font: inherit;
+                border: none;
+                background: none;
+                padding: 0;
+                
+                margin-top: 0;
+                margin-left: 1rem;
+            }
         }
         
         .open-file {
@@ -267,6 +344,10 @@ ${filePath}. Please report this to the developer (Darxoon)
     
     h2 {
         margin-top: 0;
+    }
+    
+    ul {
+        padding-left: 2rem;
     }
     
     .invisible {

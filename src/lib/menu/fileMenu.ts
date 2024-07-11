@@ -7,7 +7,7 @@ import { globalEditorStrip, loadedAutosave } from "$lib/stores"
 import { compress, decompress, downloadBlob, createFileTab, downloadText } from "$lib/util"
 import { Pointer, type ElfBinary, type DataDivision } from "paper-mario-elfs/elfBinary"
 import { DataType } from "paper-mario-elfs/dataType"
-import parseElfBinary, { EmptyFileError } from "paper-mario-elfs/parser"
+import parseElfBinary from "paper-mario-elfs/parser"
 import serializeElfBinary from "paper-mario-elfs/serializer"
 import stripBinary from "paper-mario-elfs/strip"
 import type { MenuCategory } from "$lib/types"
@@ -15,9 +15,10 @@ import { Vector3 } from "paper-mario-elfs/misc"
 import { Symbol } from "paper-mario-elfs/types"
 import { getRomfsVfs } from "$lib/save/projects"
 import yaml from 'js-yaml'
-import { FILE_TYPES, type Instance } from "paper-mario-elfs/fileTypes"
+import { FILE_TYPES } from "paper-mario-elfs/fileTypes"
 import { VALUE_UUID, type UuidTagged, ValueUuid, DATA_TYPE } from "paper-mario-elfs/valueIdentifier"
 import { enumerate } from "paper-mario-elfs/util"
+import { addToRecentFiles } from "$lib/save/recent"
 
 let editorStrip: EditorStrip
 globalEditorStrip.subscribe(value => editorStrip = value)
@@ -72,7 +73,7 @@ export function getFileMenu(): MenuCategory {
 
 export async function openFileToEditor(file: File) {
 	if (file.name.endsWith('.yaml')) {
-		await openYamlToEditor(file)
+		await openYamlToEditor(await file.text(), file.name)
 			.catch(async (e: Error) => {
 				await showModal(TextAlert, {
 					title: "Invalid File",
@@ -118,13 +119,18 @@ ${file.name}. Please report this to the developer (Darxoon)
 		
 		throw e
 	}
-
+	
+	addToRecentFiles({
+		label: `???/${file.name}`,
+		dataType,
+		saveId: -1,
+	})
+	
 	editorStrip.appendTab(createFileTab(file.name, null, binary, dataType, isCompressed))
 }
 
-export async function openYamlToEditor(file: File) {
+export async function openYamlToEditor(text: string, fileName: string) {
 	const romfs = getRomfsVfs()
-	const text = await file.text()
 	
 	const [metadata, data, symbolNameTable, symbolTable] = yaml.loadAll(text)
 	console.log(yaml.loadAll(text))
@@ -211,7 +217,13 @@ with name '${binary.symbolTable[yamlSymbol.index].name}' and now '${yamlSymbol.n
 	
 	// TODO: apply modifications to symbol table
 	
-	let outFileName = file.name.slice(0, file.name.lastIndexOf('.')) + (compressed ? '.elf.zst' : '.elf')
+	let outFileName = fileName.slice(0, fileName.lastIndexOf('.')) + (compressed ? '.elf.zst' : '.elf')
+	
+	addToRecentFiles({
+		label: `???/${outFileName}`,
+		dataType,
+		yamlContent: text,
+	})
 	
 	editorStrip.appendTab(createFileTab(outFileName, baseFilePath, binary, dataType, compressed))
 }
