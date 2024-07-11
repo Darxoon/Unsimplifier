@@ -28,10 +28,10 @@
 	let notes: string
 	
 	
-	$: if (notes) localStorage[globalFieldId + ".description"] = notes
+	$: if (notes) localStorage[globalFieldId + ".ttyddesc"] = notes
 	
 	onMount(() => {
-		notes = localStorage[globalFieldId + ".description"]
+		notes = localStorage[globalFieldId + ".ttyddesc"]
 	})
 	
 	type GlobalValuesEntry = readonly [UuidTagged, number, number]

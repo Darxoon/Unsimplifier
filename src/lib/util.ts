@@ -207,6 +207,13 @@ export function clamp(n: number, minimum: number, maximum: number): number {
 		return n
 }
 
+const twoLetterAcronyms = [
+	'ID',
+	'BP',
+	'HP',
+	'FP',
+]
+
 export function toReadableString(camelCaseStr: string) {
 	if (camelCaseStr.startsWith('field_'))
 		return camelCaseStr.replace('_', ' ')
@@ -221,12 +228,20 @@ export function toReadableString(camelCaseStr: string) {
 		const isNumber = /^\d$/.test(currentChar)
 		const newWordBeginning: boolean = currentChar.toUpperCase() === currentChar || output === ''
 		
+		function testSpecialWord(word: string): boolean {
+			return output.endsWith(word[0]) && currentChar == word[1].toLowerCase()
+		}
+		
 		// special case for BShapes
 		if (newWordBeginning && output.endsWith(' B')) {
 			output += currentChar.toUpperCase()
 		}
-		// special case for word "ID"
-		else if (output.endsWith(' I') && currentChar === 'd' && !(/^[a-z]$/.test(lookAhead))) {
+		// special case for two letter acronyms like "ID"
+		else if (
+			output.at(-2) == ' '
+			&& twoLetterAcronyms.find(testSpecialWord)
+			&& !(/^[a-z]$/.test(lookAhead))
+		) {
 			output += currentChar.toUpperCase()
 		}
 		else if (isNumber && /^\d$/.test(previousChar)) {

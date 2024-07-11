@@ -9,8 +9,8 @@
 	let wrapper: HTMLDivElement
 	
 	let allNotes = Object.entries(localStorage)
-		.filter(arr => arr[0].endsWith('.description'))
-		.map(arr => [arr[0].slice(0, -'.description'.length).split('/'), arr[1]])
+		.filter(arr => arr[0].endsWith('.ttyddesc'))
+		.map(arr => [arr[0].slice(0, -'.ttyddesc'.length).split('/'), arr[1]])
 	
 	$: console.log('allNotes', allNotes)
 	
