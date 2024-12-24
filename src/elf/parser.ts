@@ -216,6 +216,47 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 		
+		case DataType.DataEffect: {
+			const dataStringSection = findSection('.rodata.str1.1')
+			const rodataSection = findSection('.rodata')
+			
+			let rodataView = new DataView(rodataSection.content)
+			
+			const categoryCountSymbol = findSymbol('eft::data::s_categoryCount')
+			const categoryCount = rodataView.getInt32(categoryCountSymbol.location.value, true)
+			
+			
+			// .data section exclusively contains an array of strings (category names)
+			// count of items in .data is determined by categoryCount Symbol
+			
+			// because it exclusively contains relocations, we can ignore data section completely
+			// and just focus on .rela.data
+			let categories: string[] = []
+			for (const [offset, relocation] of allRelocations.get('.data')) {
+				categories.push(dataStringSection.getStringAt(relocation.targetOffset))
+			}
+			
+			data = {}
+			data.category = categories
+			
+			
+			// .rodata contains actual main data (under symbol dataSymbol)
+			const dataCountSymbol = findSymbol("eft::data::s_dataCount")
+			const dataCount = rodataView.getInt32(dataCountSymbol.location.value, true)
+			
+			const dataSymbol = findSymbol("eft::data::s_data")
+			const dataObjects = applyStrings(
+				dataSymbol.location, dataType, dataStringSection,
+				allRelocations.get('.rodata'), symbolTable,
+				
+				parseRawDataSection(rodataSection, dataCount, dataSymbol.location.value, dataType), 
+			)
+			
+			data.main = dataObjects
+			
+			break
+		}
+		
 		case DataType.CharacterItem: {
 			const dataSection = findSection('.data')
 			const dataStringSection = findSection('.rodata.str1.1')
