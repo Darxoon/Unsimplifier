@@ -3,6 +3,7 @@ export enum DataType {
 	
 	// map dispos
 	Npc,
+	Effect,
 	Item,
 	Mobj,
 	Aobj,
@@ -17,6 +18,7 @@ export enum DataType {
 	
 	MapId,
 	ItemList,
+	DataEffect,
 	
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,

@@ -38,6 +38,8 @@ export class ElfBinary {
 
 export const dataDivisions = {
 	main: "main",
+	category: "category",
+
 } as const
 
 export type DataDivision = keyof typeof dataDivisions
