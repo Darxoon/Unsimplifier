@@ -17,6 +17,7 @@
 	
 	const defaultFileNames = {
 		"data_Npc": DataType.Npc,
+		"data_Effect": DataType.Effect,
 		"data_Item": DataType.Item,
 		"data_Mobj": DataType.Mobj,
 		"data_Aobj": DataType.Aobj,
@@ -69,6 +70,7 @@
 	<select bind:this={select}>
 		<option value="invalid">Please select data type</option>
 		<option value="Npc">NPC Placement (data_Npc)</option>
+		<option value="Effect">Effect Placement (data_Effect)</option>		
 		<option value="Item">Item Placement (data_Item)</option>
 		<option value="Mobj">Mobj Placement (data_Mobj)</option>
 		<option value="Aobj">Aobj Placement (data_Aobj)</option>
