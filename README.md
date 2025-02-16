@@ -26,6 +26,6 @@ To load the updated file into the game, go to File > Save, which will download t
 
 ## Contact
 
-For any discussions or help regarding modding the Paper Mario: The Thousand Year Door Remake or using this program, join Star Haven (<https://discord.gg/pdYpWw8>) or Modern Paper Mario Modding (<https://discord.gg/Pj4u7wB>) on discord or contact me directly (@darxoon on Discord).
+For any discussions or help regarding modding the Paper Mario: The Thousand Year Door Remake or using this program, join Star Haven (<https://discord.gg/Pj4u7wB>) or Modern Paper Mario Modding (<https://discord.gg/9EzRrfVfPg>) on discord or contact me directly (@darxoon on Discord).
 
 In case you encounter any issues while using this program, let me know as described above (or if you are feeling extra fancy, [open a Github Issue](https://github.com/Darxoon/OrigamiWand/issues)).
