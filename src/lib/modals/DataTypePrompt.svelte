@@ -1,40 +1,45 @@
 <script lang="ts">
-	import { DataType } from "paper-mario-elfs/dataType";
+  import { DataType } from "paper-mario-elfs/dataType";
 
-	import { afterUpdate, beforeUpdate, onMount } from "svelte";
-	
-	import Alert from "../modal/Alert.svelte";
-	import { hideActiveModal } from "../modal/modal";
+  import { afterUpdate, beforeUpdate, onMount } from "svelte";
 
-	export let fileName: string = ""
-	
-	let select: HTMLSelectElement
-	let okButton: HTMLButtonElement
-	
-	let selectedIndex = 0
-	
-	let isCompressed = false
-	
-	const defaultFileNames = {
-		"data_Npc": DataType.Npc,
-		"data_Item": DataType.Item,
-		"data_Mobj": DataType.Mobj,
-		"data_Aobj": DataType.Aobj,
-		"data_Bshape": DataType.Bshape,
-		"MapId": DataType.MapId,
-		"data_ItemList": DataType.ItemList,
-		"data_character_npc": DataType.CharacterNpc,
-		"data_character_mobj": DataType.CharacterMobj,
-		"data_character_party": DataType.CharacterParty,
-		"data_character_item": DataType.CharacterItem,
-		"data_character_aobj": DataType.CharacterAobj,
-	}
-	
-	onMount(() => {
-		okButton.disabled = true
-		
-		select.onchange = function(e) {
-			okButton.disabled = select.selectedIndex < 1
+  import Alert from "../modal/Alert.svelte";
+  import { hideActiveModal } from "../modal/modal";
+
+  export let fileName: string = ""
+
+  let select: HTMLSelectElement
+  let okButton: HTMLButtonElement
+
+  let selectedIndex = 0
+
+  let isCompressed = false
+
+  const defaultFileNames = {
+  "data_Npc": DataType.Npc,
+  "data_Item": DataType.Item,
+  "data_Mobj": DataType.Mobj,
+  "data_Aobj": DataType.Aobj,
+  "data_Bshape": DataType.Bshape,
+  "data_Effect": DataType.Effect,
+  "data_GobjRes": DataType.GobjRes,
+  "MapParam": DataType.MapParam,
+  "MapId": DataType.MapId,
+  "data_ItemList": DataType.ItemList,
+  "data_character_npc": DataType.CharacterNpc,
+  "data_character_mobj": DataType.CharacterMobj,
+  "data_character_party": DataType.CharacterParty,
+  "data_character_item": DataType.CharacterItem,
+  "data_character_aobj": DataType.CharacterAobj,
+  "data_param_partyhint": DataType.ParamPartyHint,
+  "data_param_gobj": DataType.ParamGobj,
+  }
+
+  onMount(() => {
+  okButton.disabled = true
+
+  select.onchange = function(e) {
+  okButton.disabled = select.selectedIndex < 1
 		}
 		
 		const sortedEntries = Object.entries(defaultFileNames).sort(([a], [b]) => b.length - a.length)
@@ -73,8 +78,10 @@
 		<option value="Mobj">Mobj Placement (data_Mobj)</option>
 		<option value="Aobj">Aobj Placement (data_Aobj)</option>
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
-		
-		<option value="CharacterNpc">NPC Registry (data_character_npc)</option>
+    <option value="Effect">Effect Placement (data_Effect)</option>
+    <option value="GobjRes">Gobj Placement (data_GobjRes)</option>
+
+    <option value="CharacterNpc">NPC Registry (data_character_npc)</option>
 		<option value="CharacterMobj">Mobj Registry (data_character_mobj)</option>
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
@@ -82,7 +89,10 @@
 		
 		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
-	</select>
+
+    <option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
+    <option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
+  </select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">
 		<input type="checkbox" id="iscompressed" bind:checked={isCompressed}>

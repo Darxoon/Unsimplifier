@@ -20,6 +20,8 @@
         "data_Mobj",
         "data_Aobj",
         "data_Bshape",
+        "data_Effect",
+        "data_GobjRes",
         "MapId",
         "data_ItemList",
         "data_character_npc",
@@ -27,6 +29,8 @@
         "data_character_party",
         "data_character_item",
         "data_character_aobj",
+        "data_param_gobj",
+        "data_param_partyhint",
     ]
     
     const dispatch = createEventDispatcher()

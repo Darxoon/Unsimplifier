@@ -7,6 +7,8 @@ export enum DataType {
 	Mobj,
 	Aobj,
 	Bshape,
+	GobjRes,
+	Effect,
 	
 	// registries
 	CharacterNpc,
@@ -17,8 +19,13 @@ export enum DataType {
 	
 	MapId,
 	ItemList,
-	
+
+	//parameters
+	ParamPartyHint,
+	ParamGobj,
+
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,
 	ListItem,
+
 }

@@ -328,6 +328,36 @@ const typedefs = {
 		field_0x48: "int",
 		field_0x4c: "int",
 	},
+	[DataType.GobjRes]: {
+		__: {
+			displayName: "GobjRes",
+		},
+
+		stage: "string",
+		id: "string",
+		field_0x10: "int",
+		field_0x14: "int",
+	},
+	[DataType.Effect]: {
+		__: {
+			displayName: "Effect",
+		},
+
+		stage: "string",
+		id: "string",
+		type: "string",
+		field_0x18: "Vector3",
+		field_0x24: "int",
+		field_0x28: "int",
+		field_0x2c: "int",
+		field_0x30: "float",
+		field_0x34: "int",
+		locationBone: new Property("string", "Bone on a map skeleton this effect is tied to."),
+		field_0x40: "int",
+		field_0x44: "int",
+		field_0x48: "int",
+		field_0x4c: "int",
+	},
 	[DataType.MapId]: {
 		__: {
 			displayName: "Map",
@@ -603,6 +633,43 @@ Specifies the type of the item. Possible values:
 			parent: DataType.CharacterMobj,
 			displayName: "Aobj Definition",
 		},
+	},
+	[DataType.ParamPartyHint]: {
+		__: {
+			displayName: "Party Hint Parameters",
+		},
+
+		id: "string",
+		field_0x08: "string",
+		field_0x10: "string",
+		field_0x18: "string",
+		field_0x20: "string",
+		field_0x28: "int",
+		field_0x2c: "int",
+		field_0x30: "string",
+		field_0x38: "int",
+		field_0x3c: "int",
+		field_0x40: "string",
+		field_0x48: "string",
+	},
+	[DataType.ParamGobj]: {
+		__: {
+			displayName: "Gobj Parameters",
+		},
+
+		id: "string",
+		field_0x08: "float",
+		field_0x0c: "float",
+		field_0x10: "float",
+		field_0x14: "float",
+		field_0x18: "float",
+		field_0x1c: "float",
+		field_0x20: "float",
+		field_0x24: "float",
+		field_0x28: "float",
+		field_0x2c: "float",
+		field_0x30: "float",
+		field_0x34: "int",
 	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
