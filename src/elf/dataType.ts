@@ -9,6 +9,7 @@ export enum DataType {
 	Bshape,
 	GobjRes,
 	Effect,
+	MapParam,
 	
 	// registries
 	CharacterNpc,
@@ -23,6 +24,16 @@ export enum DataType {
 	//parameters
 	ParamPartyHint,
 	ParamGobj,
+	ParamGobjItem,
+	DataMinigamePaperAiper,
+	DataMinigamePaperFan,
+	DataMinigamePaperRunner,
+	DataMinigamePaperRunnerai,
+
+	//battle
+	Monosiri,
+	FallObj,
+	Nozzle,
 
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,

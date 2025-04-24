@@ -23,6 +23,7 @@
   "data_Bshape": DataType.Bshape,
   "data_Effect": DataType.Effect,
   "data_GobjRes": DataType.GobjRes,
+  "data_MapLink": DataType.Maplink,
   "MapParam": DataType.MapParam,
   "MapId": DataType.MapId,
   "data_ItemList": DataType.ItemList,
@@ -33,6 +34,14 @@
   "data_character_aobj": DataType.CharacterAobj,
   "data_param_partyhint": DataType.ParamPartyHint,
   "data_param_gobj": DataType.ParamGobj,
+  "data_param_gobj_item": DataType.ParamGobjItem,
+  "DataMinigame_Paper_Aiper": DataType.DataMinigamePaperAiper,
+  "DataMinigame_Paper_Fan": DataType.DataMinigamePaperFan,
+  "DataMinigame_Paper_Runner": DataType.DataMinigamePaperRunner,
+  "DataMinigame_Paper_Runnerai": DataType.DataMinigamePaperRunnerai,
+  "Monosiri": DataType.Monosiri,
+  "FallObj": DataType.FallObj,
+  "Nozzle": DataType.Nozzle,
   }
 
   onMount(() => {
@@ -80,6 +89,8 @@
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
     <option value="Effect">Effect Placement (data_Effect)</option>
     <option value="GobjRes">Gobj Placement (data_GobjRes)</option>
+    <option value="Maplink">Room Transitions (data_MapLink)</option>
+    <option value="MapParam">Map Parameters (data_MapParam)</option>
 
     <option value="CharacterNpc">NPC Registry (data_character_npc)</option>
 		<option value="CharacterMobj">Mobj Registry (data_character_mobj)</option>
@@ -92,6 +103,15 @@
 
     <option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
     <option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
+    <option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item)</option>
+    <option value="DataMinigamePaperAiper">Paper Minigame Aiper Parameters (DataMinigame_Paper_Aiper)</option>
+    <option value="DataMinigamePaperFan">Paper Minigame Fan Parameters (DataMinigame_Paper_Fan)</option>
+    <option value="DataMinigamePaperRunner">Paper Minigame Runner Parameters (DataMinigame_Paper_Runner)</option>
+    <option value="DataMinigamePaperRunnerai">Paper Minigame Runner AI Parameters (DataMinigame_Paper_Runnerai)</option>
+
+    <option value="Monosiri">Tattle Log (Monosiri)</option>
+    <option value="FallObj">Falling Stage Objects (FallObj)</option>
+    <option value="Nozzle">Stage Spray Nozzles (Nozzle)</option>
   </select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">

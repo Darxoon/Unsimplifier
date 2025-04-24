@@ -80,6 +80,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		stringRelocations.set(".data", dataStringRelocations)
 		
 		switch (dataType) {
+
 			case DataType.MapId: {
 				let data: SerializeContext = {
 					writer: dataWriter,
@@ -94,8 +95,61 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				
 				break
 			}
-			
-			case DataType.ItemList: {
+
+			case DataType.MapParam: {
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+				}
+
+				serializeObjects(data, DataType.MapParam, binary.data.main, { padding: 1 })
+
+				// count symbol
+				symbolLocationReference.set("wld::fld::data::kNum", new Pointer(dataWriter.size))
+				dataWriter.writeInt32(binary.data.main.length)
+
+				break
+			}
+
+			case DataType.DataMinigamePaperAiper:
+			case DataType.DataMinigamePaperFan:
+			case DataType.DataMinigamePaperRunner:
+			case DataType.DataMinigamePaperRunnerai:
+				{
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+				}
+
+				serializeObjects(data, DataType.DataMinigamePaperAiper, binary.data.main, { padding: 1 })
+
+				// count symbol
+				symbolLocationReference.set("data::minigame::paper::kNum", new Pointer(dataWriter.size))
+				dataWriter.writeInt32(binary.data.main.length)
+
+				break
+			}
+
+			case DataType.Monosiri:
+				{
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+				}
+
+					serializeObjects(data, DataType.Monosiri, binary.data.main, { padding: 1 })
+
+				// count symbol
+				symbolLocationReference.set("wld::btl::data::s_DataNum", new Pointer(dataWriter.size))
+				dataWriter.writeInt32(binary.data.main.length)
+
+				break
+			}
+
+			case DataType.ItemList:
+			case DataType.FallObj:
+			case DataType.Nozzle:
+				{
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
 				const dataSymbolAddrs = new Map()
@@ -124,7 +178,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				}
 				
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
-				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[DataType.ItemList].size)
+				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
 				serializeObjects(data, DataType.ItemList, binary.data.main, { padding: 1 })
 				break
 			}
@@ -156,6 +210,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			padding?: number
 			paddingItem?: UuidTagged
 			addStrings?: boolean
+			symbolWrapper?: { symbolName: string, children?: any, item?: any }
 		}
 		
 		/**

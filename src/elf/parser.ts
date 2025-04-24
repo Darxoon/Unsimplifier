@@ -155,7 +155,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		case DataType.None:
 			data = null
 			break
-		
+
 		case DataType.MapId: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -172,8 +172,68 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			
 			break
 		}
+
+		case DataType.MapParam: {
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+
+			const dataView = new DataView(dataSection.content)
+
+			let mainSymbol = findSymbol("wld::fld::data::s_data")
+			let countSymbol = findSymbol("wld::fld::data::kNum")
+
+			let count = dataView.getInt32(countSymbol.location.value, true)
+
+			data = {}
+			data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.MapParam, { count })
+
+			break
+		}
+
+		case DataType.DataMinigamePaperAiper:
+		case DataType.DataMinigamePaperFan:
+		case DataType.DataMinigamePaperRunner:
+		case DataType.DataMinigamePaperRunnerai:
+			{
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+
+			const dataView = new DataView(dataSection.content)
+
+			let mainSymbol = findSymbol("data::minigame::paper::s_data")
+			let countSymbol = findSymbol("data::minigame::paper::kNum")
+
+			let count = dataView.getInt32(countSymbol.location.value, true)
+
+			data = {}
+			data.main = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count })
+
+			break
+		}
+
+		case DataType.Monosiri:
+			{
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+
+			const dataView = new DataView(dataSection.content)
+
+			let mainSymbol = findSymbol("wld::btl::data::s_Data")
+			let countSymbol = findSymbol("wld::btl::data::s_DataNum")
+
+			let count = dataView.getInt32(countSymbol.location.value, true)
+
+			data = {}
+				data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.Monosiri, { count })
+
+			break
+		}
 		
-		case DataType.ItemList: {
+		case DataType.ItemList:
+		case DataType.FallObj:
+		case DataType.Nozzle:
+		case DataType.HeartParam:
+			{
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
 			
@@ -181,7 +241,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let tableRelocs = peekable(allRelocations.get(".data"))
 			
 			let mainSymbol = findSymbol("wld::btl::data::s_Data")
-			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, DataType.ItemList, { count: -1, relocations: tableRelocs })
+			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count: -1, relocations: tableRelocs })
 			
 			debugger
 			
@@ -192,7 +252,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					continue
 				
 				let symbol = findSymbol(symbolName)
-				let children = parseSymbol(dataSection, stringSection, symbol, DataType.ListItem, { count: -1 })
+				let children = parseSymbol(dataSection, stringSection, symbol, dataType, { count: -1 })
 				
 				let items = {
 					symbolName,
