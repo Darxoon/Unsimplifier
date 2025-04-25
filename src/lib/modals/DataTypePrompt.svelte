@@ -1,56 +1,56 @@
 <script lang="ts">
-  import { DataType } from "paper-mario-elfs/dataType";
+	import { DataType } from "paper-mario-elfs/dataType";
 
-  import { afterUpdate, beforeUpdate, onMount } from "svelte";
+	import { afterUpdate, beforeUpdate, onMount } from "svelte";
 
-  import Alert from "../modal/Alert.svelte";
-  import { hideActiveModal } from "../modal/modal";
+	import Alert from "../modal/Alert.svelte";
+	import { hideActiveModal } from "../modal/modal";
 
-  export let fileName: string = ""
+	export let fileName: string = ""
 
-  let select: HTMLSelectElement
-  let okButton: HTMLButtonElement
+	let select: HTMLSelectElement
+	let okButton: HTMLButtonElement
 
-  let selectedIndex = 0
+	let selectedIndex = 0
 
-  let isCompressed = false
+	let isCompressed = false
 
-  const defaultFileNames = {
-  "data_Npc": DataType.Npc,
-  "data_Item": DataType.Item,
-  "data_Mobj": DataType.Mobj,
-  "data_Aobj": DataType.Aobj,
-  "data_Bshape": DataType.Bshape,
-  "data_Effect": DataType.Effect,
-  "data_GobjRes": DataType.GobjRes,
-  "data_MapLink": DataType.Maplink,
-  "MapParam": DataType.MapParam,
-  "MapId": DataType.MapId,
-  "data_ItemList": DataType.ItemList,
-  "data_character_npc": DataType.CharacterNpc,
-  "data_character_mobj": DataType.CharacterMobj,
-  "data_character_party": DataType.CharacterParty,
-  "data_character_item": DataType.CharacterItem,
-  "data_character_aobj": DataType.CharacterAobj,
-  "data_param_partyhint": DataType.ParamPartyHint,
-  "data_param_gobj": DataType.ParamGobj,
-  "data_param_gobj_item": DataType.ParamGobjItem,
-  "DataMinigame_Paper_Aiper": DataType.DataMinigamePaperAiper,
-  "DataMinigame_Paper_Fan": DataType.DataMinigamePaperFan,
-  "DataMinigame_Paper_Runner": DataType.DataMinigamePaperRunner,
-  "DataMinigame_Paper_Runnerai": DataType.DataMinigamePaperRunnerai,
-  "Monosiri": DataType.Monosiri,
-  "FallObj": DataType.FallObj,
-  "Nozzle": DataType.Nozzle,
-  "HeartParam": DataType.HeartParam,
-  "Parameter": DataType.Parameter,
-  }
+	const defaultFileNames = {
+		"data_Npc": DataType.Npc,
+		"data_Item": DataType.Item,
+		"data_Mobj": DataType.Mobj,
+		"data_Aobj": DataType.Aobj,
+		"data_Bshape": DataType.Bshape,
+		"data_Effect": DataType.Effect,
+		"data_GobjRes": DataType.GobjRes,
+		"data_MapLink": DataType.Maplink,
+		"MapParam": DataType.MapParam,
+		"MapId": DataType.MapId,
+		"data_ItemList": DataType.ItemList,
+		"data_character_npc": DataType.CharacterNpc,
+		"data_character_mobj": DataType.CharacterMobj,
+		"data_character_party": DataType.CharacterParty,
+		"data_character_item": DataType.CharacterItem,
+		"data_character_aobj": DataType.CharacterAobj,
+		"data_param_partyhint": DataType.ParamPartyHint,
+		"data_param_gobj": DataType.ParamGobj,
+		"data_param_gobj_item": DataType.ParamGobjItem,
+		"DataMinigame_Paper_Aiper": DataType.DataMinigamePaperAiper,
+		"DataMinigame_Paper_Fan": DataType.DataMinigamePaperFan,
+		"DataMinigame_Paper_Runner": DataType.DataMinigamePaperRunner,
+		"DataMinigame_Paper_Runnerai": DataType.DataMinigamePaperRunnerai,
+		"Monosiri": DataType.Monosiri,
+		"FallObj": DataType.FallObj,
+		"Nozzle": DataType.Nozzle,
+		"HeartParam": DataType.HeartParam,
+		"Parameter": DataType.Parameter,
+	}
 
-  onMount(() => {
-  okButton.disabled = true
+	onMount(() => {
+		okButton.disabled = true
 
-  select.onchange = function(e) {
-  okButton.disabled = select.selectedIndex < 1
+		select.onchange = function(e) {
+			okButton.disabled = select.selectedIndex < 1
 		}
 		
 		const sortedEntries = Object.entries(defaultFileNames).sort(([a], [b]) => b.length - a.length)
@@ -89,12 +89,12 @@
 		<option value="Mobj">Mobj Placement (data_Mobj)</option>
 		<option value="Aobj">Aobj Placement (data_Aobj)</option>
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
-    <option value="Effect">Effect Placement (data_Effect)</option>
-    <option value="GobjRes">Gobj Placement (data_GobjRes)</option>
-    <option value="Maplink">Room Transitions (data_MapLink)</option>
-    <option value="MapParam">Map Parameters (data_MapParam)</option>
+		<option value="Effect">Effect Placement (data_Effect)</option>
+		<option value="GobjRes">Gobj Placement (data_GobjRes)</option>
+		<option value="Maplink">Room Transitions (data_MapLink)</option>
+		<option value="MapParam">Map Parameters (data_MapParam)</option>
 
-    <option value="CharacterNpc">NPC Registry (data_character_npc)</option>
+		<option value="CharacterNpc">NPC Registry (data_character_npc)</option>
 		<option value="CharacterMobj">Mobj Registry (data_character_mobj)</option>
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
@@ -103,20 +103,20 @@
 		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 
-    <option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
-    <option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
-    <option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item)</option>
-    <option value="DataMinigamePaperAiper">Paper Minigame Aiper Parameters (DataMinigame_Paper_Aiper)</option>
-    <option value="DataMinigamePaperFan">Paper Minigame Fan Parameters (DataMinigame_Paper_Fan)</option>
-    <option value="DataMinigamePaperRunner">Paper Minigame Runner Parameters (DataMinigame_Paper_Runner)</option>
-    <option value="DataMinigamePaperRunnerai">Paper Minigame Runner AI Parameters (DataMinigame_Paper_Runnerai)</option>
+		<option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
+		<option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
+		<option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item)</option>
+		<option value="DataMinigamePaperAiper">Paper Minigame Aiper Parameters (DataMinigame_Paper_Aiper)</option>
+		<option value="DataMinigamePaperFan">Paper Minigame Fan Parameters (DataMinigame_Paper_Fan)</option>
+		<option value="DataMinigamePaperRunner">Paper Minigame Runner Parameters (DataMinigame_Paper_Runner)</option>
+		<option value="DataMinigamePaperRunnerai">Paper Minigame Runner AI Parameters (DataMinigame_Paper_Runnerai)</option>
 
-    <option value="Monosiri">Tattle Log (Monosiri)</option>
-    <option value="FallObj">Falling Stage Objects (FallObj)</option>
-    <option value="Nozzle">Stage Spray Nozzles (Nozzle)</option>
-    <option value="HeartParam">Heart and Flower Drop Parameters (HeartParam)</option>
-    <option value="Parameter">Battle Parameters (Parameter)</option>
-  </select>
+		<option value="Monosiri">Tattle Log (Monosiri)</option>
+		<option value="FallObj">Falling Stage Objects (FallObj)</option>
+		<option value="Nozzle">Stage Spray Nozzles (Nozzle)</option>
+		<option value="HeartParam">Heart and Flower Drop Parameters (HeartParam)</option>
+		<option value="Parameter">Battle Parameters (Parameter)</option>
+	</select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">
 		<input type="checkbox" id="iscompressed" bind:checked={isCompressed}>
