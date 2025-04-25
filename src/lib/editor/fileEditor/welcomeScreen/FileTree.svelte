@@ -39,6 +39,8 @@
   "Monosiri",
   "FallObj",
   "Nozzle",
+  "HeartParam",
+  "Parameter",
   ]
 
   const dispatch = createEventDispatcher()

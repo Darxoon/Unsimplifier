@@ -42,6 +42,8 @@
   "Monosiri": DataType.Monosiri,
   "FallObj": DataType.FallObj,
   "Nozzle": DataType.Nozzle,
+  "HeartParam": DataType.HeartParam,
+  "Parameter": DataType.Parameter,
   }
 
   onMount(() => {
@@ -112,6 +114,8 @@
     <option value="Monosiri">Tattle Log (Monosiri)</option>
     <option value="FallObj">Falling Stage Objects (FallObj)</option>
     <option value="Nozzle">Stage Spray Nozzles (Nozzle)</option>
+    <option value="HeartParam">Heart and Flower Drop Parameters (HeartParam)</option>
+    <option value="Parameter">Battle Parameters (Parameter)</option>
   </select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">

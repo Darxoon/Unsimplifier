@@ -777,6 +777,16 @@ Specifies the type of the item. Possible values:
 		field_0x44: "int",
 		field_0x48: "int",
 	},
+	[DataType.Parameter]: {
+		__: {
+			displayName: "Battle Parameters",
+		},
+
+		id: "string",
+		value: "float",
+		field_0x0c: "int",
+		field_0x10: "string",
+	},
 	[DataType.FallObj]: {
 		__: {
 			displayName: "Falling Stage Objects",
@@ -856,6 +866,41 @@ Specifies the type of the item. Possible values:
 		explosionSprayEnemy: "string",
 		fireSprayParty: "string",
 		fireSprayEnemy: "string",
+	},
+	[DataType.HeartParam]: {
+		__: {
+			displayName: "Heart-Flower Drop RNG Table",
+			childTypes: {
+				items: DataType.ListHeart,
+			},
+		},
+
+		id: "string",
+		items: new Property("symbolAddr", undefined, { tabName: "ItemTable {id}" }),
+	},
+	[DataType.ListHeart]: {
+		__: {
+			displayName: "Item",
+			identifyingField: "type",
+			dataDivision: null,
+		},
+
+		field_0x00: "int",
+		field_0x04: "int",
+		field_0x08: "int",
+		field_0x0c: "int",
+		field_0x10: "int",
+		field_0x14: "int",
+		field_0x18: "int",
+		field_0x1c: "int",
+		field_0x20: "int",
+		field_0x24: "int",
+		field_0x28: "int",
+		field_0x2c: "int",
+		field_0x30: "int",
+		field_0x34: "int",
+		field_0x38: "int",
+		field_0x3c: "int",
 	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 

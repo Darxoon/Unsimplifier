@@ -34,9 +34,12 @@ export enum DataType {
 	Monosiri,
 	FallObj,
 	Nozzle,
+	HeartParam,
+	Parameter,
 
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,
 	ListItem,
+	ListHeart,
 
 }

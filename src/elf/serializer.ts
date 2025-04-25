@@ -131,13 +131,14 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			}
 
 			case DataType.Monosiri:
+			case DataType.Parameter:
 				{
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
 				}
 
-					serializeObjects(data, DataType.Monosiri, binary.data.main, { padding: 1 })
+					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 
 				// count symbol
 				symbolLocationReference.set("wld::btl::data::s_DataNum", new Pointer(dataWriter.size))
@@ -149,6 +150,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			case DataType.ItemList:
 			case DataType.FallObj:
 			case DataType.Nozzle:
+			case DataType.HeartParam:
 				{
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
@@ -162,11 +164,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolAddrRelocations: dataSymbolAddrs,
 				}
 				
-				for (const itemTable of binary.data.main as Instance<DataType.ItemList>[]) {
+				for (const itemTable of binary.data.main as Instance<typeof dataType>[]) {
 					debugger
 					allStrings.add(itemTable.id)
 					
-					const items = itemTable.items as {children: Instance<DataType.ListItem>[], symbolName: string}
+					const items = itemTable.items as { children: Instance<typeof dataType>[], symbolName: string}
 					const { children, symbolName } = items
 					
 					// no symbol name as the names are unpredictable here (.compoundliteral.<???>)
@@ -174,12 +176,12 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ListItem].size)
 					
-					serializeObjects(data, DataType.ListItem, children, { padding: 1 })
+					serializeObjects(data, dataType, children, { padding: 1 })
 				}
 				
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
 				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
-				serializeObjects(data, DataType.ItemList, binary.data.main, { padding: 1 })
+				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 				break
 			}
 			

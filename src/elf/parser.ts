@@ -156,6 +156,33 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			data = null
 			break
 
+		case DataType.Maplink: {
+			const dataSection = findSection('.data')
+			const dataStringSection = findSection('.rodata.str1.1')
+
+			data = {}
+			let tableRelocs = peekable(allRelocations.get(".data"))
+
+			let headerSymbol = findSymbol("wld::fld::data::maplink::s_mapLink")
+			let header = parseSymbol(dataSection, dataStringSection, headerSymbol, DataType.MaplinkHeader, { count: 1, relocations: tableRelocs })
+			data.main = header
+
+			// maplink nodes
+			let { maplinks: symbolName, linkAmount } = header[0]
+			let maplinkSymbol = findSymbol(symbolName)
+			let maplinks = parseSymbol(dataSection, dataStringSection, maplinkSymbol, DataType.Maplink, linkAmount)
+
+			let maplinkObj = {
+				symbolName,
+				children: maplinks,
+			}
+
+			data.maplinkNodes = maplinks
+			header[0].maplinks = maplinkObj
+
+			break
+		}
+
 		case DataType.MapId: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -212,6 +239,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		}
 
 		case DataType.Monosiri:
+		case DataType.Parameter:
 			{
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -224,7 +252,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let count = dataView.getInt32(countSymbol.location.value, true)
 
 			data = {}
-				data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.Monosiri, { count })
+				data.main = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count })
 
 			break
 		}
@@ -232,7 +260,6 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		case DataType.ItemList:
 		case DataType.FallObj:
 		case DataType.Nozzle:
-		case DataType.HeartParam:
 			{
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -252,7 +279,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					continue
 				
 				let symbol = findSymbol(symbolName)
-				let children = parseSymbol(dataSection, stringSection, symbol, dataType, { count: -1 })
+				let children = parseSymbol(dataSection, stringSection, symbol, DataType.ListItem, { count: -1 })
 				
 				let items = {
 					symbolName,
@@ -274,7 +301,52 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			data.main = itemTables
 			
 			break
-		}
+			}
+
+		case DataType.HeartParam:
+			{
+				const dataSection = findSection('.data')
+				const stringSection = findSection('.rodata.str1.1')
+
+				// use special relocations for main table because it's at the end of file
+				let tableRelocs = peekable(allRelocations.get(".data"))
+
+				let mainSymbol = findSymbol("wld::btl::data::s_Data")
+				let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count: -1, relocations: tableRelocs })
+
+				debugger
+
+				for (const table of itemTables) {
+					const { items: symbolName } = table
+
+					if (symbolName == undefined)
+						continue
+
+					let symbol = findSymbol(symbolName)
+					let children = parseSymbol(dataSection, stringSection, symbol, DataType.ListHeart, { count: -1 })
+
+					let items = {
+						symbolName,
+						children,
+					}
+
+					table.items = items
+				}
+
+				// idea to abstract loop ^^^ away:
+				// applyChildren(dataSection, stringSection, itemTables, [
+				// 	items: {
+				// 		dataType: DataType.ListHeart,
+				// 		count: -1,
+				// 	},
+				// ])
+
+				data = {}
+				data.main = itemTables
+
+				break
+			}
+
 		
 		case DataType.CharacterItem: {
 			const dataSection = findSection('.data')
