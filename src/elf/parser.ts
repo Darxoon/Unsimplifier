@@ -214,17 +214,6 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 
-		case DataType.CharacterItem: {
-			const dataSection = findSection('.data')
-			const dataStringSection = findSection('.rodata.str1.1')
-			
-			let count = dataSection.size / FILE_TYPES[dataType].size - 1
-			data = {}
-			data.main = parseRange(dataSection, dataStringSection, 0, count, dataType)
-			
-			break
-		}
-		
 		case DataType.MapParam: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -242,58 +231,6 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 		
-		case DataType.DataMinigamePaperAiper:
-		case DataType.DataMinigamePaperFan:
-		case DataType.DataMinigamePaperRunner:
-		case DataType.DataMinigamePaperRunnerai: {
-			const dataSection = findSection('.data')
-			const stringSection = findSection('.rodata.str1.1')
-
-			const dataView = new DataView(dataSection.content)
-
-			let mainSymbol = findSymbol("data::minigame::paper::s_data")
-			let countSymbol = findSymbol("data::minigame::paper::kNum")
-
-			let count = dataView.getInt32(countSymbol.location.value, true)
-
-			data = {}
-			data.main = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count })
-
-			break
-		}
-		
-		case DataType.Monosiri:
-		case DataType.Parameter: {
-			const dataSection = findSection('.data')
-			const stringSection = findSection('.rodata.str1.1')
-
-			const dataView = new DataView(dataSection.content)
-
-			let mainSymbol = findSymbol("wld::btl::data::s_Data")
-			let countSymbol = findSymbol("wld::btl::data::s_DataNum")
-
-			let count = dataView.getInt32(countSymbol.location.value, true)
-
-			data = {}
-			data.main = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count })
-
-			break
-		}
-		
-		case DataType.FallObj:
-		case DataType.Nozzle: {
-			const dataSection = findSection('.data')
-			const stringSection = findSection('.rodata.str1.1')
-			
-			let mainSymbol = findSymbol("wld::btl::data::s_Data")
-			let items = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count: -1 })
-			
-			data = {}
-			data.main = items
-			
-			break
-		}
-
 		case DataType.HeartParam: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -360,9 +297,22 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			const dataStringSection = findSection('.rodata.str1.1')
 			const rodataSection = findSection('.rodata')
 			
-			// the .rodata Section usually only contains 4 bytes, which are the amount of objects in .data
-			let rodataView = new DataView(rodataSection.content)
-			let count = rodataView.getInt32(0, true)
+			let countSymbolName = FILE_TYPES[dataType].countSymbol
+			let defaultPadding = FILE_TYPES[dataType].defaultPadding
+			let count: number
+			
+			if (countSymbolName != null) {
+				const dataView = new DataView(dataSection.content)
+				
+				let countSymbol = findSymbol(countSymbolName)
+				count = dataView.getInt32(countSymbol.location.value, true)
+			} else if (rodataSection != null) {
+				// the .rodata Section usually only contains 4 bytes, which are the amount of objects in .data
+				let rodataView = new DataView(rodataSection.content)
+				count = rodataView.getInt32(0, true)
+			} else {
+				count = dataSection.size / FILE_TYPES[dataType].size - defaultPadding
+			}
 			
 			data = {}
 			data.main = parseRange(dataSection, dataStringSection, 0, count, dataType)

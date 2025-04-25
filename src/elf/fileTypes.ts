@@ -107,13 +107,13 @@ interface DataTypeMetadata {
 	textVars?: {[key: string]: string}
 	
 	defaultPadding?: number
+	countSymbol?: string
 	
 	childTypes?: Typedef<DataType>,
 	
 	// for future sub-types
 	// childField
 	// childFieldLabel
-	// countSymbol
 }
 
 const typedefs = {
@@ -701,6 +701,9 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperAiper]: {
 		__: {
 			displayName: "Paper Minigame Aiper Parameters",
+			
+			countSymbol: "data::minigame::paper::kNum",
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -712,6 +715,9 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperFan]: {
 		__: {
 			displayName: "Paper Minigame Fan Parameters",
+			
+			countSymbol: "data::minigame::paper::kNum",
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -723,6 +729,9 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperRunner]: {
 		__: {
 			displayName: "Paper Minigame Runner Parameters",
+			
+			countSymbol: "data::minigame::paper::kNum",
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -736,6 +745,9 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperRunnerai]: {
 		__: {
 			displayName: "Paper Minigame Runner Parameters",
+			
+			countSymbol: "data::minigame::paper::kNum",
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -761,6 +773,7 @@ Specifies the type of the item. Possible values:
 	[DataType.Monosiri]: {
 		__: {
 			displayName: "Tattle Log",
+			countSymbol: "wld::btl::data::s_DataNum",
 		},
 
 		entryCount: "int",
@@ -780,6 +793,7 @@ Specifies the type of the item. Possible values:
 	[DataType.Parameter]: {
 		__: {
 			displayName: "Battle Parameter",
+			countSymbol: "wld::btl::data::s_DataNum",
 		},
 
 		id: "string",
@@ -790,6 +804,7 @@ Specifies the type of the item. Possible values:
 	[DataType.FallObj]: {
 		__: {
 			displayName: "Falling Stage Object",
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -851,6 +866,7 @@ Specifies the type of the item. Possible values:
 	[DataType.Nozzle]: {
 		__: {
 			displayName: "Stage Spray Nozzle",
+			defaultPadding: 1,
 		},
 
 		field_0x00: "int",
@@ -922,12 +938,12 @@ interface FileTypeRegistry {
 	dataDivision: DataDivision
 	defaultPadding: number
 	textVars: {[key: string]: string}
+	countSymbol?: string
 	
 	// for future sub-types
 	childTypes?: Typedef<DataType>
 	childFieldLabel?: string
 	childField?: string
-	countSymbol?: string
 	nestedAllValues?: boolean
 	entryPoints?: {[objectType: number]: any}
 	
@@ -951,7 +967,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		metadata = {...parent.__, ...metadata}
 	}
 	
-	const { displayName, dataDivision, identifyingField, childTypes, defaultPadding, textVars } = metadata
+	const { displayName, dataDivision, identifyingField, childTypes, defaultPadding, countSymbol, textVars } = metadata
 	
 	let fields = new Map(Object.entries(typedef).flatMap(([fieldName, fieldType]) => {
 		if (fieldType instanceof Property) {
@@ -1009,6 +1025,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		textVars: textVars ?? {},
 		
 		defaultPadding: defaultPadding ?? 0,
+		countSymbol,
 		
 		childTypes: childTypes ?? {},
 		

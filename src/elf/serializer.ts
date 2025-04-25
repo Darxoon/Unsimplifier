@@ -161,26 +161,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				break
 			}
 			
-			case DataType.FallObj:
-			case DataType.Nozzle: {
-				const dataSymbols = new Map()
-				symbolRelocations.set('.data', dataSymbols)
-				const dataSymbolAddrs = new Map()
-				symbolAddrRelocations.set('.data', dataSymbolAddrs)
-				
-				let data: SerializeContext = {
-					writer: dataWriter,
-					stringRelocations: dataStringRelocations,
-					symbolRelocations: dataSymbols,
-					symbolAddrRelocations: dataSymbolAddrs,
-				}
-				
-				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
-				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
-				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
-				break
-			}
-			
 			case DataType.MapParam: {
 				let data: SerializeContext = {
 					writer: dataWriter,
@@ -196,49 +176,21 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				break
 			}
 
-			case DataType.DataMinigamePaperAiper:
-			case DataType.DataMinigamePaperFan:
-			case DataType.DataMinigamePaperRunner:
-			case DataType.DataMinigamePaperRunnerai: {
-				let data: SerializeContext = {
-					writer: dataWriter,
-					stringRelocations: dataStringRelocations,
-				}
-
-				serializeObjects(data, DataType.DataMinigamePaperAiper, binary.data.main, { padding: 1 })
-
-				// count symbol
-				symbolLocationReference.set("data::minigame::paper::kNum", new Pointer(dataWriter.size))
-				dataWriter.writeInt32(binary.data.main.length)
-
-				break
-			}
-
-			case DataType.Monosiri:
-			case DataType.Parameter: {
-				let data: SerializeContext = {
-					writer: dataWriter,
-					stringRelocations: dataStringRelocations,
-				}
-
-				serializeObjects(data, dataType, binary.data.main)
-
-				// count symbol
-				symbolLocationReference.set("wld::btl::data::s_DataNum", new Pointer(dataWriter.size))
-				dataWriter.writeInt32(binary.data.main.length)
-
-				break
-			}
-
 			default: {
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
 				}
 				
+				let countSymbolName = FILE_TYPES[dataType].countSymbol
 				let padding = FILE_TYPES[dataType].defaultPadding
 				
 				serializeObjects(data, dataType, binary.data.main, { padding })
+				
+				if (countSymbolName != null) {
+					symbolLocationReference.set(countSymbolName, new Pointer(dataWriter.size))
+					dataWriter.writeInt32(binary.data.main.length)
+				}
 				
 				break
 			}
