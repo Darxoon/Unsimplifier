@@ -43,9 +43,15 @@ export class BinaryReader {
 			this.arrayBuffer = buffer
 			this.dataView = new DataView(buffer)
 		} else if (buffer instanceof DataView) {
+			if (!(buffer.buffer instanceof ArrayBuffer))
+				throw new Error("DataView has to be backed by an ArrayBuffer")
+			
 			this.arrayBuffer = buffer.buffer
 			this.dataView = buffer
 		} else if (buffer instanceof Uint8Array) {
+			if (!(buffer.buffer instanceof ArrayBuffer))
+				throw new Error("Uint8Array has to be backed by an ArrayBuffer")
+			
 			this.arrayBuffer = buffer.buffer
 			this.dataView = new DataView(buffer.buffer)
 		}
@@ -152,9 +158,15 @@ export class BinaryWriter {
 			this.arrayBuffer = buffer
 			this.dataView = new DataView(buffer)
 		} else if (buffer instanceof DataView) {
+			if (!(buffer.buffer instanceof ArrayBuffer))
+				throw new Error("DataView has to be backed by an ArrayBuffer")
+			
 			this.arrayBuffer = buffer.buffer
 			this.dataView = buffer
 		} else if (buffer instanceof Uint8Array) {
+			if (!(buffer.buffer instanceof ArrayBuffer))
+				throw new Error("Uint8Array has to be backed by an ArrayBuffer")
+			
 			this.arrayBuffer = buffer.buffer
 			this.dataView = new DataView(buffer.buffer)
 		}
@@ -300,7 +312,7 @@ export class BinaryWriter {
 		this.size += bytes.length
 	}
 	
-	writeArrayBuffer(arrayBuffer: ArrayBuffer) {
+	writeArrayBuffer(arrayBuffer: ArrayBuffer | Uint8Array) {
 		if (this.size + arrayBuffer.byteLength >= this.capacity) {
 			this.reserve(Math.max(this.capacity * 2, this.size + arrayBuffer.byteLength))
 		}
@@ -315,7 +327,9 @@ export class BinaryWriter {
 	writeUint8Array(array: Uint8Array | number[]) {
 		if (array instanceof Array)
 			array = new Uint8Array(array)
-			
+		if (!(array.buffer instanceof ArrayBuffer))
+			throw new Error("Uint8Array has to be backed by an ArrayBuffer")
+		
 		this.writeArrayBuffer(array.buffer)
 	}
 }
