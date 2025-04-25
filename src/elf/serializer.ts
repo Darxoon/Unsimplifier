@@ -44,7 +44,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	const symbolRelocations: Map<SectionName, Map<number, SymbolName>> = new Map()
 	const symbolAddrRelocations: Map<SectionName, Map<number, SymbolName>> = new Map()
 	
-	// TODO: use noUndefinedMap only in development builds
 	const symbolLocationReference: Map<string, Pointer> = noUndefinedMap(new Map())
 	const symbolNameOverrides: Map<string, string> = noUndefinedMap(new Map())
 	const symbolSizeOverrides: Map<string, number> = noUndefinedMap(new Map())
@@ -80,21 +79,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		stringRelocations.set(".data", dataStringRelocations)
 		
 		switch (dataType) {
-			case DataType.MapId: {
-				let data: SerializeContext = {
-					writer: dataWriter,
-					stringRelocations: dataStringRelocations,
-				}
-				
-				serializeObjects(data, DataType.MapId, binary.data.main, { padding: 1 })
-				
-				// count symbol
-				symbolLocationReference.set("wld::fld::data::kNum", new Pointer(dataWriter.size))
-				dataWriter.writeInt32(binary.data.main.length)
-				
-				break
-			}
-
 			case DataType.ItemList: {
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
@@ -158,21 +142,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
 				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
 				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
-				break
-			}
-			
-			case DataType.MapParam: {
-				let data: SerializeContext = {
-					writer: dataWriter,
-					stringRelocations: dataStringRelocations,
-				}
-
-				serializeObjects(data, DataType.MapParam, binary.data.main, { padding: 1 })
-
-				// count symbol
-				symbolLocationReference.set("wld::fld::data::kNum", new Pointer(dataWriter.size))
-				dataWriter.writeInt32(binary.data.main.length)
-
 				break
 			}
 

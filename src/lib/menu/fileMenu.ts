@@ -423,21 +423,25 @@ async function saveYaml() {
 		throw new Error("Cannot save non-cards list file")
 	}
 	
-	const { dataType, binary, filePath } = content
+	let { dataType, binary, filePath } = content
 	
-	if (!filePath) {
-		// TODO: make file picker modal
-		await showModal(TextAlert, {
-			title: "Export To Yaml (WIP)",
-			content: `
+	if (filePath == null) {
+		if (FILE_TYPES[dataType].romfsPath == null) {
+			// TODO: make file picker modal
+			await showModal(TextAlert, {
+				title: "Export To Yaml (WIP)",
+				content: `
 You probably opened the current file through File > Open, which means that because
 of browser limitations, Unsimplifier is not able to see the path inside the romfs
 of your file. For yaml exporting however, this is required to know.
 
 For now, this means you cannot export this file :( In the future this problem
 will be solved.`
-		})
-		return
+			})
+			return
+		}
+		
+		filePath = FILE_TYPES[dataType].romfsPath
 	}
 	
 	let outFileName: string

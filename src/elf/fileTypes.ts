@@ -105,6 +105,7 @@ interface DataTypeMetadata {
 	identifyingField?: string
 	dataDivision?: DataDivision | null
 	textVars?: {[key: string]: string}
+	romfsPath?: string
 	
 	defaultPadding?: number
 	countSymbol?: string
@@ -361,6 +362,9 @@ const typedefs = {
 	[DataType.MapParam]: {
 		__: {
 			displayName: "Map Param",
+			
+			countSymbol: "wld::fld::data::kNum",
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -369,6 +373,10 @@ const typedefs = {
 	[DataType.MapId]: {
 		__: {
 			displayName: "Map",
+			romfsPath: "data/map/MapId.elf.zst",
+			
+			countSymbol: "wld::fld::data::kNum",
+			defaultPadding: 1,
 		},
 		
 		id: "string",
@@ -434,6 +442,7 @@ Used for the loading of new maps (?)`),
 		__: {
 			displayName: "NPC Definition",
 			defaultPadding: 1,
+			romfsPath: "data/character/data_character_npc.elf.zst",
 			textVars: {
 				model: 'data_model_npc'
 			},
@@ -504,6 +513,7 @@ The effect emitter set used when the character lands from a jump.`),
 	[DataType.CharacterMobj]: {
 		__: {
 			displayName: "Mobj Definition",
+			romfsPath: "data/character/data_character_mobj.elf.zst",
 			defaultPadding: 1,
 		},
 		
@@ -547,6 +557,7 @@ The name of the mobj's script file, relative to \`romfs/script/wld/fld/mobj/\``)
 		__: {
 			displayName: "Party Member",
 			defaultPadding: 1,
+			romfsPath: "data/character/data_character_party.elf.zst",
 		},
 		
 		id: "string",
@@ -587,6 +598,7 @@ Appears to only apply to the file name given above.`),
 		__: {
 			displayName: "Item Definition",
 			defaultPadding: 1,
+			romfsPath: "data/character/data_character_item.elf.zst",
 		},
 		
 		id: "string",
@@ -640,11 +652,13 @@ Specifies the type of the item. Possible values:
 		__: {
 			parent: DataType.CharacterMobj,
 			displayName: "Aobj Definition",
+			romfsPath: "data/character/data_character_item.elf.zst",
 		},
 	},
 	[DataType.ParamPartyHint]: {
 		__: {
 			displayName: "Party Hint Parameter",
+			romfsPath: "data/param/data_param_partyhint.elf.zst",
 		},
 
 		id: "string",
@@ -663,6 +677,7 @@ Specifies the type of the item. Possible values:
 	[DataType.ParamGobj]: {
 		__: {
 			displayName: "Gobj Parameters",
+			romfsPath: "data/param/data_param_gobj.elf.zst",
 		},
 
 		id: "string",
@@ -682,6 +697,7 @@ Specifies the type of the item. Possible values:
 	[DataType.ParamGobjItem]: {
 		__: {
 			displayName: "Gobj Item Parameters",
+			romfsPath: "data/param/data_param_gobj_item.elf.zst",
 		},
 
 		id: "string",
@@ -701,6 +717,7 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperAiper]: {
 		__: {
 			displayName: "Paper Minigame Aiper Parameters",
+			romfsPath: "data/minigame/paper/DataMinigame_Paper_Aiper.elf.zst",
 			
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
@@ -715,6 +732,7 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperFan]: {
 		__: {
 			displayName: "Paper Minigame Fan Parameters",
+			romfsPath: "data/minigame/paper/DataMinigame_Paper_Fan.elf.zst",
 			
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
@@ -729,6 +747,7 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperRunner]: {
 		__: {
 			displayName: "Paper Minigame Runner Parameters",
+			romfsPath: "data/minigame/paper/DataMinigame_Paper_Runner.elf.zst",
 			
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
@@ -745,6 +764,7 @@ Specifies the type of the item. Possible values:
 	[DataType.DataMinigamePaperRunnerai]: {
 		__: {
 			displayName: "Paper Minigame Runner Parameters",
+			romfsPath: "data/minigame/paper/DataMinigame_Paper_Runnerai.elf.zst",
 			
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
@@ -773,6 +793,8 @@ Specifies the type of the item. Possible values:
 	[DataType.Monosiri]: {
 		__: {
 			displayName: "Tattle Log",
+			romfsPath: "data/battle/data_Monosiri.elf.zst",
+			
 			countSymbol: "wld::btl::data::s_DataNum",
 		},
 
@@ -793,6 +815,8 @@ Specifies the type of the item. Possible values:
 	[DataType.Parameter]: {
 		__: {
 			displayName: "Battle Parameter",
+			romfsPath: "data/battle/data_Parameter.elf.zst",
+			
 			countSymbol: "wld::btl::data::s_DataNum",
 		},
 
@@ -804,6 +828,8 @@ Specifies the type of the item. Possible values:
 	[DataType.FallObj]: {
 		__: {
 			displayName: "Falling Stage Object",
+			romfsPath: "data/battle/data_FallObj.elf.zst",
+			
 			defaultPadding: 1,
 		},
 
@@ -866,6 +892,8 @@ Specifies the type of the item. Possible values:
 	[DataType.Nozzle]: {
 		__: {
 			displayName: "Stage Spray Nozzle",
+			romfsPath: "data/battle/data_Nozzle.elf.zst",
+			
 			defaultPadding: 1,
 		},
 
@@ -886,6 +914,8 @@ Specifies the type of the item. Possible values:
 	[DataType.HeartParam]: {
 		__: {
 			displayName: "Heart-Flower Drop Param",
+			romfsPath: "data/battle/data_HeartParam.elf.zst",
+			
 			childTypes: {
 				items: DataType.HeartItem,
 			},
@@ -936,6 +966,7 @@ interface FileTypeRegistry {
 	displayName: string
 	identifyingField: string
 	dataDivision: DataDivision
+	romfsPath: string
 	defaultPadding: number
 	textVars: {[key: string]: string}
 	countSymbol?: string
@@ -967,7 +998,16 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		metadata = {...parent.__, ...metadata}
 	}
 	
-	const { displayName, dataDivision, identifyingField, childTypes, defaultPadding, countSymbol, textVars } = metadata
+	const {
+		displayName,
+		dataDivision,
+		identifyingField,
+		romfsPath,
+		childTypes,
+		defaultPadding,
+		countSymbol,
+		textVars,
+	} = metadata
 	
 	let fields = new Map(Object.entries(typedef).flatMap(([fieldName, fieldType]) => {
 		if (fieldType instanceof Property) {
@@ -1023,6 +1063,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		identifyingField: identifyingField ?? "id",
 		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
 		textVars: textVars ?? {},
+		romfsPath,
 		
 		defaultPadding: defaultPadding ?? 0,
 		countSymbol,

@@ -100,7 +100,7 @@
         })
     }
     
-    async function openFile(filePath: string, dataType?: DataType, isCompressed?: boolean, addToRecent?: boolean = true) {
+    async function openFile(filePath: string, dataType?: DataType, isCompressed?: boolean, addToRecent: boolean = true) {
         if (!romfs)
             return
         

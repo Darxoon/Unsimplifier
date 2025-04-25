@@ -156,23 +156,6 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			data = null
 			break
 
-		case DataType.MapId: {
-			const dataSection = findSection('.data')
-			const stringSection = findSection('.rodata.str1.1')
-			
-			const dataView = new DataView(dataSection.content)
-			
-			let mainSymbol = findSymbol("wld::fld::data::s_data")
-			let countSymbol = findSymbol("wld::fld::data::kNum")
-			
-			let count = dataView.getInt32(countSymbol.location.value, true)
-			
-			data = {}
-			data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.MapId, { count })
-			
-			break
-		}
-		
 		case DataType.ItemList: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
@@ -214,23 +197,6 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 
-		case DataType.MapParam: {
-			const dataSection = findSection('.data')
-			const stringSection = findSection('.rodata.str1.1')
-
-			const dataView = new DataView(dataSection.content)
-
-			let mainSymbol = findSymbol("wld::fld::data::s_data")
-			let countSymbol = findSymbol("wld::fld::data::kNum")
-
-			let count = dataView.getInt32(countSymbol.location.value, true)
-
-			data = {}
-			data.main = parseSymbol(dataSection, stringSection, mainSymbol, DataType.MapParam, { count })
-
-			break
-		}
-		
 		case DataType.HeartParam: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
