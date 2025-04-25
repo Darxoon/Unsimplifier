@@ -39,11 +39,11 @@
 		"DataMinigame_Paper_Fan": DataType.DataMinigamePaperFan,
 		"DataMinigame_Paper_Runner": DataType.DataMinigamePaperRunner,
 		"DataMinigame_Paper_Runnerai": DataType.DataMinigamePaperRunnerai,
-		"Monosiri": DataType.Monosiri,
-		"FallObj": DataType.FallObj,
-		"Nozzle": DataType.Nozzle,
-		"HeartParam": DataType.HeartParam,
-		"Parameter": DataType.Parameter,
+		"data_Monosiri": DataType.Monosiri,
+		"data_FallObj": DataType.FallObj,
+		"data_Nozzle": DataType.Nozzle,
+		"data_HeartParam": DataType.HeartParam,
+		"data_Parameter": DataType.Parameter,
 	}
 
 	onMount(() => {
@@ -91,7 +91,7 @@
 		<option value="Bshape">Bshape Placement (data_Bshape)</option>
 		<option value="Effect">Effect Placement (data_Effect)</option>
 		<option value="GobjRes">Gobj Placement (data_GobjRes)</option>
-		<option value="Maplink">Room Transitions (data_MapLink)</option>
+		<option value="Maplink">Map Transitions (data_MapLink)</option>
 		<option value="MapParam">Map Parameters (data_MapParam)</option>
 
 		<option value="CharacterNpc">NPC Registry (data_character_npc)</option>

@@ -13,10 +13,6 @@
 	export let overrideObjects: UuidTagged[] = undefined
 	export let fileName: string = undefined
 	
-	const nonStandardDataTypes = new Set([
-		DataType.DataConfettiTotalHoleInfo,
-	])
-	
 	let inner: InnerIndexPageEditor | LinearEditor
 	
 	$: requiresIndexEditor = dataTypeExtensions(DataTypeExtension.HasComplexEditor, dataType)
@@ -36,8 +32,8 @@
 
 {#if requiresIndexEditor}
 	<InnerIndexPageEditor bind:this={inner} dataType={dataType} binary={binary} fileName={fileName} on:open />
-{:else if nonStandardDataTypes.has(dataType)}
-	<div>This file does not have an editor yet.</div>
+<!-- {:else if nonStandardDataTypes.has(dataType)}
+	<div>This file does not have an editor yet.</div> -->
 {:else}
 	<LinearEditor bind:this={inner} bind:binary={binary} bind:dataType={dataType} bind:overrideObjects={overrideObjects} tabVisible={tabVisible} on:open />
 {/if}

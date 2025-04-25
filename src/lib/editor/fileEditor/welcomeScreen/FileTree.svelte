@@ -22,6 +22,7 @@
         "data_Bshape",
         "data_Effect",
         "data_GobjRes",
+        "data_MapLink",
         "MapParam",
         "MapId",
         "data_ItemList",

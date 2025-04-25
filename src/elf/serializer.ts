@@ -144,6 +144,34 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 				break
 			}
+			
+			case DataType.Maplink: {
+				const dataSymbols = new Map()
+				symbolRelocations.set('.data', dataSymbols)
+				
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+					symbolRelocations: dataSymbols,
+				}
+				
+				const header = binary.data.main[0] as Instance<DataType.MaplinkHeader>
+				
+				// serialize maplinks
+				const maplinks = header.maplinks as { children: Instance<typeof dataType>[], symbolName: string}
+				const { children, symbolName } = maplinks
+				
+				symbolNameOverrides.set(symbolName, `wld::fld::data::maplink::${header.stage}_nodes`)
+				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.Maplink].size)
+				serializeObjects(data, dataType, children, { padding: 1 })
+				
+				// serialize header
+				symbolLocationReference.set("wld::fld::data::maplink::s_mapLink", new Pointer(dataWriter.size))
+				serializeObjects(data, DataType.MaplinkHeader, binary.data.main)
+				
+				break
+			}
 
 			default: {
 				let data: SerializeContext = {

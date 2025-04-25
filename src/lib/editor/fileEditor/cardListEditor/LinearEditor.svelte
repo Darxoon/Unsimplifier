@@ -9,6 +9,7 @@
     import BasicObjectArray from "./BasicObjectArray.svelte";
     import type { UuidTagged } from "paper-mario-elfs/valueIdentifier";
     import { incrementName } from "paper-mario-elfs/nameMangling";
+    import ObjectEditor from "$lib/editor/objectEditor/ObjectEditor.svelte";
 
 	export let binary: ElfBinary
 	export let dataType: DataType
@@ -169,13 +170,15 @@
 		<BasicObjectArray on:open on:createContent={e => handleCreateContent(e.detail)}
 			bind:this={arrayComponent} bind:objects={objects} binary={binary} dataType={dataType}
 			highlightedFields={highlightedFields} indices={searchResults && new Set(searchResults.map(result => result.index))} />
+			
+		{#if dataType === DataType.Maplink}
+			<div class="maplinkHeader">
+				<ObjectEditor title="Maplink Header" bind:obj={binary.data.main[0]} 
+					dataType={DataType.MaplinkHeader} showButtons={false} binary={binary} />
+			</div>
+		{/if}
 	</div>
 	
-	<!-- TODO: use a dedicated special elf editor instead -->
-	<!-- {#if dataType === DataType.Maplink}
-		<ObjectEditor title="Maplink Header" bind:obj={binary.data.main[0]} 
-			dataType={DataType.MaplinkHeader} showButtons={false} binary={binary} />
-	{/if} -->
 </div>
 {/if}
 
@@ -194,5 +197,9 @@
 	
 	.listing {
 		min-height: var(--content-height);
+		
+		.maplinkHeader {
+			margin-top: 2.5rem;
+		}
 	}
 </style>

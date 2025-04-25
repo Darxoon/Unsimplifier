@@ -38,7 +38,9 @@ export class ElfBinary {
 
 export const dataDivisions = {
 	main: "main",
-	maplinkNodes: "maplinkNodes",
+	
+	// maplink
+	links: "links",
 } as const
 
 export type DataDivision = keyof typeof dataDivisions

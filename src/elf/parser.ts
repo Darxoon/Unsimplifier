@@ -235,23 +235,24 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			const dataStringSection = findSection('.rodata.str1.1')
 
 			data = {}
-			let tableRelocs = peekable(allRelocations.get(".data"))
+			
+			let headerRelocs = peekable(allRelocations.get(".data"))
 
 			let headerSymbol = findSymbol("wld::fld::data::maplink::s_mapLink")
-			let header = parseSymbol(dataSection, dataStringSection, headerSymbol, DataType.MaplinkHeader, { count: 1, relocations: tableRelocs })
+			let header = parseSymbol(dataSection, dataStringSection, headerSymbol, DataType.MaplinkHeader, { count: 1, relocations: headerRelocs })
 			data.main = header
 
 			// maplink nodes
 			let { maplinks: symbolName, linkAmount } = header[0]
 			let maplinkSymbol = findSymbol(symbolName)
-			let maplinks = parseSymbol(dataSection, dataStringSection, maplinkSymbol, DataType.Maplink, linkAmount)
+			let maplinks = parseSymbol(dataSection, dataStringSection, maplinkSymbol, DataType.Maplink, { count: linkAmount })
 
 			let maplinkObj = {
 				symbolName,
 				children: maplinks,
 			}
 
-			data.maplinkNodes = maplinks
+			data.links = maplinks
 			header[0].maplinks = maplinkObj
 
 			break
@@ -451,7 +452,7 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 			obj[fieldName] = targetSymbol.name
 		} else if (fieldType == "symbolAddr") {
 			let symbolOffset = relocation.targetOffset
-			let symbol = symbolTable.find(sym => sym.location.equals(symbolOffset) && sym.info == 1)
+			let symbol = symbolTable.find(sym => sym.location.equals(symbolOffset) && (sym.info & 0xf) == 1)
 			
 			if (symbol == undefined)
 				throw new Error(`Couldn't find symbol with the offset ${symbolOffset}`)
