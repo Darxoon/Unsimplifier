@@ -37,11 +37,11 @@
         "DataMinigame_Paper_Fan",
         "DataMinigame_Paper_Runner",
         "DataMinigame_Paper_Runnerai",
-        "Monosiri",
-        "FallObj",
-        "Nozzle",
-        "HeartParam",
-        "Parameter",
+        "data_Monosiri",
+        "data_FallObj",
+        "data_Nozzle",
+        // "data_HeartParam",
+        "data_Parameter",
     ]
 
     const dispatch = createEventDispatcher()
@@ -104,6 +104,8 @@
         
         for (const file of dir.files) {
             let isSupported = supportedFiles.some(name => file.name.includes(name))
+                && !file.name.includes("data_param_gobj_item") // TODO: TEMP
+            
             if (onlyShowUnsupported ? !isSupported : (!onlyShowSupported || isSupported)) {
                 outFiles.push({
                     path: file.path,
