@@ -212,7 +212,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			padding?: number
 			paddingItem?: UuidTagged
 			addStrings?: boolean
-			symbolWrapper?: { symbolName: string, children?: any, item?: any }
 		}
 		
 		/**

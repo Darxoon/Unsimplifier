@@ -10,6 +10,7 @@ export enum DataType {
 	GobjRes,
 	Effect,
 	MapParam,
+	Maplink,
 	
 	// registries
 	CharacterNpc,
@@ -40,6 +41,8 @@ export enum DataType {
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,
 	ListItem,
-	ListHeart,
-
+	
+	HeartItem,
+	
+	MaplinkHeader,
 }

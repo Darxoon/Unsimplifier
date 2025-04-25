@@ -644,7 +644,7 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.ParamPartyHint]: {
 		__: {
-			displayName: "Party Hint Parameters",
+			displayName: "Party Hint Parameter",
 		},
 
 		id: "string",
@@ -779,7 +779,7 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.Parameter]: {
 		__: {
-			displayName: "Battle Parameters",
+			displayName: "Battle Parameter",
 		},
 
 		id: "string",
@@ -789,7 +789,7 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.FallObj]: {
 		__: {
-			displayName: "Falling Stage Objects",
+			displayName: "Falling Stage Object",
 		},
 
 		id: "string",
@@ -869,16 +869,16 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.HeartParam]: {
 		__: {
-			displayName: "Heart-Flower Drop RNG Table",
+			displayName: "Heart-Flower Drop Param",
 			childTypes: {
-				items: DataType.ListHeart,
+				items: DataType.HeartItem,
 			},
 		},
 
 		id: "string",
 		items: new Property("symbolAddr", undefined, { tabName: "ItemTable {id}" }),
 	},
-	[DataType.ListHeart]: {
+	[DataType.HeartItem]: {
 		__: {
 			displayName: "Item",
 			identifyingField: "type",
