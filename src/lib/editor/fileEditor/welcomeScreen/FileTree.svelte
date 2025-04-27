@@ -1,65 +1,72 @@
 <script lang="ts">
-    import type { FileSystem } from "$lib/save/vfs";
-    import path from "path-browserify";
-    import { afterUpdate, createEventDispatcher, onMount } from "svelte";
-    import areaNames from "./areaNames.json"
-    import { ChevronDownIcon } from "svelte-feather-icons";
+  import type { FileSystem } from "$lib/save/vfs";
+  import path from "path-browserify";
+  import { afterUpdate, createEventDispatcher, onMount } from "svelte";
+  import areaNames from "./areaNames.json"
+  import { ChevronDownIcon } from "svelte-feather-icons";
 
-    interface FsItem {
-        path: string
-        name: string
-        intuitiveName?: string
-        indentation: number
-        isFile: boolean
-        isCollapsed: boolean
-    }
+  interface FsItem {
+  path: string
+  name: string
+  intuitiveName?: string
+  indentation: number
+  isFile: boolean
+  isCollapsed: boolean
+  }
 
-    const supportedFiles = [
-        "data_Npc",
-        "data_Item",
-        "data_Mobj",
-        "data_Aobj",
-        "data_Bshape",
-        "data_Effect",
-        "data_GobjRes",
-        "data_MapLink",
-        "MapParam",
-        "MapId",
-        "data_ItemList",
-        "data_character_npc",
-        "data_character_mobj",
-        "data_character_party",
-        "data_character_item",
-        "data_character_aobj",
-        "data_param_gobj",
-        "data_param_partyhint",
-        "DataMinigame_Paper_Aiper",
-        "DataMinigame_Paper_Fan",
-        "DataMinigame_Paper_Runner",
-        "DataMinigame_Paper_Runnerai",
-        "data_Monosiri",
-        "data_FallObj",
-        "data_Nozzle",
-        // "data_HeartParam",
-        "data_Parameter",
-    ]
+  const supportedFiles = [
+  "data_Npc",
+  "data_Item",
+  "data_Mobj",
+  "data_Aobj",
+  "data_Bshape",
+  "data_Effect",
+  "data_GobjRes",
+  "data_MapLink",
+  "MapParam",
+  "MapId",
+  "data_ItemList",
+  "data_character_npc",
+  "data_character_mobj",
+  "data_character_party",
+  "data_character_item",
+  "data_character_aobj",
+  "data_param_gobj",
+  "data_param_partyhint",
+  "DataMinigame_Paper_Aiper",
+  "DataMinigame_Paper_Fan",
+  "DataMinigame_Paper_Runner",
+  "DataMinigame_Paper_Runnerai",
+  "data_Monosiri",
+  "data_FallObj",
+  "data_Nozzle",
+  // "data_HeartParam",
+  "data_Parameter",
+  "data_battle_weapon_mario",
+  "data_battle_weapon_party",
+  "data_battle_weapon_other",
+  "data_battle_weapon_enemy",
+  "data_battle_weapon_item",
+  "data_battle_weaponac_mario_ac",
+  "data_battle_weaponac_party_ac",
+  ]
 
-    const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher()
 
-    export let romfs: FileSystem | undefined
-    export let onlyShowSupported: boolean
-    export let onlyShowUnsupported: boolean = false
+  export let romfs: FileSystem | undefined
+  export let onlyShowSupported: boolean
+  export let onlyShowUnsupported: boolean = false
 
-    let prevRomfs: FileSystem
-    let prevOnlyShowSupported: boolean
-    let prevOnlyShowUnsupported: boolean
-    let fileTree: FsItem[] = JSON.parse(localStorage.getItem('romfs_list_cache'))
+  let prevRomfs: FileSystem
+  let prevOnlyShowSupported: boolean
+  let prevOnlyShowUnsupported: boolean
+  let fileTree: FsItem[] = JSON.parse(localStorage.getItem('romfs_list_cache'))
 
-    let treeElement: HTMLUListElement
-    let short = true
-    let showMoreVisible = true
+  let treeElement: HTMLUListElement
+  let short = true
+  let showMoreVisible = true
 
-    $: itemsVisible = fileTree && calculateItemsVisible(fileTree)
+  $: itemsVisible = fileTree && calculateItemsVisible(fileTree)
     
     $: if (romfs && (romfs != prevRomfs || prevOnlyShowSupported != onlyShowSupported || prevOnlyShowUnsupported != onlyShowUnsupported)) {
         // if I don't do this, romfs keeps getting set to itself all the time for some reason

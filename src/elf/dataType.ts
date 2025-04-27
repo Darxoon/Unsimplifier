@@ -38,6 +38,14 @@ export enum DataType {
 	HeartParam,
 	Parameter,
 
+	BattleWeaponMario,
+	BattleWeaponParty,
+	BattleWeaponOther,
+	BattleWeaponEnemy,
+	BattleWeaponItem,
+	BattleWeaponAcMarioAc,
+	BattleWeaponAcPartyAc,
+
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,
 	ListItem,
