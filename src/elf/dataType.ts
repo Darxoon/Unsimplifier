@@ -21,9 +21,17 @@ export enum DataType {
 	
 	MapId,
 	ItemList,
+	MapItemLotTable,
+	EventFlag,
 
 	//parameters
+	ParamActionBalloon,
+	ParamFade,
+	ParamField,
+	ParamHouseDoor,
+	ParamJump,
 	ParamPartyHint,
+	ParamPlayer,
 	ParamGobj,
 	ParamGobjItem,
 	DataMinigamePaperAiper,
@@ -45,6 +53,8 @@ export enum DataType {
 	BattleWeaponItem,
 	BattleWeaponAcMarioAc,
 	BattleWeaponAcPartyAc,
+
+	BattleAudienceKind,
 
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,

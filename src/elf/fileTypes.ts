@@ -122,7 +122,7 @@ const typedefs = {
 		__: {
 			displayName: "NPC",
 		},
-		
+
 		stage: "string",
 		id: "string",
 		type: "string",
@@ -202,7 +202,7 @@ const typedefs = {
 		__: {
 			displayName: "Item",
 		},
-		
+
 		stage: "string",
 		id: "string",
 		type: "string",
@@ -239,7 +239,7 @@ const typedefs = {
 		__: {
 			displayName: "Mobj",
 		},
-		
+
 		stage: "string",
 		id: "string",
 		type: "string",
@@ -316,7 +316,7 @@ const typedefs = {
 		__: {
 			displayName: "Bshape",
 		},
-		
+
 		stage: "string",
 		id: "string",
 		position: "Vector3",
@@ -359,10 +359,41 @@ const typedefs = {
 		field_0x48: "int",
 		field_0x4c: "int",
 	},
+	[DataType.MapItemLotTable]: {
+		__: {
+			displayName: "Map Item Lot Table",
+			romfsPath: "data/map/data_map_itemlottable.elf.zst",
+
+			defaultPadding: 1,
+		},
+
+		id: "string",
+		field_0x08: "int",
+		field_0x0c: "int",
+		itemId: "string",
+		field_0x18: "int",
+		field_0x1c: "float",
+		field_0x20: "int",
+		field_0x24: "int",
+		field_0x28: "int",
+		field_0x2c: "int",
+		field_0x30: "int",
+		field_0x34: "int",
+		field_0x38: "int",
+		field_0x3c: "int",
+		field_0x40: "int",
+		field_0x44: "int",
+		field_0x48: "int",
+		field_0x4c: "int",
+		field_0x50: "int",
+		field_0x54: "int",
+		field_0x58: "int",
+		field_0x5c: "int",
+	},
 	[DataType.MapParam]: {
 		__: {
 			displayName: "Map Param",
-			
+
 			countSymbol: "wld::fld::data::kNum",
 			defaultPadding: 1,
 		},
@@ -374,11 +405,11 @@ const typedefs = {
 		__: {
 			displayName: "Map",
 			romfsPath: "data/map/MapId.elf.zst",
-			
+
 			countSymbol: "wld::fld::data::kNum",
 			defaultPadding: 1,
 		},
-		
+
 		id: "string",
 		field_0x8: "string",
 		field_0x10: new Property("string", "Always the exact same as `id`"),
@@ -423,7 +454,7 @@ Used for the loading of new maps (?)`),
 				items: DataType.ListItem,
 			},
 		},
-		
+
 		id: "string",
 		items: new Property("symbolAddr", undefined, { tabName: "ItemTable {id}" }),
 	},
@@ -433,7 +464,7 @@ Used for the loading of new maps (?)`),
 			identifyingField: "type",
 			dataDivision: null,
 		},
-		
+
 		type: "string",
 		holdWeight: "int",
 		dropWeight: "int",
@@ -447,7 +478,7 @@ Used for the loading of new maps (?)`),
 				model: 'data_model_npc'
 			},
 		},
-		
+
 		id: "string",
 		model: new Property("string", "Referencing models in 'data/model/{model}.elf.zst'"),
 		field_0x10: "int",
@@ -516,7 +547,7 @@ The effect emitter set used when the character lands from a jump.`),
 			romfsPath: "data/character/data_character_mobj.elf.zst",
 			defaultPadding: 1,
 		},
-		
+
 		id: "string",
 		field_0x8: "string",
 		model: new Property("string", "Referencing models in 'data/model/data_model_mobj.elf.zst'"),
@@ -559,7 +590,7 @@ The name of the mobj's script file, relative to \`romfs/script/wld/fld/mobj/\``)
 			defaultPadding: 1,
 			romfsPath: "data/character/data_character_party.elf.zst",
 		},
-		
+
 		id: "string",
 		model: new Property("string", "The Model ID this character uses. From data_model_npc.elf."),
 		field_0x10: "int",
@@ -600,7 +631,7 @@ Appears to only apply to the file name given above.`),
 			defaultPadding: 1,
 			romfsPath: "data/character/data_character_item.elf.zst",
 		},
-		
+
 		id: "string",
 		description: "string",
 		itemType: new Property("int", `
@@ -655,9 +686,52 @@ Specifies the type of the item. Possible values:
 			romfsPath: "data/character/data_character_item.elf.zst",
 		},
 	},
+	[DataType.ParamActionBalloon]: {
+		__: {
+			displayName: "Action Balloon Parameters",
+			romfsPath: "data/param/data_param_actionbaloon.elf.zst",
+		},
+
+		field_0x00: "long",
+		id: "string",
+		field_0x10: "int",
+		field_0x14: "int",
+	},
+	[DataType.ParamFade]: {
+		__: {
+			displayName: "Screen Transition Parameters",
+			romfsPath: "data/param/data_param_fade.elf.zst",
+		},
+
+		orderNumber: "long",
+		id: "string",
+		transitionType: "string",
+		effectType: "string",
+		sceneType: "string",
+		field_0x28: "int",
+		field_0x2c: "int",
+		filePath: "string",
+		inOutState: "string",
+		waitState: "string",
+		sfx: "string",
+		field_0x50: "int",
+		field_0x54: "int",
+	},
+	[DataType.ParamField]: {
+		__: {
+			displayName: "Field Parameters",
+			romfsPath: "data/param/data_param_field.elf.zst",
+			countSymbol: "wld::fld::data::s_data_num",
+		},
+
+		id: "string",
+		rate: "float",
+		field_0x0c: "int",
+		field_0x10: "string",
+	},
 	[DataType.ParamPartyHint]: {
 		__: {
-			displayName: "Party Hint Parameter",
+			displayName: "Party Hint Parameters",
 			romfsPath: "data/param/data_param_partyhint.elf.zst",
 		},
 
@@ -673,6 +747,86 @@ Specifies the type of the item. Possible values:
 		field_0x3c: "int",
 		field_0x40: "string",
 		field_0x48: "string",
+	},
+	[DataType.ParamHouseDoor]: {
+		__: {
+			displayName: "House Door Parameters",
+			romfsPath: "data/param/data_param_housedoor.elf.zst",
+		},
+
+		id: "string",
+		field_0x08: "int",
+		field_0x0c: "int",
+		field_0x10: "int",
+		field_0x14: "int",
+		field_0x18: "int",
+		field_0x1c: "int",
+		field_0x20: "int",
+		field_0x24: "int",
+		field_0x28: "int",
+		field_0x2c: "float",
+		field_0x30: "int",
+		field_0x34: "int",
+		field_0x38: "int",
+		field_0x3c: "int",
+		field_0x40: "int",
+		field_0x44: "int",
+		field_0x48: "int",
+		field_0x4c: "int",
+		field_0x50: "int",
+		field_0x54: "int",
+		field_0x58: "int",
+		field_0x5c: "int",
+	},
+	[DataType.ParamJump]: {
+		__: {
+			displayName: "Jump Parameters",
+			romfsPath: "data/param/data_param_jump.elf.zst",
+		},
+
+		id: "string",
+		field_0x08: "float",
+		field_0x0c: "float",
+		field_0x10: "float",
+		field_0x14: "float",
+		field_0x18: "int",
+		field_0x1c: "float",
+		field_0x20: "float",
+		field_0x24: "float",
+		field_0x28: "float",
+		field_0x2c: "float",
+		field_0x30: "float",
+		field_0x34: "float",
+		field_0x38: "float",
+		field_0x3c: "int",
+		field_0x40: "int",
+		field_0x44: "int",
+	},
+	[DataType.ParamPlayer]: {
+		__: {
+			displayName: "Player Parameters",
+			romfsPath: "data/param/data_param_player.elf.zst",
+		},
+
+		id: "string",
+		playerState: "string",
+		playerType: "string",
+		boundingBox: "Vector3",
+		field_0x24: "float",
+		field_0x28: "float",
+		field_0x2c: "float",
+		field_0x30: "float",
+		field_0x34: "float",
+		field_0x38: "float",
+		field_0x3c: "int",
+		field_0x40: "float",
+		field_0x44: "float",
+		field_0x48: "float",
+		field_0x4c: "float",
+		field_0x50: "int",
+		field_0x54: "int",
+		field_0x58: "int",
+		field_0x5c: "int",
 	},
 	[DataType.ParamGobj]: {
 		__: {
@@ -702,7 +856,7 @@ Specifies the type of the item. Possible values:
 
 		id: "string",
 		field_0x08: "string",
-		field_0x10: "string",
+		field_0x10: "long",
 		field_0x18: "string",
 		field_0x20: "string",
 		field_0x28: "int",
@@ -811,6 +965,16 @@ Specifies the type of the item. Possible values:
 		menuCategory: "string",
 		field_0x44: "int",
 		field_0x48: "int",
+	},
+	[DataType.EventFlag]: {
+		__: {
+			displayName: "Event Flags",
+			romfsPath: "data/event/EventFlg.elf.zst",
+
+			countSymbol: "wld::fld::data::kNum",
+		},
+
+		id: "string",
 	},
 	[DataType.Parameter]: {
 		__: {
@@ -1163,7 +1327,113 @@ Specifies the type of the item. Possible values:
 			parent: DataType.BattleWeaponAcMarioAc,
 			displayName: "Party Action Commands",
 			romfsPath: "data/battle/weapon/data_battle_weaponac_party_ac.elf.zst",
+			defaultPadding: 1,
 		},
+	},
+	[DataType.BattleAudienceKind]: {
+		__: {
+			displayName: "Battle Audience Parameters",
+			romfsPath: "data/battle/weapon/data_battle_audiencekind.elf.zst",
+			defaultPadding: 1,
+		},
+
+		"id": "string",
+		"field_0x08": "long",
+		"characterPath": "string",
+		"sizeX": "float",
+		"sizeY": "float",
+		"starPowerMultiplier": "float",
+		"field_0x24": "int",
+		"throwItem1": "string",
+		"weight1": "int",
+		"field_0x34": "int",
+		"throwItem2": "string",
+		"weight2": "int",
+		"field_0x44": "int",
+		"throwItem3": "string",
+		"weight3": "int",
+		"field_0x54": "int",
+		"throwItem4": "string",
+		"weight4": "int",
+		"field_0x64": "int",
+		"throwItem5": "string",
+		"weight5": "int",
+		"field_0x74": "int",
+		"throwItem6": "string",
+		"weight6": "int",
+		"field_0x84": "int",
+		"throwItem7": "string",
+		"weight7": "int",
+		"field_0x94": "int",
+		"throwItem8": "string",
+		"weight8": "int",
+		"field_0xa4": "int",
+		"throwItem9": "string",
+		"weight9": "int",
+		"field_0xb4": "int",
+		"throwItem10": "string",
+		"weight10": "int",
+		"field_0xc4": "int",
+		"throwItem11": "string",
+		"weight11": "int",
+		"field_0xd4": "int",
+		"throwItem12": "string",
+		"weight12": "int",
+		"field_0xe4": "int",
+		"throwItem13": "string",
+		"weight13": "int",
+		"field_0xf4": "int",
+		"throwItem14": "string",
+		"weight14": "int",
+		"field_0x104": "int",
+		"throwItem15": "string",
+		"weight15": "int",
+		"field_0x114": "int",
+		"throwItem16": "string",
+		"weight16": "int",
+		"field_0x124": "int",
+		"throwItem17": "string",
+		"weight17": "int",
+		"field_0x134": "int",
+		"throwItem18": "string",
+		"weight18": "int",
+		"field_0x144": "int",
+		"throwItem19": "string",
+		"weight19": "int",
+		"field_0x154": "int",
+		"waitFrontAnim": "string",
+		"waitBackAnim": "string",
+		"jumpFrontAnim": "string",
+		"jumpBackAnim": "string",
+		"raiseBackAnim": "string",
+		"itemOnBackAnim": "string",
+		"itemThrowBackAnim": "string",
+		"runFrontAnim": "string",
+		"tumbleFrontAnim": "string",
+		"damageFrontAnim": "string",
+		"sleepFrontAnim": "string",
+		"sleepBackAnim": "string",
+		"confuseFrontAnim": "string",
+		"confuseBackAnim": "string",
+		"eventAnim1": "string",
+		"eventAnim2": "string",
+		"eventAnim3": "string",
+		"eventAnim4": "string",
+		"eventAnim5": "string",
+		"waitBackAnim2": "string",
+		"inSfx": "string",
+		"outSfx": "string",
+		"cheerSfx": "string",
+		"greatCheerSfx": "string",
+		"bingoInSfx": "string",
+		"bingoOutSfx": "string",
+		"hitOutSfx": "string",
+		"booingSfx": "string",
+		"noisySfx": "string",
+		"surpriseSfx": "string",
+		"damagedSfx": "string",
+		"feverSfx": "string",
+		"specialSfx": "string",
 	},
 	[DataType.HeartParam]: {
 		__: {

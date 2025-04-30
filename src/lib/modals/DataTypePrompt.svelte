@@ -26,13 +26,21 @@
   "data_MapLink": DataType.Maplink,
   "MapParam": DataType.MapParam,
   "MapId": DataType.MapId,
+  "EventFlg": DataType.EventFlag,
+  "data_map_itemlottable": DataType.MapItemLotTable,
   "data_ItemList": DataType.ItemList,
   "data_character_npc": DataType.CharacterNpc,
   "data_character_mobj": DataType.CharacterMobj,
   "data_character_party": DataType.CharacterParty,
   "data_character_item": DataType.CharacterItem,
   "data_character_aobj": DataType.CharacterAobj,
+  "data_param_actionballoon": DataType.ParamActionBalloon,
+  "data_param_fade": DataType.ParamFade,
+  "data_param_field": DataType.ParamField,
+  "data_param_housedoor": DataType.ParamHouseDoor,
+  "data_param_jump": DataType.ParamJump,
   "data_param_partyhint": DataType.ParamPartyHint,
+  "data_param_player": DataType.ParamPlayer,
   "data_param_gobj": DataType.ParamGobj,
   "data_param_gobj_item": DataType.ParamGobjItem,
   "DataMinigame_Paper_Aiper": DataType.DataMinigamePaperAiper,
@@ -51,6 +59,7 @@
   "data_battle_weapon_item": DataType.BattleWeaponItem,
   "data_battle_weaponac_mario_ac": DataType.BattleWeaponAcMarioAc,
   "data_battle_weaponac_party_ac": DataType.BattleWeaponAcPartyAc,
+  "data_battle_audiencekind": DataType.BattleAudienceKind,
   }
 
   onMount(() => {
@@ -106,12 +115,20 @@
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
 		<option value="CharacterAobj">Aobj Registry (data_character_aobj)</option>
-		
-		<option value="MapId">Map Registry (MapId)</option>
+
+    <option value="EventFlag">Event Flags (EventFlg)</option>
+    <option value="MapItemLotTable">Map Item Lot Table (data_map_itemlottable)</option>
+    <option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 
-		<option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
-		<option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
+    <option value="ParamActionBalloon">Action Balloon Parameters (data_param_actionballoon)</option>
+    <option value="ParamFade">Screen Transitions (data_param_fade)</option>
+    <option value="ParamField">Field Parameters (data_param_field)</option>
+    <option value="ParamHouseDoor">House Door Parameters (data_param_housedoor)</option>
+    <option value="ParamJump">Jump Parameters (data_param_jump)</option>
+    <option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
+    <option value="ParamPlayer">Player Parameters (data_param_player)</option>
+    <option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
 		<option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item)</option>
 		<option value="DataMinigamePaperAiper">Paper Minigame Aiper Parameters (DataMinigame_Paper_Aiper)</option>
 		<option value="DataMinigamePaperFan">Paper Minigame Fan Parameters (DataMinigame_Paper_Fan)</option>
@@ -131,6 +148,8 @@
     <option value="BattleWeaponItem">Item Attacks (BattleWeaponItem)</option>
     <option value="BattleWeaponAcMarioAc">Player Action Commands (BattleWeaponAcMarioAc)</option>
     <option value="BattleWeaponAcPartyAc">Party Action Commands (BattleWeaponAcPartyAc)</option>
+
+    <option value="BattleAudienceKind">Battle Audience Parameters (BattleAudienceKind)</option>
 
   </select>
 	
