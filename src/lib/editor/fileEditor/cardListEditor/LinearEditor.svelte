@@ -176,8 +176,16 @@
 				<ObjectEditor title="Maplink Header" bind:obj={binary.data.main[0]} 
 					dataType={DataType.MaplinkHeader} showButtons={false} binary={binary} />
 			</div>
-		{/if}
-	</div>
+    {/if}
+    
+    {#if dataType === DataType.SndBattle}
+      <div class="sndBattleHeader">
+        <ObjectEditor title="SndBattle Header" bind:obj={binary.data.main[0]}
+					dataType={DataType.SndBattleHeader} showButtons={false} binary={binary} />
+      </div>
+    {/if}
+
+    </div>
 	
 </div>
 {/if}

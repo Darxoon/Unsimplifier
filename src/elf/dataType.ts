@@ -24,6 +24,8 @@ export enum DataType {
 	MapItemLotTable,
 	EventFlag,
 
+	SndBattle,
+
 	//parameters
 	ParamActionBalloon,
 	ParamFade,
@@ -59,8 +61,9 @@ export enum DataType {
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,
 	ListItem,
-	
 	HeartItem,
 	
 	MaplinkHeader,
+
+	SndBattleHeader,
 }

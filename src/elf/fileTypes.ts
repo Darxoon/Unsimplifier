@@ -116,7 +116,6 @@ interface DataTypeMetadata {
 	// childField
 	// childFieldLabel
 }
-
 const typedefs = {
 	[DataType.Npc]: {
 		__: {
@@ -685,6 +684,36 @@ Specifies the type of the item. Possible values:
 			displayName: "Aobj Definition",
 			romfsPath: "data/character/data_character_item.elf.zst",
 		},
+	},
+	[DataType.SndBattle]: {
+		__: {
+			displayName: "Battle BGM List",
+			dataDivision: "tracks",
+		},
+
+		id: "string",
+		field_0x08: "int",
+		field_0x0c: "int",
+		bgmIntro: "string",
+		bgmIntroMario: "string",
+		bgmIntroEnemy: "string",
+		bgmMain: "string",
+		bgmThink: "string",
+		bgmWin: "string",
+		bgmWin2: "string",
+		field_0x48: "string",
+		field_0x50: "string",
+		field_0x58: "string",
+		field_0x60: "string",
+	},
+	[DataType.SndBattleHeader]: {
+		__: {
+			displayName: "Battle BGM Header",
+		},
+
+		battletracks: new Property("symbol", undefined, { hidden: true }),
+		trackAmount: new Property("int", undefined, { hidden: true }),
+		field_0xc: "int",
 	},
 	[DataType.ParamActionBalloon]: {
 		__: {

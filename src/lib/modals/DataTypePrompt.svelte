@@ -34,6 +34,7 @@
   "data_character_party": DataType.CharacterParty,
   "data_character_item": DataType.CharacterItem,
   "data_character_aobj": DataType.CharacterAobj,
+  "data_sndBattle": DataType.SndBattle,
   "data_param_actionballoon": DataType.ParamActionBalloon,
   "data_param_fade": DataType.ParamFade,
   "data_param_field": DataType.ParamField,
@@ -115,6 +116,8 @@
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
 		<option value="CharacterAobj">Aobj Registry (data_character_aobj)</option>
+
+    <option value="SndBattle">Battle BGM Registry (data_sndBattle)</option>
 
     <option value="EventFlag">Event Flags (EventFlg)</option>
     <option value="MapItemLotTable">Map Item Lot Table (data_map_itemlottable)</option>

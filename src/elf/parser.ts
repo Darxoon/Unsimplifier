@@ -117,7 +117,16 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	// as an array of structs. However, for some file formats (like maplink and data_npc_model),
 	// there are multiple file formats
 	
-	let data: {[division in DataDivision]?: any[]}
+	let data: { [division in DataDivision]?: any[] }
+
+	// Parses the .rodata section from a data_x_model file, since these are always the same and can be reused
+	interface RawModelInstance {
+		id: string
+		assetGroups: Pointer
+		assetGroupCount: number
+		states: Pointer
+		stateCount: number
+	}
 	
 	function findSection(sectionName: string): Section {
 		return sections.find(section => section.name == sectionName)
@@ -229,7 +238,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 			break
 		}
-		
+
 		case DataType.Maplink: {
 			const dataSection = findSection('.data')
 			const dataStringSection = findSection('.rodata.str1.1')
@@ -257,6 +266,35 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 			break
 		}
+
+		case DataType.SndBattle: {
+			const dataSection = findSection('.data')
+			const dataStringSection = findSection('.rodata.str1.1')
+
+			data = {}
+
+			let headerRelocs = peekable(allRelocations.get(".data"))
+
+			let headerSymbol = findSymbol("snd::data::s_battleDataList")
+			let header = parseSymbol(dataSection, dataStringSection, headerSymbol, DataType.SndBattleHeader, { count: 1, relocations: headerRelocs })
+			data.main = header
+
+			// maplink nodes
+			let { battletracks: symbolName, trackAmount } = header[0]
+			let sndbattleSymbol = findSymbol(symbolName)
+			let battletracks = parseSymbol(dataSection, dataStringSection, sndbattleSymbol, DataType.SndBattle, { count: trackAmount })
+
+			let trackObj = {
+				symbolName,
+				children: battletracks,
+			}
+
+			data.tracks = battletracks
+			header[0].battletracks = trackObj
+
+			break
+		}
+
 		
 		// parse .data section by data type
 		default: {

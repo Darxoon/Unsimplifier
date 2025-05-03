@@ -74,140 +74,185 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	
 	{
 		let dataWriter = new BinaryWriter()
-		
+
 		let dataStringRelocations = new Map() as Map<Offset, string>
 		stringRelocations.set(".data", dataStringRelocations)
-		
+
 		switch (dataType) {
 			case DataType.ItemList: {
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
 				const dataSymbolAddrs = new Map()
 				symbolAddrRelocations.set('.data', dataSymbolAddrs)
-				
+
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
 					symbolRelocations: dataSymbols,
 					symbolAddrRelocations: dataSymbolAddrs,
 				}
-				
+
 				for (const itemTable of binary.data.main as Instance<typeof dataType>[]) {
 					allStrings.add(itemTable.id)
-					
-					const items = itemTable.items as { children: Instance<typeof dataType>[], symbolName: string}
+
+					const items = itemTable.items as { children: Instance<typeof dataType>[], symbolName: string }
 					const { children, symbolName } = items
-					
+
 					// no symbol name as the names are unpredictable here (.compoundliteral.<???>)
 					// also ItemList does not store its item count
 					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ListItem].size)
-					
+
 					serializeObjects(data, dataType, children, { padding: 1 })
 				}
-				
+
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
 				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
 				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 				break
 			}
-			
+
 			case DataType.HeartParam: {
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
 				const dataSymbolAddrs = new Map()
 				symbolAddrRelocations.set('.data', dataSymbolAddrs)
-				
+
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
 					symbolRelocations: dataSymbols,
 					symbolAddrRelocations: dataSymbolAddrs,
 				}
-				
+
 				for (const itemTable of binary.data.main as Instance<typeof dataType>[]) {
 					allStrings.add(itemTable.id)
-					
-					const items = itemTable.items as { children: Instance<typeof dataType>[], symbolName: string}
+
+					const items = itemTable.items as { children: Instance<typeof dataType>[], symbolName: string }
 					const { children, symbolName } = items
-					
+
 					// no symbol name as the names are unpredictable here (.compoundliteral.<???>)
 					// also ItemList does not store its item count
+					symbolNameOverrides.set(symbolName, `wld::fld::data::maplink::${header.stage}_nodes`)
 					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ListItem].size)
-					
+
 					serializeObjects(data, dataType, children, { padding: 1 })
 				}
-				
+
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
 				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
 				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 				break
 			}
-			
+
 			case DataType.Maplink: {
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
-				
+
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
 					symbolRelocations: dataSymbols,
 				}
-				
+
 				const header = binary.data.main[0] as Instance<DataType.MaplinkHeader>
-				
+
 				// serialize maplinks
-				const maplinks = header.maplinks as { children: Instance<typeof dataType>[], symbolName: string}
+				const maplinks = header.maplinks as { children: Instance<typeof dataType>[], symbolName: string }
 				const { children, symbolName } = maplinks
-				
-				symbolNameOverrides.set(symbolName, `wld::fld::data::maplink::${header.stage}_nodes`)
+
+				let newSymbolName = `wld::fld::data::maplink::${header.stage}_nodes`
+
+				symbolNameOverrides.set(symbolName, newSymbolName)
 				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 				symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.Maplink].size)
-				serializeObjects(data, dataType, children, { padding: 1 })
-				
+
+				maplinks.symbolName = newSymbolName
+				header.linkAmount = children.length
+
+				serializeObjects(data, dataType, children, { symbolWrapper: maplinks, padding: 1 })
+
 				// serialize header
 				symbolLocationReference.set("wld::fld::data::maplink::s_mapLink", new Pointer(dataWriter.size))
+				symbolSizeOverrides.set("wld::fld::data::maplink::s_mapLink", binary.data.main.length * FILE_TYPES[DataType.MaplinkHeader].size)
 				serializeObjects(data, DataType.MaplinkHeader, binary.data.main)
-				
+
 				break
 			}
+
+			case DataType.SndBattle: {
+				const dataSymbols = new Map()
+				symbolRelocations.set('.data', dataSymbols)
+
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+					symbolRelocations: dataSymbols,
+				}
+
+				const header = binary.data.main[0] as Instance<DataType.SndBattleHeader>
+
+				// serialize battletracks
+				const battletracks = header.battletracks as { children: Instance<typeof dataType>[], symbolName: string }
+				const { children, symbolName } = battletracks
+
+				let newSymbolName = `snd::data::s_battleData`
+
+				symbolNameOverrides.set(symbolName, newSymbolName)
+				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.SndBattle].size)
+
+				battletracks.symbolName = newSymbolName
+				header.trackAmount = children.length
+
+				serializeObjects(data, dataType, children, { symbolWrapper: battletracks, padding: 1 })
+
+				// serialize header
+				symbolLocationReference.set("snd::data::s_battleDataList", new Pointer(dataWriter.size))
+				symbolSizeOverrides.set("snd::data::s_battleDataList", binary.data.main.length * FILE_TYPES[DataType.SndBattleHeader].size)
+				serializeObjects(data, DataType.SndBattleHeader, binary.data.main)
+
+				break
+			}
+
 
 			default: {
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
 				}
-				
+
 				let countSymbolName = FILE_TYPES[dataType].countSymbol
 				let padding = FILE_TYPES[dataType].defaultPadding
-				
+
 				serializeObjects(data, dataType, binary.data.main, { padding })
-				
+
 				if (countSymbolName != null) {
 					symbolLocationReference.set(countSymbolName, new Pointer(dataWriter.size))
 					dataWriter.writeInt32(binary.data.main.length)
 				}
-				
+
 				break
 			}
 		}
-		
+
 		updatedSections.set('.data', dataWriter.toArrayBuffer())
-		
+
 		interface SerializeContext {
 			writer: BinaryWriter
 			stringRelocations: Map<number, string>
 			symbolRelocations?: Map<number, SymbolName>
 			symbolAddrRelocations?: Map<number, SymbolName>
 		}
-		
+
 		interface SerializeObjectsProperties {
 			padding?: number
 			paddingItem?: UuidTagged
 			addStrings?: boolean
+			symbolWrapper?: { symbolName: string, children?: any, item?: any }
 		}
-		
+
 		/**
 		 * Serializes an array of objects of a certain data type.
 		 * @param param0 The section to be serialized into (e.g. data, rodata). Contains the BinaryWriter, string relocations and object relocations
@@ -219,79 +264,79 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		function serializeObjects(sectionElements: SerializeContext, dataType: DataType, objects: object[], properties: SerializeObjectsProperties = {}) {
 			const { writer, stringRelocations, symbolRelocations, symbolAddrRelocations } = sectionElements
 			const { padding: paddingAmount = 0, paddingItem, addStrings = true } = properties
-			
+
 			if (paddingAmount > 0) {
 				let padding = Array.from({ length: paddingAmount }, paddingItem ? () => paddingItem : FILE_TYPES[dataType].instantiate)
 				objects = [...objects, ...padding]
 			}
-			
+
 			if (paddingAmount < 0) {
 				objects = objects.slice(0, objects.length + paddingAmount)
 			}
-			
+
 			for (const instance of objects) {
 				for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
 					let fieldValue = instance[fieldName]
-					
+
 					switch (fieldType) {
-						case "string": 
+						case "string":
 							if (addStrings)
 								allStrings.add(fieldValue)
-							
+
 							if (fieldValue != null)
 								stringRelocations.set(writer.size, fieldValue)
-							
+
 							writer.writeBigInt64(0n)
 							break
-						case "symbol": 
+						case "symbol":
 							if (fieldValue != null)
 								symbolRelocations.set(writer.size, fieldValue.symbolName)
-							
+
 							writer.writeBigInt64(0n)
 							break
 						case "symbolAddr":
 							if (fieldValue != null)
 								symbolAddrRelocations.set(writer.size, fieldValue.symbolName)
-							
+
 							writer.writeBigInt64(0n)
 							break
-						case "Vector3": 
+						case "Vector3":
 							writer.writeFloat32(fieldValue.x)
 							writer.writeFloat32(fieldValue.y)
 							writer.writeFloat32(fieldValue.z)
 							break
-						case "float": 
+						case "float":
 							writer.writeFloat32(fieldValue)
 							break
-						case "double": 
+						case "double":
 							writer.writeFloat64(fieldValue)
 							break
-						case "byte": 
+						case "byte":
 							writer.writeUint8(fieldValue)
 							break
-						case "bool8": 
+						case "bool8":
 							writer.writeUint8(fieldValue ? 1 : 0)
 							break
-						case "bool32": 
+						case "bool32":
 							writer.writeUint32(fieldValue ? 1 : 0)
 							break
-						case "short": 
+						case "short":
 							writer.writeInt16(fieldValue)
 							break
-						case "int": 
+						case "int":
 							writer.writeInt32(fieldValue)
 							break
-						case "long": 
+						case "long":
 							writer.writeBigInt64(BigInt(fieldValue))
 							break
-							
+
 						default:
 							throw new Error(`Unknown data type ${fieldType}`)
 					}
 				}
 			}
 		}
-		
+
 		function serializeStringsOnly(dataType: DataType, objects: object[]) {
 			for (const instance of objects) {
 				for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
@@ -300,9 +345,9 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					}
 				}
 			}
+
 		}
 	}
-	
 	// The .rodata section always contains the amount of items in .data as a 32-bit integer.
 	// In most of the file formats, this is it, the section is just 4 bytes in size.
 	// However, there are a few file formats that contain secondary data. This means that
