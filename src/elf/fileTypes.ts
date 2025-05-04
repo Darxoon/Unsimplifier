@@ -183,8 +183,7 @@ const typedefs = {
 		field_0x138: "int",
 		field_0x13c: "int",
 		talkFunction: new Property("string", "Function that runs when NPC is talked to."),
-		field_0x148: "int",
-		field_0x14c: "int",
+		actionFunction: new Property("string", "Function that runs when NPC is hit."),
 		field_0x150: "int",
 		field_0x154: "int",
 		field_0x158: "int",
@@ -825,7 +824,7 @@ Specifies the type of the item. Possible values:
 		field_0x28: "float",
 		field_0x2c: "float",
 		field_0x30: "float",
-		field_0x34: "float",
+		jumpHeight: "float",
 		field_0x38: "float",
 		field_0x3c: "int",
 		field_0x40: "int",
@@ -848,7 +847,7 @@ Specifies the type of the item. Possible values:
 		field_0x34: "float",
 		field_0x38: "float",
 		field_0x3c: "int",
-		field_0x40: "float",
+		runSpeed: "float",
 		field_0x44: "float",
 		field_0x48: "float",
 		field_0x4c: "float",
@@ -1109,6 +1108,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Player Attacks",
 			romfsPath: "data/battle/weapon/data_battle_weapon_mario.elf.zst",
+			defaultPadding: 1,
 
 		},
 
@@ -1470,16 +1470,16 @@ Specifies the type of the item. Possible values:
 			romfsPath: "data/battle/data_HeartParam.elf.zst",
 			
 			childTypes: {
-				items: DataType.HeartItem,
+				drops: DataType.HeartItem,
 			},
 		},
 
 		id: "string",
-		items: new Property("symbolAddr", undefined, { tabName: "ItemTable {id}" }),
+		drops: new Property("symbolAddr", undefined, { tabName: "Drop Table {id}" }),
 	},
 	[DataType.HeartItem]: {
 		__: {
-			displayName: "Item",
+			displayName: "Battle Drops",
 			identifyingField: "type",
 			dataDivision: null,
 		},

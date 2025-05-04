@@ -173,7 +173,9 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let tableRelocs = peekable(allRelocations.get(".data"))
 			
 			let mainSymbol = findSymbol("wld::btl::data::s_Data")
-			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count: -1, relocations: tableRelocs })
+			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, DataType.ItemList, { count: -1, relocations: tableRelocs })
+
+			debugger
 			
 			for (const table of itemTables) {
 				const { items: symbolName } = table
@@ -214,10 +216,12 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let tableRelocs = peekable(allRelocations.get(".data"))
 
 			let mainSymbol = findSymbol("wld::btl::data::s_Data")
-			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, dataType, { count: -1, relocations: tableRelocs })
+			let dropTables = parseSymbol(dataSection, stringSection, mainSymbol, DataType.HeartParam, { count: -1, relocations: tableRelocs })
 
-			for (const table of itemTables) {
-				const { items: symbolName } = table
+			debugger
+
+			for (const table of dropTables) {
+				const { drops: symbolName } = table
 
 				if (symbolName == undefined)
 					continue
@@ -225,16 +229,16 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				let symbol = findSymbol(symbolName)
 				let children = parseSymbol(dataSection, stringSection, symbol, DataType.HeartItem, { count: -1 })
 
-				let items = {
+				let drops = {
 					symbolName,
 					children,
 				}
 
-				table.items = items
+				table.drops = drops
 			}
 
 			data = {}
-			data.main = itemTables
+			data.main = dropTables
 
 			break
 		}

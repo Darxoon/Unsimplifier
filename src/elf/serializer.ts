@@ -103,11 +103,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ListItem].size)
 
-					serializeObjects(data, dataType, children, { padding: 1 })
+					serializeObjects(data, DataType.ListItem, children, { padding: 1 })
 				}
 
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
-				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
+				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[DataType.ItemList].size)
 				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 				break
 			}
@@ -125,23 +125,22 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolAddrRelocations: dataSymbolAddrs,
 				}
 
-				for (const itemTable of binary.data.main as Instance<typeof dataType>[]) {
-					allStrings.add(itemTable.id)
+				for (const dropTable of binary.data.main as Instance<typeof dataType>[]) {
+					allStrings.add(dropTable.id)
 
-					const items = itemTable.items as { children: Instance<typeof dataType>[], symbolName: string }
-					const { children, symbolName } = items
+					const drops = dropTable.drops as { children: Instance<typeof dataType>[], symbolName: string }
+					const { children, symbolName } = drops
 
 					// no symbol name as the names are unpredictable here (.compoundliteral.<???>)
 					// also ItemList does not store its item count
-					symbolNameOverrides.set(symbolName, `wld::fld::data::maplink::${header.stage}_nodes`)
 					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
-					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ListItem].size)
+					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.HeartItem].size)
 
 					serializeObjects(data, dataType, children, { padding: 1 })
 				}
 
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))
-				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[dataType].size)
+				symbolSizeOverrides.set("wld::btl::data::s_Data", (binary.data.main.length + 1) * FILE_TYPES[DataType.HeartParam].size)
 				serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 				break
 			}
