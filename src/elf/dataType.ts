@@ -58,10 +58,27 @@ export enum DataType {
 
 	BattleAudienceKind,
 
+	// data_model.elf
+	DataBattleModel,
+	DataGobjModel,
+	DataItemModel,
+	DataMobjModel,
+	DataNpcModel,
+	DataPlayerModel,
+
+
+
 	// this is the end of the actual file types and start of sub types
 	TypeAmount,
 	ListItem,
 	HeartItem,
+
+	ModelAssetGroup,
+	ModelState,
+	ModelFaceGroup,
+	ModelFace,
+	ModelAnimation,
+
 	
 	MaplinkHeader,
 

@@ -34,6 +34,12 @@
   "data_character_party": DataType.CharacterParty,
   "data_character_item": DataType.CharacterItem,
   "data_character_aobj": DataType.CharacterAobj,
+  "data_model_npc": DataType.DataNpcModel,
+  "data_model_player": DataType.DataPlayerModel,
+  "data_model_item": DataType.DataItemModel,
+  "data_model_mobj": DataType.DataMobjModel,
+  "data_model_gobj": DataType.DataGobjModel,
+  "data_model_battle": DataType.DataBattleModel,
   "data_sndBattle": DataType.SndBattle,
   "data_param_actionballoon": DataType.ParamActionBalloon,
   "data_param_fade": DataType.ParamFade,
@@ -116,6 +122,12 @@
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
 		<option value="CharacterAobj">Aobj Registry (data_character_aobj)</option>
+    <option value="DataNpcModel">NPC Models (data_model_npc)</option>
+    <option value="DataPlayerModel">Player Models (data_model_player)</option>
+    <option value="DataItemModel">Item Models (data_model_item)</option>
+    <option value="DataMobjModel">Mobj Models (data_model_mobj)</option>
+    <option value="DataGobjModel">Gobj Models (data_model_gobj)</option>
+    <option value="DataBattleModel">Battle Models (data_model_battle)</option>
 
     <option value="SndBattle">Battle BGM Registry (data_sndBattle)</option>
 

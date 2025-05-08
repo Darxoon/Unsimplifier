@@ -109,6 +109,7 @@ interface DataTypeMetadata {
 	
 	defaultPadding?: number
 	countSymbol?: string
+	mainSymbol?: string
 	
 	childTypes?: Typedef<DataType>,
 	
@@ -648,10 +649,10 @@ Specifies the type of the item. Possible values:
 * 19 - ?
 `),
 		field_0x14: "int",
-		field_0x18: "string",
-		field_0x20: "string",
+		modelId: "string",
+		iconId: "string",
 		field_0x28: "string",
-		field_0x30: "string",
+		descriptionText: "string",
 		field_0x38: "string",
 		field_0x40: "short",
 		field_0x42: "short",
@@ -900,7 +901,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Paper Minigame Aiper Parameters",
 			romfsPath: "data/minigame/paper/DataMinigame_Paper_Aiper.elf.zst",
-			
+
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
 		},
@@ -915,7 +916,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Paper Minigame Fan Parameters",
 			romfsPath: "data/minigame/paper/DataMinigame_Paper_Fan.elf.zst",
-			
+
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
 		},
@@ -930,7 +931,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Paper Minigame Runner Parameters",
 			romfsPath: "data/minigame/paper/DataMinigame_Paper_Runner.elf.zst",
-			
+
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
 		},
@@ -947,7 +948,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Paper Minigame Runner Parameters",
 			romfsPath: "data/minigame/paper/DataMinigame_Paper_Runnerai.elf.zst",
-			
+
 			countSymbol: "data::minigame::paper::kNum",
 			defaultPadding: 1,
 		},
@@ -976,7 +977,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Tattle Log",
 			romfsPath: "data/battle/data_Monosiri.elf.zst",
-			
+
 			countSymbol: "wld::btl::data::s_DataNum",
 		},
 
@@ -1008,7 +1009,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Battle Parameter",
 			romfsPath: "data/battle/data_Parameter.elf.zst",
-			
+
 			countSymbol: "wld::btl::data::s_DataNum",
 			defaultPadding: 1,
 		},
@@ -1022,7 +1023,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Falling Stage Object",
 			romfsPath: "data/battle/data_FallObj.elf.zst",
-			
+
 			defaultPadding: 1,
 		},
 
@@ -1086,7 +1087,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Stage Spray Nozzle",
 			romfsPath: "data/battle/data_Nozzle.elf.zst",
-			
+
 			defaultPadding: 1,
 		},
 
@@ -1468,7 +1469,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Heart-Flower Drop Param",
 			romfsPath: "data/battle/data_HeartParam.elf.zst",
-			
+
 			childTypes: {
 				drops: DataType.HeartItem,
 			},
@@ -1506,23 +1507,23 @@ Specifies the type of the item. Possible values:
 			displayName: "Maplink",
 			dataDivision: "links",
 		},
-		
+
 		stage: "string",
 		id: "string",
 		destinationStage: "string",
 		destinationId: "string",
 		field_0x20: "int",
 		field_0x24: "int",
-		field_0x28: "string",
-		field_0x30: "string",
-		field_0x38: "string",
+		targetActor: "string",
+		transitionType: "string",
+		objectId: "string",
 		field_0x40: "float",
 		field_0x44: "int",
 		field_0x48: "int",
 		field_0x4c: "int",
 		field_0x50: "int",
 		field_0x54: "int",
-		field_0x58: "string",
+		fadeType: "string",
 		field_0x60: "int",
 		field_0x64: "int",
 		field_0x68: "int",
@@ -1551,7 +1552,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Maplink Header",
 		},
-		
+
 		stage: "string",
 		linkAmount: new Property("int", undefined, { hidden: true }),
 		field_0xc: "int",
@@ -1562,6 +1563,126 @@ Specifies the type of the item. Possible values:
 		field_0x24: "int",
 		field_0x28: "int",
 		field_0x2c: "int",
+	},
+	[DataType.DataNpcModel]: {
+		__: {
+			displayName: "NPC Models",
+			mainSymbol: "wld::fld::data::s_modelNpc",
+			countSymbol: "wld::fld::data::modelNpc_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+            },
+		},
+
+		id: "string",
+		field_0x8: new Property("Vector3", "Usage unknown, but one guess would be scale? Please verify."),
+		field_0x14: "short",
+		field_0x16: "short",
+		field_0x18: "short",
+		field_0x1A: "short",
+		field_0x1c: "int",
+		field_0x20: "int",
+		field_0x24: "int",
+		field_0x28: "int",
+		field_0x2c: "int",
+		field_0x30: "int",
+		field_0x34: "int",
+		field_0x38: "float",
+		field_0x3c: "float",
+		field_0x40: "float",
+		field_0x44: "int",
+		field_0x48: "int",
+		field_0x4c: "int",
+		field_0x50: "int",
+		field_0x54: "float",
+		field_0x58: "float",
+		field_0x5c: "float",
+		field_0x60: "float",
+		field_0x64: "float",
+		field_0x68: "int",
+		field_0x6c: "float",
+		field_0x70: "float",
+		field_0x74: "float",
+		assetGroup: new Property("string", undefined, {
+			tabName: "Asset Groups for {type} {id}"
+		}),
+		assetGroupCount: new Property("int", undefined, { hidden: true }),
+		field_0x84: "int",
+		states: new Property("string", undefined, {
+			tabName: "States for {type} {id}",
+		}),
+		stateCount: new Property("int", undefined, { hidden: true }),
+		field_0x94: "int",
+	},
+	[DataType.ModelAssetGroup]: {
+		__: {
+			displayName: "Asset Group",
+			importantField: "fileName",
+			nestedAllValues: true,
+			objectType: dataDivisions.assetGroup,
+		},
+
+		modelFolder: "string",
+		fileName: "string",
+		field_0x10: "int",
+		field_0x14: "int",
+		field_0x18: "int",
+		field_0x1c: "int",
+	},
+	[DataType.DataPlayerModel]: {
+		__: {
+			parent: DataType.DataNpcModel,
+			mainSymbol: "wld::fld::data::s_modelPlayer",
+			countSymbol: "wld::fld::data::modelPlayer_num",
+			displayName: "Player Models",
+			romfsPath: "data/model/data_model_player.elf.zst",
+		},
+	},
+	[DataType.DataItemModel]: {
+		__: {
+			parent: DataType.DataNpcModel,
+			mainSymbol: "wld::fld::data::s_modelItem",
+			countSymbol: "wld::fld::data::modelItem_num",
+			displayName: "Item Models",
+			romfsPath: "data/model/data_model_item.elf.zst",
+		},
+	},
+	[DataType.DataMobjModel]: {
+		__: {
+			parent: DataType.DataNpcModel,
+			mainSymbol: "wld::fld::data::s_modelMobj",
+			countSymbol: "wld::fld::data::modelMobj_num",
+			displayName: "Mobj Models",
+			romfsPath: "data/model/data_model_mobj.elf.zst",
+		},
+	},
+	[DataType.DataGobjModel]: {
+		__: {
+			parent: DataType.DataNpcModel,
+			mainSymbol: "wld::fld::data::s_modelGobj",
+			countSymbol: "wld::fld::data::modelGobj_num",
+			displayName: "Gobj Models",
+			romfsPath: "data/model/data_model_gobj.elf.zst",
+		},
+	},
+	[DataType.DataMobjModel]: {
+		__: {
+			parent: DataType.DataNpcModel,
+			mainSymbol: "wld::fld::data::s_modelMobj",
+			countSymbol: "wld::fld::data::modelMobj_num",
+			displayName: "Mobj Models",
+			romfsPath: "data/model/data_model_mobj.elf.zst",
+		},
+	},
+	[DataType.DataBattleModel]: {
+		__: {
+			parent: DataType.DataNpcModel,
+			mainSymbol: "wld::fld::data::s_modelBattle",
+			countSymbol: "wld::fld::data::modelBattle_num",
+			displayName: "Battle Models",
+			romfsPath: "data/model/data_model_battle.elf.zst",
+		},
 	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
@@ -1585,6 +1706,7 @@ interface FileTypeRegistry {
 	defaultPadding: number
 	textVars: {[key: string]: string}
 	countSymbol?: string
+	mainSymbol?: string
 	
 	// for future sub-types
 	childTypes?: Typedef<DataType>
@@ -1622,6 +1744,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		defaultPadding,
 		countSymbol,
 		textVars,
+		mainSymbol,
 	} = metadata
 	
 	let fields = new Map(Object.entries(typedef).flatMap(([fieldName, fieldType]) => {
@@ -1682,6 +1805,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		
 		defaultPadding: defaultPadding ?? 0,
 		countSymbol,
+		mainSymbol,
 		
 		childTypes: childTypes ?? {},
 		

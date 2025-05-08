@@ -299,6 +299,27 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 
+		case DataType.DataNpcModel:
+		case DataType.DataItemModel:
+		case DataType.DataGobjModel:
+		case DataType.DataMobjModel:
+		case DataType.DataPlayerModel:
+			{
+				const dataSection = findSection('.data')
+				const dataStringSection = findSection('.rodata.str1.1')
+
+
+				// object count in .data is stored somewhere in .rodata, at symbol wld::fld::data::modelNpc_num
+				// because of name mangling, this equals _ZN3wld3fld4dataL12modelNpc_numE
+				let mainSymbol = findSymbol(FILE_TYPES[dataType].mainSymbol)
+				let model = parseSymbol(dataSection, dataStringSection, mainSymbol, dataType, { count: -1})
+
+				data = {}
+				data.main = model
+
+				break
+			}
+
 		
 		// parse .data section by data type
 		default: {
