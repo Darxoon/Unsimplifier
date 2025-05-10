@@ -3,7 +3,7 @@ import { DataType } from "./dataType";
 import { FILE_TYPES, type Instance } from "./fileTypes";
 import { BinaryWriter } from "./misc";
 import { Relocation, Section, Symbol } from "./types";
-import { noUndefinedMap } from "./util";
+import { enumerate, noUndefinedMap } from "./util";
 import type { UuidTagged } from "./valueIdentifier";
 
 type SectionName = string
@@ -220,22 +220,40 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			case DataType.DataGobjModel:
 			case DataType.DataMobjModel:
 			case DataType.DataPlayerModel:
+			case DataType.DataBattleModel:
 				{
 					// ----------------  data  ----------------
 					const dataSymbols = new Map()
 					symbolRelocations.set('.data', dataSymbols)
+					const dataSymbolAddrs = new Map()
+					symbolAddrRelocations.set('.data', dataSymbolAddrs)
 
 					let data: SerializeContext = {
 						writer: dataWriter,
 						stringRelocations: dataStringRelocations,
 						symbolRelocations: dataSymbols,
+						symbolAddrRelocations: dataSymbolAddrs,
+					}
+					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
+
+					// ----------------  rodata  ----------------
+					let rodataStringRelocations = new Map()
+					stringRelocations.set('.rodata', rodataStringRelocations)
+
+					let rodataPointers = new Map()
+					symbolRelocations.set('.rodata', rodataPointers)
+
+					let rodata: SerializeContext = {
+						writer: new BinaryWriter(),
+						stringRelocations: rodataStringRelocations,
+						symbolAddrRelocations: rodataPointers,
 					}
 
-					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
+					let serializedRodata = serializeModelRodata(rodata, binary.data.main, binary.data.main.length, "wld::fld::data")
+					updatedSections.set('.rodata', serializedRodata)
 
 					break
 				}
-
 
 			default: {
 				let data: SerializeContext = {
@@ -366,6 +384,162 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				}
 			}
 
+		}
+
+		interface ModelInstance {
+			id: string
+			assetGroups: { symbolName: string, children: Instance<DataType.ModelAssetGroup>[] }
+			assetGroupCount: number
+			states: { symbolName: string, children: Instance<DataType.ModelState>[] }
+			stateCount: number
+		}
+
+		type RodataReference = [id: string, originalId: string, assetGroups: Instance<DataType.ModelAssetGroup>[], states: Instance<DataType.ModelState>[]]
+
+		function serializeModelRodata(rodata: SerializeContext, models: ModelInstance[], modelNumber: number, modelNamespace: string) {
+			const rodataWriter = rodata.writer
+
+			// .rodata section is structured like this:
+
+			// AssetGroup[]
+			// State[]
+			// ...
+			// modelNpc_num (amount of objects in .data)
+			// for each entry in .data:
+			//   substate[]
+			//   substate[]
+			//     face[]
+			//       anime[]
+			//     face[]
+			//       anime[]
+			//       anime[]
+			//       ...
+
+			// the strings in .rodata are serialized in this order:
+			// for each entry in .data
+			//     AssetGroup, State, all animes connected to this state...
+
+			// While it may seem unnnecessary to serialize the strings in exactly
+			// the same order they were in originally, it is important to me that
+			// the input file and unmodified output file are exactly equal, in order
+			// to prevent bugs that would go unnoticed
+
+			// step 1: Serialize Asset Groups, States and the strings from animes
+			for (const model of models) {
+				if (model.assetGroups == undefined || model.states == undefined)
+					continue
+
+				// asset groups
+				const { assetGroups } = model
+
+				let newAssetGroupSymbolName = `${modelNamespace}::^${model.id}_model_files`
+
+				symbolLocationReference.set(assetGroups.symbolName, new Pointer(rodataWriter.size))
+				symbolNameOverrides.set(assetGroups.symbolName, newAssetGroupSymbolName)
+				symbolSizeOverrides.set(assetGroups.symbolName, (assetGroups.children.length + 1) * FILE_TYPES[DataType.ModelAssetGroup].size)
+
+				model.assetGroups.symbolName = newAssetGroupSymbolName
+				model.assetGroupCount = assetGroups.children.length
+
+				serializeObjects(rodata, DataType.ModelAssetGroup, assetGroups.children, { symbolWrapper: model.assetGroups, padding: 1 })
+
+				// states
+				const { states } = model
+
+				let newStateSymbolName = `${modelNamespace}::^${model.id}_state`
+
+				symbolLocationReference.set(states.symbolName, new Pointer(rodataWriter.size))
+				symbolNameOverrides.set(states.symbolName, newStateSymbolName)
+				symbolSizeOverrides.set(states.symbolName, (states.children.length + 1) * FILE_TYPES[DataType.ModelState].size)
+
+				model.states.symbolName = newStateSymbolName
+				model.stateCount = states.children.length
+
+				serializeObjects(rodata, DataType.ModelState, states.children, { symbolWrapper: model.states, padding: 1 })
+
+				for (const state of states.children) {
+					const substates = state.substates as { children: Instance<DataType.ModelFaceGroup>[], symbolName: string }
+
+					for (const substate of substates.children) {
+						const faces = substate.faces as { children: Instance<DataType.ModelFace>[], symbolName: string }
+
+						for (const face of faces.children) {
+							const animations = face.animations as { children: Instance<DataType.ModelAnimation>[], symbolName: string }
+
+							serializeStringsOnly(DataType.ModelAnimation, animations.children)
+						}
+					}
+				}
+			}
+
+			// step 2: serialize modelNpc_num
+			symbolLocationReference.set(FILE_TYPES[dataType].countSymbol, new Pointer(rodataWriter.size))
+			rodataWriter.writeBigInt64(BigInt(modelNumber))
+
+			// step 3: serialize substates, faces and animes
+			for (const model of models) {
+				let animeCount = 0
+
+				for (const [state, i] of enumerate(model.states.children)) {
+					const substates = state.substates as { children: Instance<DataType.ModelFaceGroup>[], symbolName: string }
+					const { children, symbolName } = substates
+
+					let newSymbolName = `${modelNamespace}::^${model.id}_state${i}`
+
+					symbolLocationReference.set(symbolName, new Pointer(rodataWriter.size))
+					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ModelFaceGroup].size)
+					symbolNameOverrides.set(symbolName, newSymbolName)
+
+					substates.symbolName = newSymbolName
+					state.substateCount = children.length
+
+					serializeObjects(rodata, DataType.ModelFaceGroup, children, { symbolWrapper: substates, padding: 1 })
+				}
+
+				for (const [state, i] of enumerate(model.states.children)) {
+					const substates = state.substates as { children: Instance<DataType.ModelFaceGroup>[], symbolName: string }
+
+					for (const [substate, j] of enumerate(substates.children)) {
+						const faces = substate.faces as { children: Instance<DataType.ModelFace>[], symbolName: string }
+						const { children, symbolName } = faces
+
+						let newSymbolName = `${modelNamespace}::^${model.id}_state${i}_face${j}`
+
+						symbolLocationReference.set(symbolName, new Pointer(rodataWriter.size))
+						symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ModelFace].size)
+						symbolNameOverrides.set(symbolName, newSymbolName)
+
+						faces.symbolName = newSymbolName
+						substate.faceCount = children.length
+
+						serializeObjects(rodata, DataType.ModelFace, children, { symbolWrapper: faces, padding: 1 })
+					}
+
+					for (const substate of substates.children) {
+						const faces = substate.faces as { children: Instance<DataType.ModelFace>[], symbolName: string }
+
+						for (const face of faces.children) {
+							const animations = face.animations as { children: Instance<DataType.ModelAnimation>[], symbolName: string }
+							const { children, symbolName } = animations
+
+							let newSymbolName = `${modelNamespace}::^${model.id}_anime${animeCount}`
+
+							animeCount += 1
+
+							symbolLocationReference.set(symbolName, new Pointer(rodataWriter.size))
+							symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.ModelAnimation].size)
+							symbolNameOverrides.set(symbolName, newSymbolName)
+
+							animations.symbolName = newSymbolName
+							face.animationCount = children.length
+
+							serializeObjects(rodata, DataType.ModelAnimation, children, { symbolWrapper: animations, padding: 1 })
+						}
+					}
+				}
+			}
+
+			return rodataWriter.toArrayBuffer()
 		}
 	}
 	// The .rodata section always contains the amount of items in .data as a 32-bit integer.
