@@ -59,6 +59,7 @@ export enum DataType {
 	BattleAudienceKind,
 
 	// data_model.elf
+	ModelType,
 	DataBattleModel,
 	DataGobjModel,
 	DataItemModel,

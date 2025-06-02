@@ -225,15 +225,14 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					// ----------------  data  ----------------
 					const dataSymbols = new Map()
 					symbolRelocations.set('.data', dataSymbols)
-					const dataSymbolAddrs = new Map()
-					symbolAddrRelocations.set('.data', dataSymbolAddrs)
+
 
 					let data: SerializeContext = {
 						writer: dataWriter,
 						stringRelocations: dataStringRelocations,
 						symbolRelocations: dataSymbols,
-						symbolAddrRelocations: dataSymbolAddrs,
 					}
+
 					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 
 					// ----------------  rodata  ----------------
@@ -246,7 +245,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					let rodata: SerializeContext = {
 						writer: new BinaryWriter(),
 						stringRelocations: rodataStringRelocations,
-						symbolAddrRelocations: rodataPointers,
+						symbolRelocations: rodataPointers,
 					}
 
 					let serializedRodata = serializeModelRodata(rodata, binary.data.main, binary.data.main.length, "wld::fld::data")
@@ -384,6 +383,13 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				}
 			}
 
+		}
+		interface RawModelInstance {
+			id: string
+			assetGroups: Pointer
+			assetGroupCount: number
+			states: Pointer
+			stateCount: number
 		}
 
 		interface ModelInstance {

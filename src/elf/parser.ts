@@ -7,6 +7,7 @@ import { Relocation, Section, Symbol } from "./types";
 import { ValueUuid, VALUE_UUID, DATA_TYPE, type UuidTagged } from "./valueIdentifier";
 import { peekable, type Peekable } from "./util";
 
+
 export class EmptyFileError extends Error {
 	constructor(message: any) {
 		super(message)
@@ -318,8 +319,10 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				const dataStringSection = findSection('.rodata.str1.1')
 
 				let mainSymbol = findSymbol(FILE_TYPES[dataType].mainSymbol)
-				let modelTables = parseSymbol(dataSection, dataStringSection, mainSymbol, dataType, { count: -1, })
+				let modelTables = parseSymbol(dataSection, dataStringSection, mainSymbol, dataType, { count: -1 })
+				data = {}
 				function parseModelRodata(data: { [division in DataDivision]?: any[] }, models: RawModelInstance[]) {
+
 					//assetGroups
 					let allAssetGroups = []
 
@@ -327,7 +330,8 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 						const { assetGroups: symbolName, assetGroupCount } = model
 
 
-						if (symbolName == undefined) {
+						if (symbolName == undefined || symbolName == Pointer.NULL) {
+							model.assetGroups = null
 							continue
 						}
 						let assetRelocs = peekable(allRelocations.get(".rodata"))
@@ -353,16 +357,18 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					let allAnimations = []
 
 					for (const model of models) {
-						const { states: symbolName } = model
+						const { states: symbolName, stateCount } = model
 
 
-						if (symbolName == undefined) {
+						if (symbolName == undefined || symbolName == Pointer.NULL) {
+							model.states = null
 							continue
 						}
+
 						let stateRelocs = peekable(allRelocations.get(".rodata"))
 
 						let symbol = findSymbol(`wld::fld::data::^${model.id}_state`)
-						let states = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelState, { count: -1, relocations: stateRelocs })
+						let states = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelState, { count: stateCount, relocations: stateRelocs })
 
 						let stateObj = {
 							symbolName,
@@ -375,19 +381,16 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 						//faceGroups
 						for (const state of states) {
-							const { substates: symbolName } = state
+							const { substates: symbolName, substateCount } = state
 
 
-							if (symbolName == undefined || symbolName == Pointer.NULL) {
-								state.substates = null
-								continue
-							}
 							let faceGroupRelocs = peekable(allRelocations.get(".rodata"))
-							let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
-							let faceGroups = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFaceGroup, { count: -1, relocations: faceGroupRelocs })
+
+							let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_state${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
+							let faceGroups = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFaceGroup, { count: substateCount, relocations: faceGroupRelocs })
 
 							let faceGroupObj = {
-								symbolName,
+								symbol,
 								children: faceGroups,
 							}
 
@@ -397,7 +400,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 							//faces
 							for (const faceGroup of faceGroups) {
-								const { faces: symbolName } = faceGroup
+								const { faces: symbolName, faceCount } = faceGroup
 
 
 								if (symbolName == undefined || symbolName == Pointer.NULL) {
@@ -406,11 +409,11 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 								}
 								let faceRelocs = peekable(allRelocations.get(".rodata"))
 								let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
-								let faces = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFace, { count: -1, relocations: faceRelocs })
+								let faces = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFace, { count: faceCount, relocations: faceRelocs })
 
 								let faceObj = {
 									symbolName,
-									faces,
+									children: faces,
 								}
 								allFaces.push(faceObj);
 								faceGroup.faces = faceObj
@@ -418,7 +421,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 								//animations
 								for (const face of faces) {
-									const { animations: symbolName } = face
+									const { animations: symbolName, animationCount } = face
 
 
 									if (symbolName == undefined || symbolName == Pointer.NULL) {
@@ -427,11 +430,11 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 									}
 									let animRelocs = peekable(allRelocations.get(".rodata"))
 									let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
-									let animations = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAnimation, { count: -1, relocations: animRelocs })
+									let animations = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAnimation, { count: animationCount, relocations: animRelocs })
 
 									let animationObj = {
 										symbolName,
-										animations,
+										children: animations,
 									}
 									allAnimations.push(animationObj);
 									face.animations = animationObj
@@ -446,9 +449,9 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					data.face = allFaces
 					data.subState = allFaceGroups
 					data.state = allStates
+
 				}
 
-				data = {}
 				data.main = modelTables
 
 				parseModelRodata(data, data.main)

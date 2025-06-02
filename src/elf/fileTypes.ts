@@ -111,8 +111,10 @@ interface DataTypeMetadata {
 	countSymbol?: string
 	mainSymbol?: string
 	
-	childTypes?: Typedef<DataType>,
-	
+	childTypes?: Typedef<DataType>
+	childField?: string
+	nestedAllValues?: boolean
+	entryPoints?: { [objectType: number]: any }
 	// for future sub-types
 	// childField
 	// childFieldLabel
@@ -1358,14 +1360,12 @@ Specifies the type of the item. Possible values:
 			parent: DataType.BattleWeaponAcMarioAc,
 			displayName: "Party Action Commands",
 			romfsPath: "data/battle/weapon/data_battle_weaponac_party_ac.elf.zst",
-			defaultPadding: 1,
 		},
 	},
 	[DataType.BattleAudienceKind]: {
 		__: {
 			displayName: "Battle Audience Parameters",
 			romfsPath: "data/battle/weapon/data_battle_audiencekind.elf.zst",
-			defaultPadding: 1,
 		},
 
 		"id": "string",
@@ -1565,11 +1565,9 @@ Specifies the type of the item. Possible values:
 		field_0x28: "int",
 		field_0x2c: "int",
 	},
-	[DataType.DataNpcModel]: {
+	[DataType.ModelType]: {
 		__: {
-			displayName: "NPC Models",
-			mainSymbol: "wld::fld::data::s_modelNpc",
-			countSymbol: "wld::fld::data::modelNpc_num",
+			dataDivision: dataDivisions.main,
 			childTypes: {
 				assetGroups: DataType.ModelAssetGroup,
 				states: DataType.ModelState,
@@ -1625,8 +1623,7 @@ Specifies the type of the item. Possible values:
 
 		modelFolder: "string",
 		fileName: "string",
-		field_0x10: "int",
-		field_0x14: "int",
+		field_0x10: "string",
 		field_0x18: "int",
 		field_0x1c: "int",
 	},
@@ -1634,10 +1631,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "State",
 			identifyingField: "id",
-			childFieldLabel: "faceArrays",
-			childField: "substates",
-			nestedAllValues: true,
-			dataDivision: "state",
+			dataDivision: dataDivisions.state,
 			childTypes: {
 				substates: DataType.ModelFaceGroup,
 			},
@@ -1651,7 +1645,7 @@ Some commonly found translations:
 * ダメージ = damage
 * 変形 = deformation/variation
 `),
-		substates: new Property("symbolAddr", undefined, { hidden: true }),
+		substates: new Property("symbolAddr", undefined, { tabName: "SubStates for {type} {id}" }),
 		substateCount: new Property("int", undefined, { hidden: true }),
 		field_0x14: new Property("int", undefined, { hidden: true }),
 	},
@@ -1660,7 +1654,7 @@ Some commonly found translations:
 			displayName: "Face Array",
 			childField: "faces",
 			nestedAllValues: true,
-			dataDivision: "faceGroup",
+			dataDivision: dataDivisions.subState,
 			childTypes: {
 				faces: DataType.ModelFace,
 			},
@@ -1668,7 +1662,7 @@ Some commonly found translations:
 
 		field_0x0: "int",
 		field_0x4: "int",
-		faces: new Property("symbolAddr", undefined, { hidden: true }),
+		faces: new Property("symbolAddr", undefined, { tabName: "Faces for {type} {id}" }),
 		faceCount: new Property("int", undefined, { hidden: true }),
 		field_0x14: "int",
 	},
@@ -1678,7 +1672,7 @@ Some commonly found translations:
 			displayName: "Face",
 			childField: "animations",
 			nestedAllValues: true,
-			dataDivision: "face",
+			dataDivision: dataDivisions.face,
 			childTypes: {
 				animations: DataType.ModelAnimation,
 			},
@@ -1687,7 +1681,7 @@ Some commonly found translations:
 		field_0x0: "int",
 		field_0x4: "int",
 		// internally also called "anime"
-		animations: new Property("symbolAddr", undefined, { hidden: true }),
+		animations: new Property("symbolAddr", undefined, { tabName: "Animations for {type} {id}" }),
 		animationCount: new Property("int", undefined, { hidden: true }),
 		field_0x14: "int",
 	},
@@ -1696,272 +1690,65 @@ Some commonly found translations:
 		__: {
 			displayName: "Animation",
 			nestedAllValues: true,
-			dataDivision: "anime",
+			dataDivisions: dataDivisions.anime,
 		},
 
 		description: "string",
 		id: "string",
 	},
+	[DataType.DataNpcModel]: {
+		__: {
+			parent: DataType.ModelType,
+			displayName: "NPC Models",
+			mainSymbol: "wld::fld::data::s_modelNpc",
+			countSymbol: "wld::fld::data::modelNpc_num",
+			romfsPath: "data/model/data_model_npc.elf.zst",
+		},
+	},
 	[DataType.DataPlayerModel]: {
 		__: {
+			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelPlayer",
 			countSymbol: "wld::fld::data::modelPlayer_num",
 			displayName: "Player Models",
 			romfsPath: "data/model/data_model_player.elf.zst",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
 		},
-
-		id: "string",
-		field_0x8: new Property("Vector3", "Usage unknown, but one guess would be scale? Please verify."),
-		field_0x14: "short",
-		field_0x16: "short",
-		field_0x18: "short",
-		field_0x1A: "short",
-		field_0x1c: "int",
-		field_0x20: "int",
-		field_0x24: "int",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "float",
-		field_0x3c: "float",
-		field_0x40: "float",
-		field_0x44: "int",
-		field_0x48: "int",
-		field_0x4c: "int",
-		field_0x50: "int",
-		field_0x54: "float",
-		field_0x58: "float",
-		field_0x5c: "float",
-		field_0x60: "float",
-		field_0x64: "float",
-		field_0x68: "int",
-		field_0x6c: "float",
-		field_0x70: "float",
-		field_0x74: "float",
-		assetGroups: new Property("symbolAddr", undefined, {
-			tabName: "Model Table for {type} {id}"
-		}),
-		assetGroupCount: new Property("int", undefined, { hidden: true }),
-		field_0x84: "int",
-		states: new Property("symbolAddr", undefined, {
-			tabName: "States for {type} {id}",
-		}),
-		stateCount: new Property("int", undefined, { hidden: true }),
-		field_0x94: "int",
 	},
 	[DataType.DataItemModel]: {
 		__: {
+			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelItem",
 			countSymbol: "wld::fld::data::modelItem_num",
 			displayName: "Item Models",
 			romfsPath: "data/model/data_model_item.elf.zst",
-
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
 		},
-
-		id: "string",
-		field_0x8: new Property("Vector3", "Usage unknown, but one guess would be scale? Please verify."),
-		field_0x14: "short",
-		field_0x16: "short",
-		field_0x18: "short",
-		field_0x1A: "short",
-		field_0x1c: "int",
-		field_0x20: "int",
-		field_0x24: "int",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "float",
-		field_0x3c: "float",
-		field_0x40: "float",
-		field_0x44: "int",
-		field_0x48: "int",
-		field_0x4c: "int",
-		field_0x50: "int",
-		field_0x54: "float",
-		field_0x58: "float",
-		field_0x5c: "float",
-		field_0x60: "float",
-		field_0x64: "float",
-		field_0x68: "int",
-		field_0x6c: "float",
-		field_0x70: "float",
-		field_0x74: "float",
-		assetGroups: new Property("symbolAddr", undefined, {
-			tabName: "Model Table for {type} {id}"
-		}),
-		assetGroupCount: new Property("int", undefined, { hidden: true }),
-		field_0x84: "int",
-		states: new Property("symbolAddr", undefined, {
-			tabName: "States for {type} {id}",
-		}),
-		stateCount: new Property("int", undefined, { hidden: true }),
-		field_0x94: "int",
 	},
 	[DataType.DataMobjModel]: {
 		__: {
+			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelMobj",
 			countSymbol: "wld::fld::data::modelMobj_num",
 			displayName: "Mobj Models",
 			romfsPath: "data/model/data_model_mobj.elf.zst",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
 		},
-
-		id: "string",
-		field_0x8: new Property("Vector3", "Usage unknown, but one guess would be scale? Please verify."),
-		field_0x14: "short",
-		field_0x16: "short",
-		field_0x18: "short",
-		field_0x1A: "short",
-		field_0x1c: "int",
-		field_0x20: "int",
-		field_0x24: "int",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "float",
-		field_0x3c: "float",
-		field_0x40: "float",
-		field_0x44: "int",
-		field_0x48: "int",
-		field_0x4c: "int",
-		field_0x50: "int",
-		field_0x54: "float",
-		field_0x58: "float",
-		field_0x5c: "float",
-		field_0x60: "float",
-		field_0x64: "float",
-		field_0x68: "int",
-		field_0x6c: "float",
-		field_0x70: "float",
-		field_0x74: "float",
-		assetGroups: new Property("symbolAddr", undefined, {
-			tabName: "Model Table for {type} {id}"
-		}),
-		assetGroupCount: new Property("int", undefined, { hidden: true }),
-		field_0x84: "int",
-		states: new Property("symbolAddr", undefined, {
-			tabName: "States for {type} {id}",
-		}),
-		stateCount: new Property("int", undefined, { hidden: true }),
-		field_0x94: "int",
 	},
 	[DataType.DataGobjModel]: {
 		__: {
+			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelGobj",
 			countSymbol: "wld::fld::data::modelGobj_num",
 			displayName: "Gobj Models",
 			romfsPath: "data/model/data_model_gobj.elf.zst",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
 		},
-
-		id: "string",
-		field_0x8: new Property("Vector3", "Usage unknown, but one guess would be scale? Please verify."),
-		field_0x14: "short",
-		field_0x16: "short",
-		field_0x18: "short",
-		field_0x1A: "short",
-		field_0x1c: "int",
-		field_0x20: "int",
-		field_0x24: "int",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "float",
-		field_0x3c: "float",
-		field_0x40: "float",
-		field_0x44: "int",
-		field_0x48: "int",
-		field_0x4c: "int",
-		field_0x50: "int",
-		field_0x54: "float",
-		field_0x58: "float",
-		field_0x5c: "float",
-		field_0x60: "float",
-		field_0x64: "float",
-		field_0x68: "int",
-		field_0x6c: "float",
-		field_0x70: "float",
-		field_0x74: "float",
-		assetGroups: new Property("symbolAddr", undefined, {
-			tabName: "Model Table for {type} {id}"
-		}),
-		assetGroupCount: new Property("int", undefined, { hidden: true }),
-		field_0x84: "int",
-		states: new Property("symbolAddr", undefined, {
-			tabName: "States for {type} {id}",
-		}),
-		stateCount: new Property("int", undefined, { hidden: true }),
-		field_0x94: "int",
 	},
 	[DataType.DataBattleModel]: {
 		__: {
+			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelBattle",
 			countSymbol: "wld::fld::data::modelBattle_num",
 			displayName: "Battle Models",
 			romfsPath: "data/model/data_model_battle.elf.zst",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
 		},
-
-		id: "string",
-		field_0x8: new Property("Vector3", "Usage unknown, but one guess would be scale? Please verify."),
-		field_0x14: "short",
-		field_0x16: "short",
-		field_0x18: "short",
-		field_0x1A: "short",
-		field_0x1c: "int",
-		field_0x20: "int",
-		field_0x24: "int",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "float",
-		field_0x3c: "float",
-		field_0x40: "float",
-		field_0x44: "int",
-		field_0x48: "int",
-		field_0x4c: "int",
-		field_0x50: "int",
-		field_0x54: "float",
-		field_0x58: "float",
-		field_0x5c: "float",
-		field_0x60: "float",
-		field_0x64: "float",
-		field_0x68: "int",
-		field_0x6c: "float",
-		field_0x70: "float",
-		field_0x74: "float",
-		assetGroups: new Property("symbolAddr", undefined, {
-			tabName: "Model Table for {type} {id}"
-		}),
-		assetGroupCount: new Property("int", undefined, { hidden: true }),
-		field_0x84: "int",
-		states: new Property("symbolAddr", undefined, {
-			tabName: "States for {type} {id}",
-		}),
-		stateCount: new Property("int", undefined, { hidden: true }),
-		field_0x94: "int",
 	},
 } as const satisfies {[dataType: number]: TypeDefinition}
 
