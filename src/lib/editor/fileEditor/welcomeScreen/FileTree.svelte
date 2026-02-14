@@ -60,6 +60,7 @@
         "data_battle_weaponac_mario_ac",
         "data_battle_weaponac_party_ac",
         "data_battle_audiencekind",
+        "data_model",
     ];
 
     const dispatch = createEventDispatcher();
