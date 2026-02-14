@@ -1,79 +1,79 @@
 <script lang="ts">
-  import { DataType } from "paper-mario-elfs/dataType";
+	import { DataType } from "paper-mario-elfs/dataType"
 
-  import { afterUpdate, beforeUpdate, onMount } from "svelte";
+	import { afterUpdate, beforeUpdate, onMount } from "svelte"
 
-  import Alert from "../modal/Alert.svelte";
-  import { hideActiveModal } from "../modal/modal";
+	import Alert from "../modal/Alert.svelte"
+	import { hideActiveModal } from "../modal/modal"
 
-  export let fileName: string = ""
+	export let fileName: string = ""
 
-  let select: HTMLSelectElement
-  let okButton: HTMLButtonElement
+	let select: HTMLSelectElement
+	let okButton: HTMLButtonElement
 
-  let selectedIndex = 0
+	let selectedIndex = 0
 
-  let isCompressed = false
+	let isCompressed = false
 
-  const defaultFileNames = {
-  "data_Npc": DataType.Npc,
-  "data_Item": DataType.Item,
-  "data_Mobj": DataType.Mobj,
-  "data_Aobj": DataType.Aobj,
-  "data_Bshape": DataType.Bshape,
-  "data_Effect": DataType.Effect,
-  "data_GobjRes": DataType.GobjRes,
-  "data_MapLink": DataType.Maplink,
-  "MapParam": DataType.MapParam,
-  "MapId": DataType.MapId,
-  "EventFlg": DataType.EventFlag,
-  "data_map_itemlottable": DataType.MapItemLotTable,
-  "data_ItemList": DataType.ItemList,
-  "data_character_npc": DataType.CharacterNpc,
-  "data_character_mobj": DataType.CharacterMobj,
-  "data_character_party": DataType.CharacterParty,
-  "data_character_item": DataType.CharacterItem,
-  "data_character_aobj": DataType.CharacterAobj,
-  "data_model_npc": DataType.DataNpcModel,
-  "data_model_player": DataType.DataPlayerModel,
-  "data_model_item": DataType.DataItemModel,
-  "data_model_mobj": DataType.DataMobjModel,
-  "data_model_gobj": DataType.DataGobjModel,
-  "data_model_battle": DataType.DataBattleModel,
-  "data_sndBattle": DataType.SndBattle,
-  "data_param_actionballoon": DataType.ParamActionBalloon,
-  "data_param_fade": DataType.ParamFade,
-  "data_param_field": DataType.ParamField,
-  "data_param_housedoor": DataType.ParamHouseDoor,
-  "data_param_jump": DataType.ParamJump,
-  "data_param_partyhint": DataType.ParamPartyHint,
-  "data_param_player": DataType.ParamPlayer,
-  "data_param_gobj": DataType.ParamGobj,
-  "data_param_gobj_item": DataType.ParamGobjItem,
-  "DataMinigame_Paper_Aiper": DataType.DataMinigamePaperAiper,
-  "DataMinigame_Paper_Fan": DataType.DataMinigamePaperFan,
-  "DataMinigame_Paper_Runner": DataType.DataMinigamePaperRunner,
-  "DataMinigame_Paper_Runnerai": DataType.DataMinigamePaperRunnerai,
-  "data_Monosiri": DataType.Monosiri,
-  "data_FallObj": DataType.FallObj,
-  "data_Nozzle": DataType.Nozzle,
-  "data_HeartParam": DataType.HeartParam,
-  "data_Parameter": DataType.Parameter,
-  "data_battle_weapon_mario": DataType.BattleWeaponMario,
-  "data_battle_weapon_party": DataType.BattleWeaponParty,
-  "data_battle_weapon_other": DataType.BattleWeaponOther,
-  "data_battle_weapon_enemy": DataType.BattleWeaponEnemy,
-  "data_battle_weapon_item": DataType.BattleWeaponItem,
-  "data_battle_weaponac_mario_ac": DataType.BattleWeaponAcMarioAc,
-  "data_battle_weaponac_party_ac": DataType.BattleWeaponAcPartyAc,
-  "data_battle_audiencekind": DataType.BattleAudienceKind,
-  }
+	const defaultFileNames = {
+		"data_Npc": DataType.Npc,
+		"data_Item": DataType.Item,
+		"data_Mobj": DataType.Mobj,
+		"data_Aobj": DataType.Aobj,
+		"data_Bshape": DataType.Bshape,
+		"data_Effect": DataType.Effect,
+		"data_GobjRes": DataType.GobjRes,
+		"data_MapLink": DataType.Maplink,
+		"MapParam": DataType.MapParam,
+		"MapId": DataType.MapId,
+		"EventFlg": DataType.EventFlag,
+		"data_map_itemlottable": DataType.MapItemLotTable,
+		"data_ItemList": DataType.ItemList,
+		"data_character_npc": DataType.CharacterNpc,
+		"data_character_mobj": DataType.CharacterMobj,
+		"data_character_party": DataType.CharacterParty,
+		"data_character_item": DataType.CharacterItem,
+		"data_character_aobj": DataType.CharacterAobj,
+		"data_model_npc": DataType.DataNpcModel,
+		"data_model_player": DataType.DataPlayerModel,
+		"data_model_item": DataType.DataItemModel,
+		"data_model_mobj": DataType.DataMobjModel,
+		"data_model_gobj": DataType.DataGobjModel,
+		"data_model_battle": DataType.DataBattleModel,
+		"data_sndBattle": DataType.SndBattle,
+		"data_param_actionballoon": DataType.ParamActionBalloon,
+		"data_param_fade": DataType.ParamFade,
+		"data_param_field": DataType.ParamField,
+		"data_param_housedoor": DataType.ParamHouseDoor,
+		"data_param_jump": DataType.ParamJump,
+		"data_param_partyhint": DataType.ParamPartyHint,
+		"data_param_player": DataType.ParamPlayer,
+		"data_param_gobj": DataType.ParamGobj,
+		"data_param_gobj_item": DataType.ParamGobjItem,
+		"DataMinigame_Paper_Aiper": DataType.DataMinigamePaperAiper,
+		"DataMinigame_Paper_Fan": DataType.DataMinigamePaperFan,
+		"DataMinigame_Paper_Runner": DataType.DataMinigamePaperRunner,
+		"DataMinigame_Paper_Runnerai": DataType.DataMinigamePaperRunnerai,
+		"data_Monosiri": DataType.Monosiri,
+		"data_FallObj": DataType.FallObj,
+		"data_Nozzle": DataType.Nozzle,
+		"data_HeartParam": DataType.HeartParam,
+		"data_Parameter": DataType.Parameter,
+		"data_battle_weapon_mario": DataType.BattleWeaponMario,
+		"data_battle_weapon_party": DataType.BattleWeaponParty,
+		"data_battle_weapon_other": DataType.BattleWeaponOther,
+		"data_battle_weapon_enemy": DataType.BattleWeaponEnemy,
+		"data_battle_weapon_item": DataType.BattleWeaponItem,
+		"data_battle_weaponac_mario_ac": DataType.BattleWeaponAcMarioAc,
+		"data_battle_weaponac_party_ac": DataType.BattleWeaponAcPartyAc,
+		"data_battle_audiencekind": DataType.BattleAudienceKind,
+	}
 
-  onMount(() => {
-  okButton.disabled = true
+	onMount(() => {
+		okButton.disabled = true
 
-  select.onchange = function(e) {
-  okButton.disabled = select.selectedIndex < 1
+		select.onchange = function (e) {
+			okButton.disabled = select.selectedIndex < 1
 		}
 		
 		const sortedEntries = Object.entries(defaultFileNames).sort(([a], [b]) => b.length - a.length)
