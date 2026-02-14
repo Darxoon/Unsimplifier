@@ -122,6 +122,13 @@ interface DataTypeMetadata {
 	 * be put into any data division.
 	 */
 	dataDivision?: DataDivision | null
+	/**
+	 * Which section should be targeted for all relocations of type `"symbolAddr"`
+	 * in this data type and all children.
+	 * 
+	 * Defaults to `".data"`
+	 */
+	pointerTargetSection?: string
 	textVars?: {[key: string]: string}
 	/**
 	 * For file types that only appear once in the romfs, this will be used to locate
@@ -1605,6 +1612,7 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.ModelType]: {
 		__: {
+			pointerTargetSection: ".rodata",
 			childTypes: {
 				assetGroups: DataType.ModelAssetGroup,
 				states: DataType.ModelState,
@@ -1823,6 +1831,13 @@ interface FileTypeRegistry {
 	 */
 	dataDivision: DataDivision,
 	/**
+	 * Which section should be targeted for all relocations of type `"symbolAddr"`
+	 * in this data type and all children.
+	 * 
+	 * Defaults to `".data"`
+	 */
+	pointerTargetSection: string,
+	/**
 	 * For file types that only appear once in the romfs, this will be used to locate
 	 * that file when importing a yaml file for example.
 	 */
@@ -1879,6 +1894,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		displayName,
 		identifyingField,
 		dataDivision,
+		pointerTargetSection,
 		romfsPath,
 		childTypes,
 		defaultPadding,
@@ -1940,6 +1956,8 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		displayName,
 		identifyingField: identifyingField ?? "id",
 		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
+		
+		pointerTargetSection: pointerTargetSection ?? ".data",
 		
 		textVars: textVars ?? {},
 		romfsPath,

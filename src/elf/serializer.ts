@@ -601,8 +601,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		updatedSections.set('.rodata.str1.1', writer.toArrayBuffer())
 	}
 	
-	
-	// @ts-ignore
 	const sections = binary.sections
 	
 	
@@ -711,7 +709,8 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	
 	{
 		// symbol addr relocations
-		const targetSectionIndex = sections.findIndex(section => section.name === ".data")
+		const targetSectionName = FILE_TYPES[dataType].pointerTargetSection
+		const targetSectionIndex = sections.findIndex(section => section.name === targetSectionName)
 		const targetSectionSymbolIndex = binary.symbolTable.findIndex(symbol => symbol.info == 3
 			&& symbol.sectionHeaderIndex == targetSectionIndex)
 		
