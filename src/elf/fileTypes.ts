@@ -99,25 +99,56 @@ type TypeDefinition = {
 } & { __?: DataTypeMetadata }
 
 interface DataTypeMetadata {
+	/**
+	 * If this is set, all fields and metadata will be inherited from the other
+	 * data type's definition. All other metadata specified here will overshadow
+	 * those from the parent.
+	 */
 	parent?: DataType
 	
+	/**
+	 * The name which will be displayed in the UI
+	 */
 	displayName?: string
+	/**
+	 * The field name of something like the ID field. The content of this field
+	 * will be displayed in the UI, even when the object is collapsed
+	 */
 	identifyingField?: string
-	dataDivision?: DataDivision | null
 	textVars?: {[key: string]: string}
+	/**
+	 * For file types that only appear once in the romfs, this will be used to locate
+	 * that file when importing a yaml file for example.
+	 */
 	romfsPath?: string
 	
+	/**
+	 * For data types without a custom written parser/serializer, this contains the
+	 * amount of trailing zero-values at the end of the file.
+	 * 
+	 * Usually 0 (if no padding; the default value) or 1 (null terminated)
+	 */
 	defaultPadding?: number
+	/**
+	 * The name of the symbol containing the item count of the data type.
+	 */
 	countSymbol?: string
+	/**
+	 * The symbol name of the main symbol containing items of this data type, if it exists.
+	 */
 	mainSymbol?: string
 	
+	/**
+	 * A mapping between field names of this data structure and another data type if a field
+	 * contains a pointer to that data type.
+	 */
 	childTypes?: Typedef<DataType>
+	
+	// these do nothing yet
 	childField?: string
+	// childFieldLabel
 	nestedAllValues?: boolean
 	entryPoints?: { [objectType: number]: any }
-	// for future sub-types
-	// childField
-	// childFieldLabel
 }
 
 const typedefs = {
@@ -464,7 +495,6 @@ Used for the loading of new maps (?)`),
 		__: {
 			displayName: "Item",
 			identifyingField: "type",
-			dataDivision: null,
 		},
 
 		type: "string",
@@ -691,7 +721,6 @@ Specifies the type of the item. Possible values:
 	[DataType.SndBattle]: {
 		__: {
 			displayName: "Battle BGM List",
-			dataDivision: "tracks",
 		},
 
 		id: "string",
@@ -1483,7 +1512,6 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Battle Drops",
 			identifyingField: "type",
-			dataDivision: null,
 		},
 
 		field_0x00: "int",
@@ -1506,7 +1534,6 @@ Specifies the type of the item. Possible values:
 	[DataType.Maplink]: {
 		__: {
 			displayName: "Maplink",
-			dataDivision: "links",
 		},
 
 		stage: "string",
@@ -1567,7 +1594,6 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.ModelType]: {
 		__: {
-			dataDivision: dataDivisions.main,
 			childTypes: {
 				assetGroups: DataType.ModelAssetGroup,
 				states: DataType.ModelState,
@@ -1618,8 +1644,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Asset Group",
 			identifyingField: "fileName",
-			nestedAllValues: true,
-			dataDivisions: "assetGroup",
+			// nestedAllValues: true,
 		},
 
 		modelFolder: "string",
@@ -1632,10 +1657,9 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "State",
 			identifyingField: "description",
-			dataDivisions: "state",
-			childFieldLabel: "faceArray",
-			chileField: "face",
-			nestedAllValues: true,
+			// childFieldLabel: "faceArray",
+			// childField: "face",
+			// nestedAllValues: true,
 			childTypes: {
 				substates: DataType.ModelFaceGroup,
 			},
@@ -1656,9 +1680,8 @@ Some commonly found translations:
 	[DataType.ModelFaceGroup]: {
 		__: {
 			displayName: "Face Array",
-			childField: "faces",
-			nestedAllValues: true,
-			dataDivisions: "subState",
+			// childField: "faces",
+			// nestedAllValues: true,
 			childTypes: {
 				faces: DataType.ModelFace,
 			},
@@ -1674,9 +1697,8 @@ Some commonly found translations:
 	[DataType.ModelFace]: {
 		__: {
 			displayName: "Face",
-			childField: "animations",
-			nestedAllValues: true,
-			dataDivisions: "face",
+			// childField: "animations",
+			// nestedAllValues: true,
 			childTypes: {
 				animations: DataType.ModelAnimation,
 			},
@@ -1693,7 +1715,6 @@ Some commonly found translations:
 	[DataType.ModelAnimation]: {
 		__: {
 			displayName: "Animation",
-			dataDivisions: "anime",
 		},
 
 		description: "string",
@@ -1701,27 +1722,19 @@ Some commonly found translations:
 	},
 	[DataType.DataNpcModel]: {
 		__: {
+			parent: DataType.ModelType,
 			displayName: "NPC Models",
 			mainSymbol: "wld::fld::data::s_modelNpc",
 			countSymbol: "wld::fld::data::modelNpc_num",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
-			parent: DataType.ModelType,
 			romfsPath: "data/model/data_model_npc.elf.zst",
 		},
 	},
 	[DataType.DataPlayerModel]: {
 		__: {
 			parent: DataType.ModelType,
+			displayName: "Player Models",
 			mainSymbol: "wld::fld::data::s_modelPlayer",
 			countSymbol: "wld::fld::data::modelPlayer_num",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
-			displayName: "Player Models",
 			romfsPath: "data/model/data_model_player.elf.zst",
 		},
 
@@ -1729,52 +1742,36 @@ Some commonly found translations:
 	[DataType.DataItemModel]: {
 		__: {
 			parent: DataType.ModelType,
+			displayName: "Item Models",
 			mainSymbol: "wld::fld::data::s_modelItem",
 			countSymbol: "wld::fld::data::modelItem_num",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
-			displayName: "Item Models",
 			romfsPath: "data/model/data_model_item.elf.zst",
 		},
 	},
 	[DataType.DataMobjModel]: {
 		__: {
 			parent: DataType.ModelType,
+			displayName: "Mobj Models",
 			mainSymbol: "wld::fld::data::s_modelMobj",
 			countSymbol: "wld::fld::data::modelMobj_num",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
-			displayName: "Mobj Models",
 			romfsPath: "data/model/data_model_mobj.elf.zst",
 		},
 	},
 	[DataType.DataGobjModel]: {
 		__: {
 			parent: DataType.ModelType,
+			displayName: "Gobj Models",
 			mainSymbol: "wld::fld::data::s_modelGobj",
 			countSymbol: "wld::fld::data::modelGobj_num",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
-			displayName: "Gobj Models",
 			romfsPath: "data/model/data_model_gobj.elf.zst",
 		},
 	},
 	[DataType.DataBattleModel]: {
 		__: {
 			parent: DataType.ModelType,
+			displayName: "Battle Models",
 			mainSymbol: "wld::fld::data::s_modelBattle",
 			countSymbol: "wld::fld::data::modelBattle_num",
-			childTypes: {
-				assetGroups: DataType.ModelAssetGroup,
-				states: DataType.ModelState,
-			},
-			displayName: "Battle Models",
 			romfsPath: "data/model/data_model_battle.elf.zst",
 		},
 	},
@@ -1793,16 +1790,42 @@ interface FileTypeRegistry {
 	metadata: Typedef<Property>
 	fieldOffsets: Typedef<number> & {[offset: number]: string}
 	size: number
+	/**
+	 * The name which will be displayed in the UI
+	 */
 	displayName: string
+	/**
+	 * The field name of something like the ID field. The content of this field
+	 * will be displayed in the UI, even when the object is collapsed
+	 */
 	identifyingField: string
-	dataDivision: DataDivision
+	/**
+	 * For file types that only appear once in the romfs, this will be used to locate
+	 * that file when importing a yaml file for example.
+	 */
 	romfsPath: string
+	/**
+	 * For data types without a custom written parser/serializer, this contains the
+	 * amount of trailing zero-values at the end of the file.
+	 * 
+	 * Usually 0 (if no padding; the default value) or 1 (null terminated)
+	 */
 	defaultPadding: number
 	textVars: {[key: string]: string}
+	/**
+	 * The name of the symbol containing the item count of the data type.
+	 */
 	countSymbol?: string
+	/**
+	 * The symbol name of the main symbol containing items of this data type, if it exists.
+	 */
 	mainSymbol?: string
 	
 	// for future sub-types
+	/**
+	 * A mapping between field names of this data structure and another data type if a field
+	 * contains a pointer to that data type.
+	 */
 	childTypes?: Typedef<DataType>
 	childFieldLabel?: string
 	childField?: string
@@ -1831,7 +1854,6 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 	
 	const {
 		displayName,
-		dataDivision,
 		identifyingField,
 		romfsPath,
 		childTypes,
@@ -1893,7 +1915,6 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		
 		displayName,
 		identifyingField: identifyingField ?? "id",
-		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
 		textVars: textVars ?? {},
 		romfsPath,
 		
