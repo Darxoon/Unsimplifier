@@ -115,6 +115,13 @@ interface DataTypeMetadata {
 	 * will be displayed in the UI, even when the object is collapsed
 	 */
 	identifyingField?: string
+	/**
+	 * The data division in which items of this data type will be placed in.
+	 * 
+	 * `"main"` by default; if it's explicitly set to `null` then the items will not
+	 * be put into any data division.
+	 */
+	dataDivision?: DataDivision | null
 	textVars?: {[key: string]: string}
 	/**
 	 * For file types that only appear once in the romfs, this will be used to locate
@@ -495,6 +502,7 @@ Used for the loading of new maps (?)`),
 		__: {
 			displayName: "Item",
 			identifyingField: "type",
+			dataDivision: null,
 		},
 
 		type: "string",
@@ -721,6 +729,7 @@ Specifies the type of the item. Possible values:
 	[DataType.SndBattle]: {
 		__: {
 			displayName: "Battle BGM List",
+			dataDivision: "tracks",
 		},
 
 		id: "string",
@@ -1512,6 +1521,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Battle Drops",
 			identifyingField: "type",
+			dataDivision: null,
 		},
 
 		field_0x00: "int",
@@ -1534,6 +1544,7 @@ Specifies the type of the item. Possible values:
 	[DataType.Maplink]: {
 		__: {
 			displayName: "Maplink",
+			dataDivision: "links",
 		},
 
 		stage: "string",
@@ -1644,6 +1655,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Asset Group",
 			identifyingField: "fileName",
+			dataDivision: null,
 			// nestedAllValues: true,
 		},
 
@@ -1657,6 +1669,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "State",
 			identifyingField: "description",
+			dataDivision: null,
 			// childFieldLabel: "faceArray",
 			// childField: "face",
 			// nestedAllValues: true,
@@ -1680,6 +1693,7 @@ Some commonly found translations:
 	[DataType.ModelFaceGroup]: {
 		__: {
 			displayName: "Face Array",
+			dataDivision: null,
 			// childField: "faces",
 			// nestedAllValues: true,
 			childTypes: {
@@ -1697,6 +1711,7 @@ Some commonly found translations:
 	[DataType.ModelFace]: {
 		__: {
 			displayName: "Face",
+			dataDivision: null,
 			// childField: "animations",
 			// nestedAllValues: true,
 			childTypes: {
@@ -1715,6 +1730,7 @@ Some commonly found translations:
 	[DataType.ModelAnimation]: {
 		__: {
 			displayName: "Animation",
+			dataDivision: null,
 		},
 
 		description: "string",
@@ -1800,6 +1816,13 @@ interface FileTypeRegistry {
 	 */
 	identifyingField: string
 	/**
+	 * The data division in which items of this data type will be placed in.
+	 * 
+	 * `"main"` by default; if it's explicitly set to `null` then the items will not
+	 * be put into any data division.
+	 */
+	dataDivision: DataDivision,
+	/**
 	 * For file types that only appear once in the romfs, this will be used to locate
 	 * that file when importing a yaml file for example.
 	 */
@@ -1855,6 +1878,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 	const {
 		displayName,
 		identifyingField,
+		dataDivision,
 		romfsPath,
 		childTypes,
 		defaultPadding,
@@ -1915,6 +1939,8 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		
 		displayName,
 		identifyingField: identifyingField ?? "id",
+		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
+		
 		textVars: textVars ?? {},
 		romfsPath,
 		
