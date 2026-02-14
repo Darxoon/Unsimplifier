@@ -10,6 +10,21 @@ type SectionName = string
 type Offset = number
 type SymbolName = string
 
+/**
+ * Represents a symbol name with the added information of when in the serialization
+ * process this was created.
+ * 
+ * Sometimes, a data structure will have to be serialized before its
+ * children/dependencies. In that case, the symbol names of the children could not
+ * have been renamed to their new symbol names (based on the user-editable IDs) yet.
+ * In that case, the symbol name listed here might be out of date, but it's impossible
+ * to know yet.
+ */
+interface OrderedSymbolName {
+	potentiallyStale: boolean
+	symbolName: SymbolName
+}
+
 const BINARY_HEADER: Uint8Array = new Uint8Array([
 	0x7F, 0x45, 0x4C, 0x46, 0x02, 0x01, 0x01, 0x00, 
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -41,8 +56,8 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	
 	const allRelocations: Map<SectionName, Relocation[]> = new Map()
 	const stringRelocations: Map<SectionName, Map<number, string>> = new Map()
-	const symbolRelocations: Map<SectionName, Map<number, SymbolName>> = new Map()
-	const symbolAddrRelocations: Map<SectionName, Map<number, SymbolName>> = new Map()
+	const symbolRelocations: Map<SectionName, Map<number, OrderedSymbolName>> = new Map()
+	const symbolAddrRelocations: Map<SectionName, Map<number, OrderedSymbolName>> = new Map()
 	
 	const symbolLocationReference: Map<string, Pointer> = noUndefinedMap(new Map())
 	const symbolNameOverrides: Map<string, string> = noUndefinedMap(new Map())
@@ -226,18 +241,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			case DataType.DataPlayerModel:
 			case DataType.DataBattleModel:
 				{
-					// ----------------  data  ----------------
-					let dataSymbolAddrs = new Map()
-					symbolAddrRelocations.set('.data', dataSymbolAddrs)
-
-					let data: SerializeContext = {
-						writer: dataWriter,
-						stringRelocations: dataStringRelocations,
-						symbolAddrRelocations: dataSymbolAddrs,
-					}
-
-					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
-
 					// ----------------  rodata  ----------------
 					let rodataStringRelocations = new Map()
 					stringRelocations.set('.rodata', rodataStringRelocations)
@@ -254,6 +257,18 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 
 					let serializedRodata = serializeModelRodata(rodata, binary.data.main, binary.data.main.length, "wld::fld::data")
 					updatedSections.set('.rodata', serializedRodata)
+
+					// ----------------  data  ----------------
+					let dataSymbolAddrs = new Map()
+					symbolAddrRelocations.set('.data', dataSymbolAddrs)
+
+					let data: SerializeContext = {
+						writer: dataWriter,
+						stringRelocations: dataStringRelocations,
+						symbolAddrRelocations: dataSymbolAddrs,
+					}
+
+					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 
 					break
 				}
@@ -284,14 +299,19 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		interface SerializeContext {
 			writer: BinaryWriter
 			stringRelocations: Map<number, string>
-			symbolRelocations?: Map<number, SymbolName>
-			symbolAddrRelocations?: Map<number, SymbolName>
+			symbolRelocations?: Map<number, OrderedSymbolName>
+			symbolAddrRelocations?: Map<number, OrderedSymbolName>
 		}
 
 		interface SerializeObjectsProperties {
 			padding?: number
 			paddingItem?: UuidTagged
 			addStrings?: boolean
+			/**
+			 * This is necessary if an object is serialized before its children are,
+			 * as the symbol names of the children could not have been updated yet
+			 */
+			staleChildSymbols?: boolean
 			symbolWrapper?: { symbolName: string, children?: any, item?: any }
 		}
 
@@ -331,14 +351,22 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 							writer.writeBigInt64(0n)
 							break
 						case "symbol":
-							if (fieldValue != null)
-								symbolRelocations.set(writer.size, fieldValue.symbolName)
+							if (fieldValue != null) {
+								symbolRelocations.set(writer.size, {
+									potentiallyStale: properties.staleChildSymbols ?? false,
+									symbolName: fieldValue.symbolName,
+								})
+							}
 
 							writer.writeBigInt64(0n)
 							break
 						case "symbolAddr":
-							if (fieldValue != null)
-								symbolAddrRelocations.set(writer.size, fieldValue.symbolName)
+							if (fieldValue != null) {
+								symbolAddrRelocations.set(writer.size, {
+									potentiallyStale: properties.staleChildSymbols ?? false,
+									symbolName: fieldValue.symbolName,
+								})
+							}
 
 							writer.writeBigInt64(0n)
 							break
@@ -445,7 +473,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				model.assetGroups.symbolName = newAssetGroupSymbolName
 				model.assetGroupCount = assetGroups.children.length
 
-				serializeObjects(rodata, DataType.ModelAssetGroup, assetGroups.children, { symbolWrapper: model.assetGroups, padding: 1 })
+				serializeObjects(rodata, DataType.ModelAssetGroup, assetGroups.children, {
+					symbolWrapper: model.assetGroups,
+					padding: 1,
+					staleChildSymbols: true,
+				})
 
 				// states
 				const { states } = model
@@ -459,7 +491,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				model.states.symbolName = newStateSymbolName
 				model.stateCount = states.children.length
 
-				serializeObjects(rodata, DataType.ModelState, states.children, { symbolWrapper: model.states, padding: 1 })
+				serializeObjects(rodata, DataType.ModelState, states.children, {
+					symbolWrapper: model.states,
+					padding: 1,
+					staleChildSymbols: true,
+				})
 
 				for (const state of states.children) {
 					const substates = state.substates as { children: Instance<DataType.ModelFaceGroup>[], symbolName: string }
@@ -497,7 +533,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					substates.symbolName = newSymbolName
 					state.substateCount = children.length
 
-					serializeObjects(rodata, DataType.ModelFaceGroup, children, { symbolWrapper: substates, padding: 1 })
+					serializeObjects(rodata, DataType.ModelFaceGroup, children, {
+						symbolWrapper: substates,
+						padding: 1,
+						staleChildSymbols: true,
+					})
 				}
 
 				for (const [state, i] of enumerate(model.states.children)) {
@@ -516,7 +556,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 						faces.symbolName = newSymbolName
 						substate.faceCount = children.length
 
-						serializeObjects(rodata, DataType.ModelFace, children, { symbolWrapper: faces, padding: 1 })
+						serializeObjects(rodata, DataType.ModelFace, children, {
+							symbolWrapper: faces,
+							padding: 1,
+							staleChildSymbols: true,
+						})
 					}
 
 					for (const substate of substates.children) {
@@ -537,7 +581,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 							animations.symbolName = newSymbolName
 							face.animationCount = children.length
 
-							serializeObjects(rodata, DataType.ModelAnimation, children, { symbolWrapper: animations, padding: 1 })
+							serializeObjects(rodata, DataType.ModelAnimation, children, {
+								symbolWrapper: animations,
+								padding: 1,
+								staleChildSymbols: true,
+							})
 						}
 					}
 				}
@@ -698,10 +746,14 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			if (!allRelocations.has(sectionName))
 				allRelocations.set(sectionName, [])
 			
-			let rawRelocations: Relocation[] = allRelocations.get(sectionName)
+			const rawRelocations: Relocation[] = allRelocations.get(sectionName)
 			
 			for (const [location, targetSymbol] of sectionSymbolRelocations) {
-				let targetSymbolIndex = binary.symbolTable.findIndex(symbol => symbol.name === targetSymbol)
+				let symbolName = targetSymbol.symbolName
+				if (targetSymbol.potentiallyStale && symbolNameOverrides.has(targetSymbol.symbolName))
+					symbolName = symbolNameOverrides.get(targetSymbol.symbolName)
+				
+				const targetSymbolIndex = binary.symbolTable.findIndex(symbol => symbol.name === symbolName)
 				rawRelocations.push(new Relocation(new Pointer(location), DEFAULT_RELOCATION_TYPE, targetSymbolIndex, Pointer.ZERO))
 			}
 		}
@@ -718,10 +770,14 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			if (!allRelocations.has(sectionName))
 				allRelocations.set(sectionName, [])
 			
-			let rawRelocations: Relocation[] = allRelocations.get(sectionName)
+			const rawRelocations: Relocation[] = allRelocations.get(sectionName)
 			
 			for (const [location, targetSymbolName] of sectionSymbolRelocations) {
-				let targetSymbol = binary.symbolTable.find(symbol => symbol.name === targetSymbolName)
+				let symbolName = targetSymbolName.symbolName
+				if (targetSymbolName.potentiallyStale && symbolNameOverrides.has(targetSymbolName.symbolName))
+					symbolName = symbolNameOverrides.get(targetSymbolName.symbolName)
+				
+				const targetSymbol = binary.symbolTable.find(symbol => symbol.name === symbolName)
 				rawRelocations.push(new Relocation(new Pointer(location), DEFAULT_RELOCATION_TYPE, targetSectionSymbolIndex, targetSymbol.location))
 			}
 		}
