@@ -3,6 +3,7 @@ import { DataType } from "./dataType";
 import { FILE_TYPES } from "./fileTypes";
 import type { Instance } from "./fileTypes";
 import { BinaryReader, Vector3 } from "./misc";
+import { demangle, mangleIdentifier } from "./nameMangling";
 import { Relocation, Section, Symbol } from "./types";
 import { ValueUuid, VALUE_UUID, DATA_TYPE, type UuidTagged } from "./valueIdentifier";
 import { peekable, type Peekable } from "./util";
@@ -130,11 +131,149 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	}
 
 	interface ModelInstance {
-		assetGroups: { symbolName: Pointer, children: Instance<DataType.ModelAssetGroup>[] }
+		assetGroups: { symbolName: string, children: Instance<DataType.ModelAssetGroup>[] }
 		assetGroupCount: number
-		states: { symbolName: Pointer, children: Instance<DataType.ModelState>[] }
+		states: { symbolName: string, children: Instance<DataType.ModelState>[] }
 		stateCount: number
 	}
+
+	function parseModelRodata(data: { [division in DataDivision]?: any[] }, models: RawModelInstance[]) {
+		const rodataSection = findSection('.rodata')
+		const dataStringSection = findSection('.rodata.str1.1')
+
+		//assetGroups
+		let allAssetGroups = []
+
+		for (const model of models) {
+			const { assetGroups: offset, assetGroupCount } = model
+
+
+			if (offset == undefined || offset == Pointer.NULL) {
+				model.assetGroups = null
+				continue
+			}
+			let assetRelocs = peekable(allRelocations.get(".rodata"))
+
+			let symbol = findSymbol(`wld::fld::data::^${model.id}_model_files`) ?? createMissingSymbol(`wld::fld::data::^${model.id}_model_files`, rodataSection)
+			let children = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAssetGroup, { count: assetGroupCount, relocations: assetRelocs })
+
+			let assetGroupObj = {
+				symbolName: demangle(symbol.name),
+				children,
+			}
+
+			allAssetGroups.push(assetGroupObj);
+			(model as unknown as ModelInstance).assetGroups = assetGroupObj
+		}
+
+		data.assetGroup = allAssetGroups
+
+		// states
+		let allStates = []
+		let allFaceGroups = []
+		let allFaces = []
+		let allAnimations = []
+
+		for (const model of models) {
+			const { states: offset, stateCount } = model
+
+
+			if (offset == undefined || offset == Pointer.NULL) {
+				model.states = null
+				continue
+			}
+
+			let stateRelocs = peekable(allRelocations.get(".rodata"))
+
+			let symbol = findSymbol(`wld::fld::data::^${model.id}_state`) ?? createMissingSymbol(`wld::fld::data::^${model.id}_state`, rodataSection)
+			let states = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelState, { count: stateCount, relocations: stateRelocs })
+
+			let stateObj = {
+				symbolName: demangle(symbol.name),
+				children: states,
+			}
+
+			allStates.push(stateObj);
+			(model as unknown as ModelInstance).states = stateObj
+
+
+			//faceGroups
+			for (const state of states) {
+				const { substates: symbolName, substateCount } = state
+
+				if (symbolName == undefined || symbolName == Pointer.NULL) {
+					state.substates = null
+					continue
+				}
+
+				let faceGroupRelocs = peekable(allRelocations.get(".rodata"))
+
+				let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_state${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
+				let faceGroups = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFaceGroup, { count: substateCount, relocations: faceGroupRelocs })
+
+				let faceGroupObj = {
+					symbolName: demangle(symbol.name),
+					children: faceGroups,
+				}
+
+				allFaceGroups.push(faceGroupObj);
+				state.substates = faceGroupObj
+
+
+				//faces
+				for (const faceGroup of faceGroups) {
+					const { faces: symbolName, faceCount } = faceGroup
+
+
+					if (symbolName == undefined || symbolName == Pointer.NULL) {
+						faceGroup.faces = null
+						continue
+					}
+					let faceRelocs = peekable(allRelocations.get(".rodata"))
+					let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
+					let faces = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFace, { count: faceCount, relocations: faceRelocs })
+
+					let faceObj = {
+						symbolName: demangle(symbol.name),
+						children: faces,
+					}
+					allFaces.push(faceObj);
+					faceGroup.faces = faceObj
+
+
+					//animations
+					for (const face of faces) {
+						const { animations: symbolName, animationCount } = face
+
+
+						if (symbolName == undefined || symbolName == Pointer.NULL) {
+							face.animations = null
+							continue
+						}
+						let animRelocs = peekable(allRelocations.get(".rodata"))
+						let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
+						let animations = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAnimation, { count: animationCount, relocations: animRelocs })
+
+						let animationObj = {
+							symbolName: demangle(symbol.name),
+							children: animations,
+						}
+						allAnimations.push(animationObj);
+						face.animations = animationObj
+					}
+
+				}
+
+			}
+
+		}
+		data.anime = allAnimations
+		data.face = allFaces
+		data.subState = allFaceGroups
+		data.state = allStates
+
+	}
+
 
 	function findSection(sectionName: string): Section {
 		return sections.find(section => section.name == sectionName)
@@ -318,140 +457,16 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				const rodataSection = findSection('.rodata')
 				const dataStringSection = findSection('.rodata.str1.1')
 
+				let modelRelocs = peekable(allRelocations.get(".data"))
+				let rodataView = new DataView(rodataSection.content)
+
+
 				let mainSymbol = findSymbol(FILE_TYPES[dataType].mainSymbol)
-				let modelTables = parseSymbol(dataSection, dataStringSection, mainSymbol, dataType, { count: -1 })
+				let countSymbol = findSymbol(FILE_TYPES[dataType].countSymbol)
+				const dataCount = Number(rodataView.getBigInt64(countSymbol.location.value, true))
+
+				let modelTables = parseSymbol(dataSection, dataStringSection, mainSymbol, dataType, { count: dataCount, relocations: modelRelocs })
 				data = {}
-				function parseModelRodata(data: { [division in DataDivision]?: any[] }, models: RawModelInstance[]) {
-
-					//assetGroups
-					let allAssetGroups = []
-
-					for (const model of models) {
-						const { assetGroups: symbolName, assetGroupCount } = model
-
-
-						if (symbolName == undefined || symbolName == Pointer.NULL) {
-							model.assetGroups = null
-							continue
-						}
-						let assetRelocs = peekable(allRelocations.get(".rodata"))
-
-						let symbol = findSymbol(`wld::fld::data::^${model.id}_model_files`)
-						let children = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAssetGroup, { count: assetGroupCount, relocations: assetRelocs })
-
-						let assetGroupObj = {
-							symbolName,
-							children,
-						}
-
-						allAssetGroups.push(assetGroupObj);
-						(model as unknown as ModelInstance).assetGroups = assetGroupObj
-					}
-
-					data.assetGroup = allAssetGroups
-
-					// states
-					let allStates = []
-					let allFaceGroups = []
-					let allFaces = []
-					let allAnimations = []
-
-					for (const model of models) {
-						const { states: symbolName, stateCount } = model
-
-
-						if (symbolName == undefined || symbolName == Pointer.NULL) {
-							model.states = null
-							continue
-						}
-
-						let stateRelocs = peekable(allRelocations.get(".rodata"))
-
-						let symbol = findSymbol(`wld::fld::data::^${model.id}_state`)
-						let states = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelState, { count: stateCount, relocations: stateRelocs })
-
-						let stateObj = {
-							symbolName,
-							children: states,
-						}
-
-						allStates.push(stateObj);
-						(model as unknown as ModelInstance).states = stateObj
-
-
-						//faceGroups
-						for (const state of states) {
-							const { substates: symbolName, substateCount } = state
-
-
-							let faceGroupRelocs = peekable(allRelocations.get(".rodata"))
-
-							let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_state${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
-							let faceGroups = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFaceGroup, { count: substateCount, relocations: faceGroupRelocs })
-
-							let faceGroupObj = {
-								symbol,
-								children: faceGroups,
-							}
-
-							allFaceGroups.push(faceGroupObj);
-							state.substates = faceGroupObj
-
-
-							//faces
-							for (const faceGroup of faceGroups) {
-								const { faces: symbolName, faceCount } = faceGroup
-
-
-								if (symbolName == undefined || symbolName == Pointer.NULL) {
-									faceGroup.faces = null
-									continue
-								}
-								let faceRelocs = peekable(allRelocations.get(".rodata"))
-								let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
-								let faces = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFace, { count: faceCount, relocations: faceRelocs })
-
-								let faceObj = {
-									symbolName,
-									children: faces,
-								}
-								allFaces.push(faceObj);
-								faceGroup.faces = faceObj
-
-
-								//animations
-								for (const face of faces) {
-									const { animations: symbolName, animationCount } = face
-
-
-									if (symbolName == undefined || symbolName == Pointer.NULL) {
-										face.animations = null
-										continue
-									}
-									let animRelocs = peekable(allRelocations.get(".rodata"))
-									let symbol = findSymbol(symbolName) ?? createMissingSymbol(`wld::fld::data::^${model.id}_${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`, rodataSection)
-									let animations = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAnimation, { count: animationCount, relocations: animRelocs })
-
-									let animationObj = {
-										symbolName,
-										children: animations,
-									}
-									allAnimations.push(animationObj);
-									face.animations = animationObj
-								}
-
-							}
-
-						}
-
-					}
-					data.anime = allAnimations
-					data.face = allFaces
-					data.subState = allFaceGroups
-					data.state = allStates
-
-				}
-
 				data.main = modelTables
 
 				parseModelRodata(data, data.main)

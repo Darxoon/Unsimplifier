@@ -44,6 +44,9 @@ export const dataDivisions = {
 	face: "face",
 	anime: "anime",
 
+	model: "model",
+	modelProperty: "modelProperty",
+
 	// maplink
 	links: "links",
 

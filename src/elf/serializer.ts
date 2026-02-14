@@ -146,12 +146,16 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			}
 
 			case DataType.Maplink: {
+				const dataSymbolAddrs = new Map()
+				symbolAddrRelocations.set('.data', dataSymbolAddrs)
+
 				const dataSymbols = new Map()
 				symbolRelocations.set('.data', dataSymbols)
 
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
+					symbolAddrRelocations: dataSymbolAddrs,
 					symbolRelocations: dataSymbols,
 				}
 
@@ -223,14 +227,13 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			case DataType.DataBattleModel:
 				{
 					// ----------------  data  ----------------
-					const dataSymbols = new Map()
-					symbolRelocations.set('.data', dataSymbols)
-
+					let dataSymbolAddrs = new Map()
+					symbolAddrRelocations.set('.data', dataSymbolAddrs)
 
 					let data: SerializeContext = {
 						writer: dataWriter,
 						stringRelocations: dataStringRelocations,
-						symbolRelocations: dataSymbols,
+						symbolAddrRelocations: dataSymbolAddrs,
 					}
 
 					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
@@ -239,13 +242,14 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					let rodataStringRelocations = new Map()
 					stringRelocations.set('.rodata', rodataStringRelocations)
 
-					let rodataPointers = new Map()
-					symbolRelocations.set('.rodata', rodataPointers)
+					let rodataSymbolAddrs = new Map()
+					symbolAddrRelocations.set('.rodata', rodataSymbolAddrs)
+
 
 					let rodata: SerializeContext = {
 						writer: new BinaryWriter(),
 						stringRelocations: rodataStringRelocations,
-						symbolRelocations: rodataPointers,
+						symbolAddrRelocations: rodataSymbolAddrs,
 					}
 
 					let serializedRodata = serializeModelRodata(rodata, binary.data.main, binary.data.main.length, "wld::fld::data")
@@ -258,6 +262,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
+					symbolRelocations: undefined,
 				}
 
 				let countSymbolName = FILE_TYPES[dataType].countSymbol
@@ -383,13 +388,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				}
 			}
 
-		}
-		interface RawModelInstance {
-			id: string
-			assetGroups: Pointer
-			assetGroupCount: number
-			states: Pointer
-			stateCount: number
 		}
 
 		interface ModelInstance {
@@ -548,6 +546,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			return rodataWriter.toArrayBuffer()
 		}
 	}
+
 	// The .rodata section always contains the amount of items in .data as a 32-bit integer.
 	// In most of the file formats, this is it, the section is just 4 bytes in size.
 	// However, there are a few file formats that contain secondary data. This means that

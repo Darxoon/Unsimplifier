@@ -1618,7 +1618,8 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Asset Group",
 			identifyingField: "fileName",
-			dataDivision: "assetGroup",
+			nestedAllValues: true,
+			dataDivisions: "assetGroup",
 		},
 
 		modelFolder: "string",
@@ -1630,14 +1631,17 @@ Specifies the type of the item. Possible values:
 	[DataType.ModelState]: {
 		__: {
 			displayName: "State",
-			identifyingField: "id",
-			dataDivision: dataDivisions.state,
+			identifyingField: "description",
+			dataDivisions: "state",
+			childFieldLabel: "faceArray",
+			chileField: "face",
+			nestedAllValues: true,
 			childTypes: {
 				substates: DataType.ModelFaceGroup,
 			},
 		},
 
-		id: new Property("string", `
+		description: new Property("string", `
 Description of the state, which doesn't seem to have an effect on its behavior.
 Some commonly found translations:
 
@@ -1654,7 +1658,7 @@ Some commonly found translations:
 			displayName: "Face Array",
 			childField: "faces",
 			nestedAllValues: true,
-			dataDivision: dataDivisions.subState,
+			dataDivisions: "subState",
 			childTypes: {
 				faces: DataType.ModelFace,
 			},
@@ -1672,7 +1676,7 @@ Some commonly found translations:
 			displayName: "Face",
 			childField: "animations",
 			nestedAllValues: true,
-			dataDivision: dataDivisions.face,
+			dataDivisions: "face",
 			childTypes: {
 				animations: DataType.ModelAnimation,
 			},
@@ -1689,8 +1693,7 @@ Some commonly found translations:
 	[DataType.ModelAnimation]: {
 		__: {
 			displayName: "Animation",
-			nestedAllValues: true,
-			dataDivisions: dataDivisions.anime,
+			dataDivisions: "anime",
 		},
 
 		description: "string",
@@ -1698,10 +1701,14 @@ Some commonly found translations:
 	},
 	[DataType.DataNpcModel]: {
 		__: {
-			parent: DataType.ModelType,
 			displayName: "NPC Models",
 			mainSymbol: "wld::fld::data::s_modelNpc",
 			countSymbol: "wld::fld::data::modelNpc_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+			},
+			parent: DataType.ModelType,
 			romfsPath: "data/model/data_model_npc.elf.zst",
 		},
 	},
@@ -1710,15 +1717,24 @@ Some commonly found translations:
 			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelPlayer",
 			countSymbol: "wld::fld::data::modelPlayer_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+			},
 			displayName: "Player Models",
 			romfsPath: "data/model/data_model_player.elf.zst",
 		},
+
 	},
 	[DataType.DataItemModel]: {
 		__: {
 			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelItem",
 			countSymbol: "wld::fld::data::modelItem_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+			},
 			displayName: "Item Models",
 			romfsPath: "data/model/data_model_item.elf.zst",
 		},
@@ -1728,6 +1744,10 @@ Some commonly found translations:
 			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelMobj",
 			countSymbol: "wld::fld::data::modelMobj_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+			},
 			displayName: "Mobj Models",
 			romfsPath: "data/model/data_model_mobj.elf.zst",
 		},
@@ -1737,6 +1757,10 @@ Some commonly found translations:
 			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelGobj",
 			countSymbol: "wld::fld::data::modelGobj_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+			},
 			displayName: "Gobj Models",
 			romfsPath: "data/model/data_model_gobj.elf.zst",
 		},
@@ -1746,6 +1770,10 @@ Some commonly found translations:
 			parent: DataType.ModelType,
 			mainSymbol: "wld::fld::data::s_modelBattle",
 			countSymbol: "wld::fld::data::modelBattle_num",
+			childTypes: {
+				assetGroups: DataType.ModelAssetGroup,
+				states: DataType.ModelState,
+			},
 			displayName: "Battle Models",
 			romfsPath: "data/model/data_model_battle.elf.zst",
 		},
