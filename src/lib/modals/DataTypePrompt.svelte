@@ -67,6 +67,7 @@
 		"data_battle_weaponac_mario_ac": DataType.BattleWeaponAcMarioAc,
 		"data_battle_weaponac_party_ac": DataType.BattleWeaponAcPartyAc,
 		"data_battle_audiencekind": DataType.BattleAudienceKind,
+    "data_ui": DataType.DataUi,
 	}
 
 	onMount(() => {
@@ -165,6 +166,8 @@
     <option value="BattleWeaponAcPartyAc">Party Action Commands (BattleWeaponAcPartyAc)</option>
 
     <option value="BattleAudienceKind">Battle Audience Parameters (BattleAudienceKind)</option>
+
+    <option value="DataUi">User Interface Registry (data_ui)</option>
 
   </select>
 	

@@ -16,22 +16,43 @@ const complexEditorCategories: {[dataType: number]: ComplexCategoryList} = {
 			dataType: DataType.UiModel,
 		},
 		"Messages": {
-			dataType: DataType.UiMsg,
+			dataType: DataType.UiMessage,
 		},
 		"Shops": {
 			dataType: DataType.UiShop,
 		},
-		"Sea Map": {
-			dataType: DataType.UiSeaMap,
+		"Action Commands": {
+			dataType: DataType.UiAcMaster,
 		},
-		"Menus": {
-			dataType: DataType.UiMenu,
+		"Gallery Art": {
+			dataType: DataType.UiGalleryArt,
 		},
-		"Announcements": {
-			dataType: DataType.UiAnnouncement,
+		"Gallery Sound": {
+			dataType: DataType.UiGallerySound,
 		},
-		"Announcement Excludes": {
-			dataType: DataType.UiAnnouncementExclude,
+		"Icons": {
+			dataType: DataType.UiIcon,
+		},
+		"Mail": {
+			dataType: DataType.UiMail,
+		},
+		"World Map": {
+			dataType: DataType.UiMap,
+		},
+		"Selected Window": {
+			dataType: DataType.UiSelectWindow,
+		},
+		"Shine Sprite": {
+			dataType: DataType.UiShine,
+		},
+		"Starpiece": {
+			dataType: DataType.UiStarpiece,
+		},
+		"Style": {
+			dataType: DataType.UiStyle,
+		},
+		"UranaisiNext": {
+			dataType: DataType.UiUranaisiNext,
 		},
 	},
 	

@@ -67,6 +67,8 @@ export enum DataType {
 	DataNpcModel,
 	DataPlayerModel,
 
+	DataUi,
+
 
 
 	// this is the end of the actual file types and start of sub types
@@ -84,4 +86,23 @@ export enum DataType {
 	MaplinkHeader,
 
 	SndBattleHeader,
+
+	UiModel,
+	UiModelProperty,
+	UiAcMaster,
+	UiGalleryArt,
+	UiGallerySound,
+	UiIcon,
+	UiMail,
+	UiMap,
+	UiMessage,
+	UiSelectWindow,
+	UiShine,
+	UiShop,
+	UiSellItem,
+	UiStarpiece,
+	UiStyle,
+	UiUranaisiNext,
+
+
 }

@@ -46,6 +46,20 @@ export const dataDivisions = {
 
 	model: "model",
 	modelProperty: "modelProperty",
+	msg: "msg",
+	shop: "shop",
+	sellItem: "sellItem",
+	action: "action",
+	art: "art",
+	sound: "sound",
+	icon: "icon",
+	mail: "mail",
+	map: "map",
+	window: "window",
+	shine: "shine",
+	starpiece: "starpiece",
+	style: "style",
+	uranaisi: "uranaisi",
 
 	// maplink
 	links: "links",
