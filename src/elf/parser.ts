@@ -558,6 +558,26 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let shopRelocs = peekable(allRelocations.get(".data"))
 			let shops = parseSymbol(dataSection, dataStringSection, shopSymbol, DataType.UiShop, { count: -1, relocations: shopRelocs })
 
+			// sell data
+			debugger
+
+			for (const shop of shops) {
+				const { soldItems: symbolName } = shop
+
+				if (symbolName == undefined)
+					continue
+
+				let symbol = findSymbol(symbolName)
+				let children = parseSymbol(dataSection, dataStringSection, symbol, DataType.UiSellItem, { count: -1 })
+
+				let soldItems = {
+					symbolName,
+					children,
+				}
+
+				shop.soldItems = soldItems
+			}
+
 			data.shop = shops
 
 			// models
