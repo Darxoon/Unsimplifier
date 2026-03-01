@@ -1,5 +1,5 @@
 import type EditorStrip from "$lib/editor/EditorStrip.svelte"
-import { DataTypeExtension, dataTypeExtensions } from "$lib/editor/fileEditor/dataTypeExtensions"
+import { getIndexChildTypes, isIndexDataType } from "$lib/editor/fileEditor/dataTypeExtensions"
 import { showModal } from "$lib/modal/modal"
 import TextAlert from "$lib/modal/TextAlert.svelte"
 import DescriptionViewer from "$lib/modals/DescriptionViewer.svelte"
@@ -59,16 +59,14 @@ type Metadata = {[fieldName: string]: Property<PropertyType>}
 function viewAllDescriptions(dataType: DataType) {
 	let allMetadata: Map<DataType, Metadata> = new Map()
 	
-	// TODO: get better name for data types without entry point data type,
-	// as literally, ones with can also be complex (e.g. BtlSet)
-	let isComplex = dataTypeExtensions(DataTypeExtension.HasComplexEditor, dataType)
+	let hasIndexEditor = isIndexDataType(dataType)
 	
-	if (!isComplex) {
+	if (!hasIndexEditor) {
 		addMetadataRecursive(dataType, allMetadata)
 	} else {
-		let childTypes = dataTypeExtensions(DataTypeExtension.ComplexEditorCategory, dataType)
+		let childTypes = getIndexChildTypes(dataType)
 		
-		for (const [name, { dataType }] of Object.entries(childTypes)) {
+		for (const { dataType } of Object.values(childTypes)) {
 			addMetadataRecursive(dataType, allMetadata)
 		}
 	}

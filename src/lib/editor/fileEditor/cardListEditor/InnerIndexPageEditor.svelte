@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { DataType } from "paper-mario-elfs/dataType";
-	import { createEventDispatcher, onMount } from "svelte";
-    import { DataTypeExtension, dataTypeExtensions } from "../dataTypeExtensions";
+	import { createEventDispatcher } from "svelte";
+    import { getIndexChildTypes } from "../dataTypeExtensions";
     import { nonnativeButton } from "$lib/nonnativeButton";
     import { OpenWindowEvent } from "$lib/editor/events";
     import type { ElfBinary } from "paper-mario-elfs/elfBinary";
@@ -23,7 +23,7 @@
 		editorElements.forEach(editor => editor.open = true)
 	}
 	
-	$: items = Object.entries(dataTypeExtensions(DataTypeExtension.ComplexEditorCategory, dataType))
+	$: items = Object.entries(getIndexChildTypes(dataType))
 </script>
 
 <div class="editor">

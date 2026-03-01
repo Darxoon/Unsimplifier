@@ -4,7 +4,7 @@
 	import { DataType } from "paper-mario-elfs/dataType";
     import LinearEditor from "./cardListEditor/LinearEditor.svelte";
     import InnerIndexPageEditor from "./cardListEditor/InnerIndexPageEditor.svelte";
-    import { DataTypeExtension, dataTypeExtensions } from "./dataTypeExtensions";
+    import { isIndexDataType } from "./dataTypeExtensions";
 
 	export let binary: ElfBinary
 	export let dataType: DataType
@@ -15,7 +15,7 @@
 	
 	let inner: InnerIndexPageEditor | LinearEditor
 	
-	$: requiresIndexEditor = dataTypeExtensions(DataTypeExtension.HasComplexEditor, dataType)
+	$: requiresIndexEditor = isIndexDataType(dataType)
 	
 	$: if (requiresIndexEditor && fileName == undefined) {
 		throw new Error("filename property must be set in CardListEditor component with inner index editor.")

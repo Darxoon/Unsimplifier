@@ -1,13 +1,15 @@
 import { DataType } from "paper-mario-elfs/dataType";
 
-export enum DataTypeExtension {
-	HasComplexEditor,
-	ComplexEditorCategory,
-}
+const indexDataTypes: Set<DataType> = new Set([
+	DataType.DataUi,
+])
 
-const hasComplexEditor = {
-	[DataType.DataUi]: true,
-	[DataType.DataBtl]: true,
+/**
+ * Whether a top-level data type has multiple root categories
+ * (i.e. it requires an index editor which just contains links to different data types)
+ */
+export function isIndexDataType(dataType: DataType): boolean {
+	return indexDataTypes.has(dataType)
 }
 
 const complexEditorCategories: {[dataType: number]: ComplexCategoryList} = {
@@ -39,75 +41,26 @@ const complexEditorCategories: {[dataType: number]: ComplexCategoryList} = {
 		"World Map": {
 			dataType: DataType.UiMap,
 		},
-		"Selected Window": {
+		"Selection Boxes": {
 			dataType: DataType.UiSelectWindow,
 		},
-		"Shine Sprite": {
+		"Shine Sprites": {
 			dataType: DataType.UiShine,
 		},
-		"Starpiece": {
+		"Star Pieces": {
 			dataType: DataType.UiStarpiece,
 		},
-		"Style": {
+		"Font Styles": {
 			dataType: DataType.UiStyle,
 		},
-		"UranaisiNext": {
+		"Merluvlee": {
 			dataType: DataType.UiUranaisiNext,
-		},
-	},
-	
-	[DataType.DataBtl]: {
-		"Actors": {
-			label: "Actors (all characters in battle)",
-			dataType: DataType.BtlUnit,
-		},
-		"Models": {
-			dataType: DataType.BtlModel,
-		},
-		"Parts": {
-			dataType: DataType.BtlPart,
-		},
-		"Attacks": {
-			dataType: DataType.BtlAttack,
-		},
-		"Attack Ranges": {
-			dataType: DataType.BtlAttackRangeHeader,
-		},
-		"Boss Attacks": {
-			dataType: DataType.BtlBossAttack,
-		},
-		"Event Cameras": {
-			dataType: DataType.BtlEventCamera,
-		},
-		"Puzzle Levels": {
-			dataType: DataType.BtlPuzzleLevel,
-		},
-		"Cheer Terms": {
-			dataType: DataType.BtlCheerTerms,
-		},
-		"Cheer Events": {
-			dataType: DataType.BtlCheer,
-		},
-		"Resources": {
-			dataType: DataType.BtlResourceField,
-		},
-		"Settings": {
-			dataType: DataType.BtlConfig,
 		},
 	},
 }
 
 export type ComplexCategoryList = {[name: string]: { dataType: DataType, label?: string }}
 
-const extensions = {
-	[DataTypeExtension.HasComplexEditor]: hasComplexEditor,
-	[DataTypeExtension.ComplexEditorCategory]: complexEditorCategories,
-}
-
-// TODO: this is totally overengineered, just make a different function for every category
-export function dataTypeExtensions(extension: DataTypeExtension.HasComplexEditor, dataType: DataType): boolean;
-export function dataTypeExtensions(extension: DataTypeExtension.ComplexEditorCategory, dataType: DataType): ComplexCategoryList;
-
-export function dataTypeExtensions(extension: DataTypeExtension, dataType: DataType): unknown {
-	return extensions[extension][dataType]
+export function getIndexChildTypes(dataType: DataType): ComplexCategoryList {
+	return complexEditorCategories[dataType]
 }

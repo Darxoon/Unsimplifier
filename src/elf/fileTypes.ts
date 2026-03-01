@@ -161,7 +161,7 @@ interface DataTypeMetadata {
 	// these do nothing yet
 	childField?: string
 	// childFieldLabel
-	nestedAllValues?: boolean
+	// nestedAllValues?: boolean
 	entryPoints?: { [objectType: number]: any }
 }
 
@@ -1801,7 +1801,6 @@ Some commonly found translations:
 		},
 	},
 	[DataType.DataUi]: {},
-
 	[DataType.UiModel]: {
 		__: {
 			displayName: "Model",
@@ -1820,12 +1819,10 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 		propertyCount: new Property("int", undefined, { hidden: true }),
 		field_0x24: "int",
 	},
-
 	[DataType.UiModelProperty]: {
 		__: {
 			displayName: "Model Property",
 			dataDivision: "modelProperty",
-			nestedAllValues: true,
 		},
 		id: "string",
 		model: "string",
@@ -1885,7 +1882,6 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 		field_0x8c: "int",
 		field_0x90: "int",
 	},
-
 	[DataType.UiShop]: {
 		__: {
 			displayName: "Shop",
@@ -1898,29 +1894,17 @@ The ID of the shop. Entries that show null are tied to the next shop ID above. S
 		item: new Property("string", `
 Item ID.`),
 		price: new Property("int", `
-Item Price.`),
+Item Price in coins.`),
 		outOfStock: new Property("bool32", `
-If 0, the item is available. If 1, the item is out of stock.`),
+Whether this item is available in the shop by default or not.`),
 	},
-
-	//[DataType.UiSellItem]: {
-		//__: {
-			//displayName: "Sold Item",
-			//dataDivision: null,
-			//nestedAllValues: true,
-		//},
-
-		//id: "string",
-		//cost: "int",
-		//field_0x0c: "int",
-	//},
-
 	[DataType.UiAcMaster]: {
 		__: {
-			displayName: "Action Commands",
+			displayName: "Action Command",
 			dataDivision: "action",
 			defaultPadding: 1,
 		},
+		
 		id: "string",
 		field_0x08: "string",
 		field_0x10: "string",
@@ -1937,6 +1921,7 @@ If 0, the item is available. If 1, the item is out of stock.`),
 			dataDivision: "art",
 			defaultPadding: 1,
 		},
+		
 		type: "string",
 		id: "string",
 		field_0x10: "string",
@@ -1961,12 +1946,13 @@ If 0, the item is available. If 1, the item is out of stock.`),
 	},
 	[DataType.UiIcon]: {
 		__: {
-			displayName: "Icons",
+			displayName: "Icon",
 			dataDivision: "icon",
 			defaultPadding: 1,
 		},
+		
 		id: "string",
-		textureID: new Property("string", `
+		textureId: new Property("string", `
 Texture name from romfs/ui/icon/icon.bntx.zst`),
 		field_0x10: "string",
 		field_0x18: "string",
@@ -1987,6 +1973,7 @@ Texture name from romfs/ui/icon/icon.bntx.zst`),
 			dataDivision: "mail",
 			defaultPadding: 1,
 		},
+		
 		id: "string",
 		field_0x08: "int",
 		field_0x0c: "int",
@@ -2002,10 +1989,11 @@ Body of the mail from mail.msbt`),
 	},
 	[DataType.UiMap]: {
 		__: {
-			displayName: "World Map",
+			displayName: "Map Location",
 			dataDivision: "map",
 			defaultPadding: 1,
 		},
+		
 		id: "string",
 		placementBone: "string",
 		mapName: new Property("string", `
@@ -2015,14 +2003,16 @@ Map description from global.msbt`),
 	},
 	[DataType.UiSelectWindow]: {
 		__: {
-			displayName: "Selected Window",
+			displayName: "Selection Box",
 			dataDivision: "window",
 			defaultPadding: 1,
+			identifyingField: "type",
 		},
+		
 		type: "string",
 		field_0x08: "int",
 		field_0x0c: "int",
-		id: "string",
+		field_0x10: "string",
 		field_0x18: "string",
 		field_0x20: "string",
 		field_0x28: "string",
@@ -2038,19 +2028,26 @@ Map description from global.msbt`),
 	},
 	[DataType.UiShine]: {
 		__: {
-			displayName: "Shine Sprite Data",
+			displayName: "Shine Sprite",
 			dataDivision: "shine",
 			defaultPadding: 1,
 		},
 		id: "string",
-		field_0x08: "string",
-		field_0x10: "string",
+		description: new Property("string", `
+A description of where this shine sprite is located. Common values include:
+
+* ゴロツキタウン - Rogueport
+* ステージ1 - Stage 1
+* ステージ2 - Stage 2
+* ...
+`),
+		areaName: "string",
 		field_0x18: "string",
 		field_0x20: "string",
 	},
 	[DataType.UiStarpiece]: {
 		__: {
-			displayName: "Star Piece Data",
+			displayName: "Star Piece",
 			dataDivision: "starpiece",
 			defaultPadding: 1,
 		},
@@ -2062,7 +2059,7 @@ Map description from global.msbt`),
 	},
 	[DataType.UiStyle]: {
 		__: {
-			displayName: "Font Styles",
+			displayName: "Font Style",
 			dataDivision: "style",
 			defaultPadding: 1,
 		},
@@ -2091,7 +2088,7 @@ Map description from global.msbt`),
 	},
 	[DataType.UiUranaisiNext]: {
 		__: {
-			displayName: "UranaisiNext",
+			displayName: "Merluvlee Data",
 			dataDivision: "uranaisi",
 			defaultPadding: 1,
 		},
