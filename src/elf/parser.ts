@@ -467,65 +467,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let messages = parseSymbol(dataSection, stringSection, msgSymbol, DataType.UiMessage, { count: -1, allowSkippingRelocations: true })
 			data.msg = messages
 
-			// style
-			let styleSymbol = findSymbol("wld::fld::data::s_UIStyleData")
-			let styles = parseSymbol(dataSection, stringSection, styleSymbol, DataType.UiStyle, { count: -1 })
-			data.style = styles
-
-			// shop
-			let shopSymbol = findSymbol("wld::fld::data::s_UIShopData")
-			let shops = parseSymbol(dataSection, stringSection, shopSymbol, DataType.UiShop, { count: -1 })
-			data.shop = shops
-
-			// icons
-			let iconSymbol = findSymbol("wld::fld::data::s_UIIconData")
-			let icons = parseSymbol(dataSection, stringSection, iconSymbol, DataType.UiIcon, { count: -1 })
-			data.icon = icons
-
-			// mail
-			let mailSymbol = findSymbol("wld::fld::data::s_UIMailData")
-			let mail = parseSymbol(dataSection, stringSection, mailSymbol, DataType.UiMail, { count: -1 })
-			data.mail = mail
-
-			// map
-			let mapSymbol = findSymbol("wld::fld::data::s_UIMapData")
-			let worldmap = parseSymbol(dataSection, stringSection, mapSymbol, DataType.UiMap, { count: -1 })
-			data.map = worldmap
-
-			// uranais
-			let uranaisiSymbol = findSymbol("wld::fld::data::s_UIUranaisiNextData")
-			let uranaisi = parseSymbol(dataSection, stringSection, uranaisiSymbol, DataType.UiUranaisiNext, { count: -1 })
-			data.uranaisi = uranaisi
-
-			// starpiece
-			let starpieceSymbol = findSymbol("wld::fld::data::s_UIStarpieceData")
-			let starpieces = parseSymbol(dataSection, stringSection, starpieceSymbol, DataType.UiStarpiece, { count: -1 })
-			data.starpiece = starpieces
-
-			// shine
-			let shineSymbol = findSymbol("wld::fld::data::s_UIShineData")
-			let shines = parseSymbol(dataSection, stringSection, shineSymbol, DataType.UiShine, { count: -1 })
-			data.shine = shines
-
-			// gallery art
-			let artSymbol = findSymbol("wld::fld::data::s_UIGalleryArtData")
-			let art = parseSymbol(dataSection, stringSection, artSymbol, DataType.UiGalleryArt, { count: -1 })
-			data.art = art
-
-			// gallery sound
-			let soundSymbol = findSymbol("wld::fld::data::s_UIGallerySoundData")
-			let sound = parseSymbol(dataSection, stringSection, soundSymbol, DataType.UiGallerySound, { count: -1 })
-			data.sound = sound
-			
-			// ac master
-			let acSymbol = findSymbol("wld::fld::data::s_UIAcMasterData")
-			let actions = parseSymbol(dataSection, stringSection, acSymbol, DataType.UiAcMaster, { count: -1 })
-			data.action = actions
-
-			// select window
-			let windowSymbol = findSymbol("wld::fld::data::s_UISelectWindowData")
-			let windows = parseSymbol(dataSection, stringSection, windowSymbol, DataType.UiSelectWindow, { count: -1 })
-			data.window = windows
+			parseIndexData(dataSection, stringSection, dataType)
 
 			break
 		}
@@ -588,6 +530,20 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	return binary
 	
 	// Util parsing functions
+	function parseIndexData(section: Section, stringSection: Section, dataType: DataType) {
+		for (const [dataDivision, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
+			const symbolName = FILE_TYPES[childDataType].mainSymbol
+			const symbol = findSymbol(symbolName)
+			
+			const count = FILE_TYPES[childDataType].defaultPadding > 0
+				? -FILE_TYPES[childDataType].defaultPadding
+				: undefined
+			
+			const items = parseSymbol(section, stringSection, symbol, childDataType, { count })
+			data[dataDivision] = items
+		}
+	}
+	
 	interface ParseChildProps {
 		dataType: DataType
 		countField?: string

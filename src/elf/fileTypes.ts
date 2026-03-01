@@ -158,6 +158,11 @@ interface DataTypeMetadata {
 	 */
 	childTypes?: Typedef<DataType>
 	
+	/**
+	 * If this data type is an index type, this is the index of all its root child types
+	 */
+	rootTypes?: {[dataDivision in DataDivision]?: DataType}
+	
 	// these do nothing yet
 	childField?: string
 	// childFieldLabel
@@ -1800,7 +1805,24 @@ Some commonly found translations:
 			romfsPath: "data/model/data_model_battle.elf.zst",
 		},
 	},
-	[DataType.DataUi]: {},
+	[DataType.DataUi]: {
+		__: {
+			rootTypes: {
+				style: DataType.UiStyle,
+				shop: DataType.UiShop,
+				icon: DataType.UiIcon,
+				mail: DataType.UiMail,
+				map: DataType.UiMap,
+				uranaisi: DataType.UiUranaisiNext,
+				starpiece: DataType.UiStarpiece,
+				shine: DataType.UiShine,
+				art: DataType.UiGalleryArt,
+				sound: DataType.UiGallerySound,
+				action: DataType.UiAcMaster,
+				window: DataType.UiSelectWindow,
+			}
+		}
+	},
 	[DataType.UiModel]: {
 		__: {
 			displayName: "Model",
@@ -1886,6 +1908,7 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 		__: {
 			displayName: "Shop",
 			dataDivision: "shop",
+			mainSymbol: "wld::fld::data::s_UIShopData",
 			defaultPadding: 1,
 		},
 
@@ -1902,6 +1925,7 @@ Whether this item is available in the shop by default or not.`),
 		__: {
 			displayName: "Action Command",
 			dataDivision: "action",
+			mainSymbol: "wld::fld::data::s_UIAcMasterData",
 			defaultPadding: 1,
 		},
 		
@@ -1919,6 +1943,7 @@ Whether this item is available in the shop by default or not.`),
 		__: {
 			displayName: "Gallery Art",
 			dataDivision: "art",
+			mainSymbol: "wld::fld::data::s_UIGalleryArtData",
 			defaultPadding: 1,
 		},
 		
@@ -1932,6 +1957,7 @@ Whether this item is available in the shop by default or not.`),
 		__: {
 			displayName: "Gallery Sound",
 			dataDivision: "sound",
+			mainSymbol: "wld::fld::data::s_UIGallerySoundData",
 			defaultPadding: 1,
 		},
 
@@ -1948,6 +1974,7 @@ Whether this item is available in the shop by default or not.`),
 		__: {
 			displayName: "Icon",
 			dataDivision: "icon",
+			mainSymbol: "wld::fld::data::s_UIIconData",
 			defaultPadding: 1,
 		},
 		
@@ -1971,6 +1998,7 @@ Texture name from romfs/ui/icon/icon.bntx.zst`),
 		__: {
 			displayName: "Mail",
 			dataDivision: "mail",
+			mainSymbol: "wld::fld::data::s_UIMailData",
 			defaultPadding: 1,
 		},
 		
@@ -1991,6 +2019,7 @@ Body of the mail from mail.msbt`),
 		__: {
 			displayName: "Map Location",
 			dataDivision: "map",
+			mainSymbol: "wld::fld::data::s_UIMapData",
 			defaultPadding: 1,
 		},
 		
@@ -2005,8 +2034,9 @@ Map description from global.msbt`),
 		__: {
 			displayName: "Selection Box",
 			dataDivision: "window",
-			defaultPadding: 1,
+			mainSymbol: "wld::fld::data::s_UISelectWindowData",
 			identifyingField: "type",
+			defaultPadding: 1,
 		},
 		
 		type: "string",
@@ -2030,6 +2060,7 @@ Map description from global.msbt`),
 		__: {
 			displayName: "Shine Sprite",
 			dataDivision: "shine",
+			mainSymbol: "wld::fld::data::s_UIShineData",
 			defaultPadding: 1,
 		},
 		id: "string",
@@ -2049,6 +2080,7 @@ A description of where this shine sprite is located. Common values include:
 		__: {
 			displayName: "Star Piece",
 			dataDivision: "starpiece",
+			mainSymbol: "wld::fld::data::s_UIStarpieceData",
 			defaultPadding: 1,
 		},
 		id: "string",
@@ -2061,6 +2093,7 @@ A description of where this shine sprite is located. Common values include:
 		__: {
 			displayName: "Font Style",
 			dataDivision: "style",
+			mainSymbol: "wld::fld::data::s_UIStyleData",
 			defaultPadding: 1,
 		},
 		id: "string",
@@ -2090,6 +2123,7 @@ A description of where this shine sprite is located. Common values include:
 		__: {
 			displayName: "Merluvlee Data",
 			dataDivision: "uranaisi",
+			mainSymbol: "wld::fld::data::s_UIUranaisiNextData",
 			defaultPadding: 1,
 		},
 		id: "string",
@@ -2192,12 +2226,17 @@ interface FileTypeRegistry {
 	 */
 	mainSymbol?: string
 	
-	// for future sub-types
 	/**
 	 * A mapping between field names of this data structure and another data type if a field
 	 * contains a pointer to that data type.
 	 */
-	childTypes?: Typedef<DataType>
+	childTypes: Typedef<DataType>
+	/**
+	 * If this data type is an index type, this is the index of all its root child types
+	 */
+	rootTypes: {[dataDivision in DataDivision]?: DataType},
+	
+	// for future sub-types
 	childFieldLabel?: string
 	childField?: string
 	nestedAllValues?: boolean
@@ -2230,6 +2269,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		pointerTargetSection,
 		romfsPath,
 		childTypes,
+		rootTypes,
 		defaultPadding,
 		countSymbol,
 		textVars,
@@ -2300,6 +2340,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		mainSymbol,
 		
 		childTypes: childTypes ?? {},
+		rootTypes: rootTypes ?? {},
 		
 		// for future sub-types
 		// childField: typedef.__childField as string | undefined,
