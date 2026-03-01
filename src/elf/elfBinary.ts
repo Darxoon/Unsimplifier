@@ -45,10 +45,8 @@ export const dataDivisions = {
 	anime: "anime",
 
 	model: "model",
-	modelProperty: "modelProperty",
 	msg: "msg",
 	shop: "shop",
-	sellItem: "sellItem",
 	action: "action",
 	art: "art",
 	sound: "sound",

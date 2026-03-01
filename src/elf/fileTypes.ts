@@ -1822,7 +1822,7 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 	[DataType.UiModelProperty]: {
 		__: {
 			displayName: "Model Property",
-			dataDivision: "modelProperty",
+			dataDivision: null,
 		},
 		id: "string",
 		model: "string",

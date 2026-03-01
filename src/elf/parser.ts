@@ -322,32 +322,12 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let mainSymbol = findSymbol("wld::btl::data::s_Data")
 			let itemTables = parseSymbol(dataSection, stringSection, mainSymbol, DataType.ItemList, { count: -1, relocations: tableRelocs })
 
-			debugger
-
-			for (const table of itemTables) {
-				const { items: symbolName } = table
-
-				if (symbolName == undefined)
-					continue
-
-				let symbol = findSymbol(symbolName)
-				let children = parseSymbol(dataSection, stringSection, symbol, DataType.ListItem, { count: -1 })
-
-				let items = {
-					symbolName,
-					children,
-				}
-
-				table.items = items
-			}
-
-			// idea to abstract loop ^^^ away:
-			// applyChildren(dataSection, stringSection, itemTables, [
-			// 	items: {
-			// 		dataType: DataType.ListItem,
-			// 		count: -1,
-			// 	},
-			// ])
+			parseChildren(dataSection, stringSection, itemTables, {
+				items: {
+					dataType: DataType.ListItem,
+					count: -1,
+				},
+			})
 
 			data = {}
 			data.main = itemTables
@@ -364,25 +344,13 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 			let mainSymbol = findSymbol("wld::btl::data::s_Data")
 			let dropTables = parseSymbol(dataSection, stringSection, mainSymbol, DataType.HeartParam, { count: -1, relocations: tableRelocs })
-
-			debugger
-
-			for (const table of dropTables) {
-				const { drops: symbolName } = table
-
-				if (symbolName == undefined)
-					continue
-
-				let symbol = findSymbol(symbolName)
-				let children = parseSymbol(dataSection, stringSection, symbol, DataType.HeartItem, { count: -1 })
-
-				let drops = {
-					symbolName,
-					children,
-				}
-
-				table.drops = drops
-			}
+			
+			parseChildren(dataSection, stringSection, dropTables, {
+				drops: {
+					dataType: DataType.HeartItem,
+					count: -1,
+				},
+			})
 
 			data = {}
 			data.main = dropTables
@@ -485,32 +453,14 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let modelDataSymbol = findSymbol("wld::fld::data::s_uiModelData")
 			let models = parseSymbol(dataSection, stringSection, modelDataSymbol, DataType.UiModel, { count: -1, relocations: modelRelocs })
 			data.model = models
-
+			
 			// model properties
-			let modelProperties = []
-
-			for (const model of models) {
-				const { properties: offset, propertyCount } = model
-
-
-				if (offset == undefined || offset == Pointer.NULL) {
-					model.properties = null
-					continue
-				}
-
-				let symbol = findSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`) ?? createMissingSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`, dataSection)
-				let children = parseSymbol(dataSection, stringSection, symbol, DataType.UiModelProperty, { count: propertyCount })
-
-				let propertyObj = {
-					symbolName: demangle(symbol.name),
-					children,
-				}
-
-				modelProperties.push(propertyObj);
-				model.properties = propertyObj
-			}
-
-			data.modelProperty = modelProperties
+			parseChildren(dataSection, stringSection, models, {
+				properties: {
+					dataType: DataType.UiModelProperty,
+					countField: "propertyCount",
+				},
+			})
 
 			// msg
 			let msgSymbol = findSymbol("wld::fld::data::s_uiMessageData")
@@ -637,6 +587,43 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	
 	return binary
 	
+	// Util parsing functions
+	interface ParseChildProps {
+		dataType: DataType
+		countField?: string
+		count?: number
+	}
+	
+	type IsAny<T> = unknown extends T ? [keyof T] extends [never] ? false : true : false
+	type PotentialChildFields<T> = {[key in keyof T]: IsAny<T[key]> extends true ? key : never}[keyof T]
+	
+	function parseChildren<T extends DataType>(
+		section: Section, stringSection: Section, items: Instance<T>[],
+		childFields: {[fieldName in PotentialChildFields<Instance<T>>]?: ParseChildProps},
+	) {
+		for (const [fieldName, _props] of Object.entries(childFields)) {
+			const props = _props as ParseChildProps
+			
+			for (const item of items) {
+				const symbolName = item[fieldName]
+	
+				if (item[fieldName] == undefined)
+					continue
+				
+				const count = props.countField ? item[props.countField] : props.count
+	
+				let symbol = findSymbol(symbolName) ?? createMissingSymbol(symbolName, section)
+				let children = parseSymbol(section, stringSection, symbol, props.dataType, { count })
+	
+				let propertyObj = {
+					symbolName: demangle(symbol.name),
+					children,
+				}
+	
+				item[fieldName] = propertyObj
+			}
+		}
+	}
 	
 	interface ParseSymbolProps {
 		count?: number
@@ -644,7 +631,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		allowSkippingRelocations?: boolean
 	}
 	
-	function parseSymbol<T extends DataType>(section: Section, stringSection: Section, symbol: Symbol, dataType: T, properties?: ParseSymbolProps) {
+	function parseSymbol<T extends DataType>(section: Section, stringSection: Section, symbol: Symbol, dataType: T, properties?: ParseSymbolProps): Instance<T>[] {
 		let { count, relocations, allowSkippingRelocations } = properties
 		
 		// if count is smaller than zero, calculate size like normal and subtract negative value from it
@@ -663,7 +650,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	function parseRange<T extends DataType>(
 		section: Section, stringSection: Section, startOffset: number | Pointer, count: number,
 		dataType: T, relocations?: Peekable<[number, Relocation]>, allowSkippingRelocations?: boolean,
-	) {
+	): Instance<T>[] {
 		const initialReaderPosition = section.reader.position
 		let reader = section.reader
 		
