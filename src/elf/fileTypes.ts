@@ -2093,7 +2093,7 @@ Map description from global.msbt`),
 		__: {
 			displayName: "UranaisiNext",
 			dataDivision: "uranaisi",
-			defualtPadding: 1,
+			defaultPadding: 1,
 		},
 		id: "string",
 		field_0x08: "int",

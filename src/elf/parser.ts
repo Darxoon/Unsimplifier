@@ -478,9 +478,8 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
 
-
 			data = {}
-
+			
 			// models
 			let modelRelocs = peekable(allRelocations.get(".data"))
 			let modelDataSymbol = findSymbol("wld::fld::data::s_uiModelData")
@@ -498,10 +497,9 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					model.properties = null
 					continue
 				}
-				let propertyRelocs = peekable(allRelocations.get(".data"))
 
 				let symbol = findSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`) ?? createMissingSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`, dataSection)
-				let children = parseSymbol(dataSection, stringSection, symbol, DataType.UiModelProperty, { count: propertyCount, relocations: propertyRelocs })
+				let children = parseSymbol(dataSection, stringSection, symbol, DataType.UiModelProperty, { count: propertyCount })
 
 				let propertyObj = {
 					symbolName: demangle(symbol.name),
@@ -516,82 +514,68 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 			// msg
 			let msgSymbol = findSymbol("wld::fld::data::s_uiMessageData")
-			let msgRelocs = peekable(allRelocations.get(".data"))
-			let messages = parseSymbol(dataSection, stringSection, msgSymbol, DataType.UiMessage, { count: -1, relocations: msgRelocs })
+			let messages = parseSymbol(dataSection, stringSection, msgSymbol, DataType.UiMessage, { count: -1, allowSkippingRelocations: true })
 			data.msg = messages
+
+			// style
+			let styleSymbol = findSymbol("wld::fld::data::s_UIStyleData")
+			let styles = parseSymbol(dataSection, stringSection, styleSymbol, DataType.UiStyle, { count: -1 })
+			data.style = styles
 
 			// shop
 			let shopSymbol = findSymbol("wld::fld::data::s_UIShopData")
-			let shopRelocs = peekable(allRelocations.get(".data"))
-			let shops = parseSymbol(dataSection, stringSection, shopSymbol, DataType.UiShop, { count: -1, relocations: shopRelocs })
-
+			let shops = parseSymbol(dataSection, stringSection, shopSymbol, DataType.UiShop, { count: -1 })
 			data.shop = shops
-
-			// ac master
-			let acSymbol = findSymbol("wld::fld::data::s_UIAcMasterData")
-			let acRelocs = peekable(allRelocations.get(".data"))
-			let actions = parseSymbol(dataSection, stringSection, acSymbol, DataType.UiAcMaster, { count: -1, relocations: acRelocs })
-			data.action = actions
-
-			// gallery art
-			let artSymbol = findSymbol("wld::fld::data::s_UIGalleryArtData")
-			let artRelocs = peekable(allRelocations.get(".data"))
-			let art = parseSymbol(dataSection, stringSection, artSymbol, DataType.UiGalleryArt, { count: -1, relocations: artRelocs })
-			data.art = art
-
-			// gallery sound
-			let soundSymbol = findSymbol("wld::fld::data::s_UIGallerySoundData")
-			let soundRelocs = peekable(allRelocations.get(".data"))
-			let sound = parseSymbol(dataSection, stringSection, soundSymbol, DataType.UiGallerySound, { count: -1, relocations: soundRelocs })
-			data.sound = sound
 
 			// icons
 			let iconSymbol = findSymbol("wld::fld::data::s_UIIconData")
-			let iconRelocs = peekable(allRelocations.get(".data"))
-			let icons = parseSymbol(dataSection, stringSection, iconSymbol, DataType.UiIcon, { count: -1, relocations: iconRelocs })
+			let icons = parseSymbol(dataSection, stringSection, iconSymbol, DataType.UiIcon, { count: -1 })
 			data.icon = icons
 
 			// mail
 			let mailSymbol = findSymbol("wld::fld::data::s_UIMailData")
-			let mailRelocs = peekable(allRelocations.get(".data"))
-			let mail = parseSymbol(dataSection, stringSection, mailSymbol, DataType.UiMail, { count: -1, relocations: mailRelocs })
+			let mail = parseSymbol(dataSection, stringSection, mailSymbol, DataType.UiMail, { count: -1 })
 			data.mail = mail
 
 			// map
 			let mapSymbol = findSymbol("wld::fld::data::s_UIMapData")
-			let mapRelocs = peekable(allRelocations.get(".data"))
-			let worldmap = parseSymbol(dataSection, stringSection, mapSymbol, DataType.UiMap, { count: -1, relocations: mapRelocs })
+			let worldmap = parseSymbol(dataSection, stringSection, mapSymbol, DataType.UiMap, { count: -1 })
 			data.map = worldmap
-
-			// select window
-			let windowSymbol = findSymbol("wld::fld::data::s_UISelectWindowData")
-			let windowRelocs = peekable(allRelocations.get(".data"))
-			let windows = parseSymbol(dataSection, stringSection, windowSymbol, DataType.UiSelectWindow, { count: -1, relocations: windowRelocs })
-			data.window = windows
-
-			// shine
-			let shineSymbol = findSymbol("wld::fld::data::s_UIShineData")
-			let shineRelocs = peekable(allRelocations.get(".data"))
-			let shines = parseSymbol(dataSection, stringSection, shineSymbol, DataType.UiShine, { count: -1, relocations: shineRelocs })
-			data.shine = shines
-
-			// starpiece
-			let starpieceSymbol = findSymbol("wld::fld::data::s_UIStarpieceData")
-			let starpieceRelocs = peekable(allRelocations.get(".data"))
-			let starpieces = parseSymbol(dataSection, stringSection, starpieceSymbol, DataType.UiStarpiece, { count: -1, relocations: starpieceRelocs })
-			data.starpiece = starpieces
-
-			// style
-			let styleSymbol = findSymbol("wld::fld::data::s_UIStyleData")
-			let styleRelocs = peekable(allRelocations.get(".data"))
-			let styles = parseSymbol(dataSection, stringSection, styleSymbol, DataType.UiStyle, { count: -1, relocations: styleRelocs })
-			data.style = styles
 
 			// uranais
 			let uranaisiSymbol = findSymbol("wld::fld::data::s_UIUranaisiNextData")
-			let uranaisiRelocs = peekable(allRelocations.get(".data"))
-			let uranaisi = parseSymbol(dataSection, stringSection, uranaisiSymbol, DataType.UiUranaisiNext, { count: -1, relocations: uranaisiRelocs })
+			let uranaisi = parseSymbol(dataSection, stringSection, uranaisiSymbol, DataType.UiUranaisiNext, { count: -1 })
 			data.uranaisi = uranaisi
+
+			// starpiece
+			let starpieceSymbol = findSymbol("wld::fld::data::s_UIStarpieceData")
+			let starpieces = parseSymbol(dataSection, stringSection, starpieceSymbol, DataType.UiStarpiece, { count: -1 })
+			data.starpiece = starpieces
+
+			// shine
+			let shineSymbol = findSymbol("wld::fld::data::s_UIShineData")
+			let shines = parseSymbol(dataSection, stringSection, shineSymbol, DataType.UiShine, { count: -1 })
+			data.shine = shines
+
+			// gallery art
+			let artSymbol = findSymbol("wld::fld::data::s_UIGalleryArtData")
+			let art = parseSymbol(dataSection, stringSection, artSymbol, DataType.UiGalleryArt, { count: -1 })
+			data.art = art
+
+			// gallery sound
+			let soundSymbol = findSymbol("wld::fld::data::s_UIGallerySoundData")
+			let sound = parseSymbol(dataSection, stringSection, soundSymbol, DataType.UiGallerySound, { count: -1 })
+			data.sound = sound
+			
+			// ac master
+			let acSymbol = findSymbol("wld::fld::data::s_UIAcMasterData")
+			let actions = parseSymbol(dataSection, stringSection, acSymbol, DataType.UiAcMaster, { count: -1 })
+			data.action = actions
+
+			// select window
+			let windowSymbol = findSymbol("wld::fld::data::s_UISelectWindowData")
+			let windows = parseSymbol(dataSection, stringSection, windowSymbol, DataType.UiSelectWindow, { count: -1 })
+			data.window = windows
 
 			break
 		}
@@ -657,10 +641,11 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	interface ParseSymbolProps {
 		count?: number
 		relocations?: Peekable<[number, Relocation]>
+		allowSkippingRelocations?: boolean
 	}
 	
 	function parseSymbol<T extends DataType>(section: Section, stringSection: Section, symbol: Symbol, dataType: T, properties?: ParseSymbolProps) {
-		let { count, relocations } = properties
+		let { count, relocations, allowSkippingRelocations } = properties
 		
 		// if count is smaller than zero, calculate size like normal and subtract negative value from it
 		let subtract = 0
@@ -672,18 +657,18 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		
 		count = count ?? symbol.size / FILE_TYPES[dataType].size - subtract
 		
-		return parseRange(section, stringSection, symbol.location, count, dataType, relocations)
+		return parseRange(section, stringSection, symbol.location, count, dataType, relocations, allowSkippingRelocations)
 	}
 	
 	function parseRange<T extends DataType>(
-		section: Section, stringSection: Section, startOffset: number | Pointer,
-		count: number, dataType: T, relocations?: Peekable<[number, Relocation]>,
+		section: Section, stringSection: Section, startOffset: number | Pointer, count: number,
+		dataType: T, relocations?: Peekable<[number, Relocation]>, allowSkippingRelocations?: boolean,
 	) {
 		const initialReaderPosition = section.reader.position
 		let reader = section.reader
-		let allowSkippingRelocations = relocations != undefined
 		
-		relocations = relocations ?? allRelocationIters.get(section.name)
+		allowSkippingRelocations ??= relocations != undefined
+		relocations ??= allRelocationIters.get(section.name)
 		
 		reader.position = typeof startOffset == 'number' ? startOffset : startOffset.value
 		

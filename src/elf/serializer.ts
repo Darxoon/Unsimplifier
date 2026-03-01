@@ -283,7 +283,23 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolAddrRelocations: dataSymbolAddrs,
 				}
 
-
+				serializeStringsOnly(DataType.UiModel, binary.data.model)
+				serializeStringsOnly(DataType.UiMessage, binary.data.msg)
+				serializeStringsOnly(DataType.UiModel, binary.data.model)
+				serializeStringsOnly(DataType.UiMessage, binary.data.msg)
+				serializeStringsOnly(DataType.UiStyle, binary.data.style)
+				serializeStringsOnly(DataType.UiShop, binary.data.shop)
+				serializeStringsOnly(DataType.UiIcon, binary.data.icon)
+				serializeStringsOnly(DataType.UiMail, binary.data.mail)
+				serializeStringsOnly(DataType.UiMap, binary.data.map)
+				serializeStringsOnly(DataType.UiUranaisiNext, binary.data.uranaisi)
+				serializeStringsOnly(DataType.UiStarpiece, binary.data.starpiece)
+				serializeStringsOnly(DataType.UiShine, binary.data.shine)
+				serializeStringsOnly(DataType.UiGalleryArt, binary.data.art)
+				serializeStringsOnly(DataType.UiGallerySound, binary.data.sound)
+				serializeStringsOnly(DataType.UiAcMaster, binary.data.action)
+				serializeStringsOnly(DataType.UiSelectWindow, binary.data.window)
+				
 				// model properties
 				for (const model of binary.data.model as Instance<DataType.UiModel>[]) {
 					if (model.properties == undefined)
@@ -303,25 +319,29 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 
 					serializeObjects(data, DataType.UiModelProperty, properties.children, {
 						symbolWrapper: model.properties,
-						padding: 1,
 						staleChildSymbols: true,
 					})
 				}
 
-				// ac master
-				symbolLocationReference.set(`wld::fld::data::s_UIAcMasterData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIAcMasterData`, (binary.data.action.length + 1) * FILE_TYPES[DataType.UiAcMaster].size)
-				serializeObjects(data, DataType.UiAcMaster, binary.data.action, { padding: 1 })
+				// model
+				symbolLocationReference.set(`wld::fld::data::s_uiModelData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_uiModelData`, (binary.data.model.length + 1) * FILE_TYPES[DataType.UiModel].size)
+				serializeObjects(data, DataType.UiModel, binary.data.model, { padding: 1 })
 
-				// art
-				symbolLocationReference.set(`wld::fld::data::s_UIGalleryArtData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIGalleryArtData`, (binary.data.art.length + 1) * FILE_TYPES[DataType.UiGalleryArt].size)
-				serializeObjects(data, DataType.UiGalleryArt, binary.data.art, { padding: 1 })
+				// msg
+				symbolLocationReference.set(`wld::fld::data::s_uiMessageData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_uiMessageData`, (binary.data.msg.length + 1) * FILE_TYPES[DataType.UiMessage].size)
+				serializeObjects(data, DataType.UiMessage, binary.data.msg, { padding: 1 })
 
-				// sound
-				symbolLocationReference.set(`wld::fld::data::s_UIGallerySoundData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIGallerySoundData`, (binary.data.sound.length + 1) * FILE_TYPES[DataType.UiGallerySound].size)
-				serializeObjects(data, DataType.UiGallerySound, binary.data.sound, { padding: 1 })
+				// font styles
+				symbolLocationReference.set(`wld::fld::data::s_UIStyleData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIStyleData`, (binary.data.style.length + 1) * FILE_TYPES[DataType.UiStyle].size)
+				serializeObjects(data, DataType.UiStyle, binary.data.style, { padding: 1 })
+
+				// shops
+				symbolLocationReference.set(`wld::fld::data::s_UIShopData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIShopData`, (binary.data.shop.length + 1) * FILE_TYPES[DataType.UiShop].size)
+				serializeObjects(data, DataType.UiShop, binary.data.shop, { padding: 1 })
 
 				// icons
 				symbolLocationReference.set(`wld::fld::data::s_UIIconData`, new Pointer(dataWriter.size))
@@ -338,45 +358,40 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				symbolSizeOverrides.set(`wld::fld::data::s_UIMapData`, (binary.data.map.length + 1) * FILE_TYPES[DataType.UiMap].size)
 				serializeObjects(data, DataType.UiMap, binary.data.map, { padding: 1 })
 
-				// msg
-				symbolLocationReference.set(`wld::fld::data::s_uiMessageData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_uiMessageData`, (binary.data.msg.length + 1) * FILE_TYPES[DataType.UiMessage].size)
-				serializeObjects(data, DataType.UiMessage, binary.data.msg, { padding: 1 })
-
-				// model
-				symbolLocationReference.set(`wld::fld::data::s_uiModelData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_uiModelData`, (binary.data.model.length + 1) * FILE_TYPES[DataType.UiModel].size)
-				serializeObjects(data, DataType.UiModel, binary.data.model, { padding: 1 })
-
-				// windows
-				symbolLocationReference.set(`wld::fld::data::s_UISelectWindowData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UISelectWindowData`, (binary.data.window.length + 1) * FILE_TYPES[DataType.UiSelectWindow].size)
-				serializeObjects(data, DataType.UiSelectWindow, binary.data.window, { padding: 1 })
-
-				// shines
-				symbolLocationReference.set(`wld::fld::data::s_UIShineData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIShineData`, (binary.data.shine.length + 1) * FILE_TYPES[DataType.UiShine].size)
-				serializeObjects(data, DataType.UiShine, binary.data.shine, { padding: 1 })
-
-				// shops
-				symbolLocationReference.set(`wld::fld::data::s_UIShopData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIShopData`, (binary.data.shop.length + 1) * FILE_TYPES[DataType.UiShop].size)
-				serializeObjects(data, DataType.UiShop, binary.data.shop, { padding: 1 })
+				// uranaisi
+				symbolLocationReference.set(`wld::fld::data::s_UIUranaisiNextData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIUranaisiNextData`, (binary.data.uranaisi.length + 1) * FILE_TYPES[DataType.UiUranaisiNext].size)
+				serializeObjects(data, DataType.UiUranaisiNext, binary.data.uranaisi, { padding: 1 })
 
 				// starpieces
 				symbolLocationReference.set(`wld::fld::data::s_UIStarpieceData`, new Pointer(dataWriter.size))
 				symbolSizeOverrides.set(`wld::fld::data::s_UIStarpieceData`, (binary.data.starpiece.length + 1) * FILE_TYPES[DataType.UiStarpiece].size)
 				serializeObjects(data, DataType.UiStarpiece, binary.data.starpiece, { padding: 1 })
 
-				// font styles
-				symbolLocationReference.set(`wld::fld::data::s_UIStyleData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIStyleData`, (binary.data.style.length + 1) * FILE_TYPES[DataType.UiStyle].size)
-				serializeObjects(data, DataType.UiStyle, binary.data.style, { padding: 1 })
+				// shines
+				symbolLocationReference.set(`wld::fld::data::s_UIShineData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIShineData`, (binary.data.shine.length + 1) * FILE_TYPES[DataType.UiShine].size)
+				serializeObjects(data, DataType.UiShine, binary.data.shine, { padding: 1 })
 
-				// uranaisi
-				symbolLocationReference.set(`wld::fld::data::s_UIUranaisiNextData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIUranaisiNextData`, (binary.data.uranaisi.length + 1) * FILE_TYPES[DataType.UiUranaisiNext].size)
-				serializeObjects(data, DataType.UiUranaisiNext, binary.data.uranaisi, { padding: 1 })
+				// gallery art
+				symbolLocationReference.set(`wld::fld::data::s_UIGalleryArtData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIGalleryArtData`, (binary.data.art.length + 1) * FILE_TYPES[DataType.UiGalleryArt].size)
+				serializeObjects(data, DataType.UiGalleryArt, binary.data.art, { padding: 1 })
+
+				// gallery sound
+				symbolLocationReference.set(`wld::fld::data::s_UIGallerySoundData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIGallerySoundData`, (binary.data.sound.length + 1) * FILE_TYPES[DataType.UiGallerySound].size)
+				serializeObjects(data, DataType.UiGallerySound, binary.data.sound, { padding: 1 })
+
+				// ac master
+				symbolLocationReference.set(`wld::fld::data::s_UIAcMasterData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UIAcMasterData`, (binary.data.action.length + 1) * FILE_TYPES[DataType.UiAcMaster].size)
+				serializeObjects(data, DataType.UiAcMaster, binary.data.action, { padding: 1 })
+
+				// windows
+				symbolLocationReference.set(`wld::fld::data::s_UISelectWindowData`, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(`wld::fld::data::s_UISelectWindowData`, (binary.data.window.length + 1) * FILE_TYPES[DataType.UiSelectWindow].size)
+				serializeObjects(data, DataType.UiSelectWindow, binary.data.window, { padding: 1 })
 
 				break
 			}
@@ -717,20 +732,9 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	// have a .rodata section at all. We do not have to make a special case for these,
 	// as the entry in updatedSections will just be ignored if there is no .rodata section present.
 	
-	if (!updatedSections.has('.rodata')) {
+	if (!updatedSections.has('.rodata') && binary.data.main != undefined) {
 		let writer = new BinaryWriter()
-		
-		switch (dataType) {
-			case DataType.None:
-				writer.writeInt32(0)
-				break
-			
-			// case DataType.DataNpcModel:
-				
-			default:
-				writer.writeInt32(binary.data.main.length)
-		}
-		
+		writer.writeInt32(binary.data.main.length)
 		updatedSections.set('.rodata', writer.toArrayBuffer())
 	}
 	
