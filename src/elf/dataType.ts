@@ -69,6 +69,8 @@ export enum DataType {
 
 	DataUi,
 
+	// sound
+	DataSnd,
 
 
 	// this is the end of the actual file types and start of sub types

@@ -481,6 +481,52 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 			data = {}
 
+			// models
+			let modelRelocs = peekable(allRelocations.get(".data"))
+			let modelDataSymbol = findSymbol("wld::fld::data::s_uiModelData")
+			let models = parseSymbol(dataSection, stringSection, modelDataSymbol, DataType.UiModel, { count: -1, relocations: modelRelocs })
+			data.model = models
+
+			// model properties
+			let modelProperties = []
+
+			for (const model of models) {
+				const { properties: offset, propertyCount } = model
+
+
+				if (offset == undefined || offset == Pointer.NULL) {
+					model.properties = null
+					continue
+				}
+				let propertyRelocs = peekable(allRelocations.get(".data"))
+
+				let symbol = findSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`) ?? createMissingSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`, dataSection)
+				let children = parseSymbol(dataSection, stringSection, symbol, DataType.UiModelProperty, { count: propertyCount, relocations: propertyRelocs })
+
+				let propertyObj = {
+					symbolName: demangle(symbol.name),
+					children,
+				}
+
+				modelProperties.push(propertyObj);
+				model.properties = propertyObj
+			}
+
+			data.modelProperty = modelProperties
+
+			// msg
+			let msgSymbol = findSymbol("wld::fld::data::s_uiMessageData")
+			let msgRelocs = peekable(allRelocations.get(".data"))
+			let messages = parseSymbol(dataSection, stringSection, msgSymbol, DataType.UiMessage, { count: -1, relocations: msgRelocs })
+			data.msg = messages
+
+			// shop
+			let shopSymbol = findSymbol("wld::fld::data::s_UIShopData")
+			let shopRelocs = peekable(allRelocations.get(".data"))
+			let shops = parseSymbol(dataSection, stringSection, shopSymbol, DataType.UiShop, { count: -1, relocations: shopRelocs })
+
+			data.shop = shops
+
 			// ac master
 			let acSymbol = findSymbol("wld::fld::data::s_UIAcMasterData")
 			let acRelocs = peekable(allRelocations.get(".data"))
@@ -492,6 +538,12 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let artRelocs = peekable(allRelocations.get(".data"))
 			let art = parseSymbol(dataSection, stringSection, artSymbol, DataType.UiGalleryArt, { count: -1, relocations: artRelocs })
 			data.art = art
+
+			// gallery sound
+			let soundSymbol = findSymbol("wld::fld::data::s_UIGallerySoundData")
+			let soundRelocs = peekable(allRelocations.get(".data"))
+			let sound = parseSymbol(dataSection, stringSection, soundSymbol, DataType.UiGallerySound, { count: -1, relocations: soundRelocs })
+			data.sound = sound
 
 			// icons
 			let iconSymbol = findSymbol("wld::fld::data::s_UIIconData")
@@ -541,80 +593,28 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			let uranaisi = parseSymbol(dataSection, stringSection, uranaisiSymbol, DataType.UiUranaisiNext, { count: -1, relocations: uranaisiRelocs })
 			data.uranaisi = uranaisi
 
-			// msg
-			let msgSymbol = findSymbol("wld::fld::data::s_uiMessageData")
-			let msgRelocs = peekable(allRelocations.get(".data"))
-			let messages = parseSymbol(dataSection, stringSection, msgSymbol, DataType.UiMessage, { count: -1, relocations: msgRelocs })
-			data.msg = messages
-
-			// gallery sound
-			let soundSymbol = findSymbol("wld::fld::data::s_UIGallerySoundData")
-			let soundRelocs = peekable(allRelocations.get(".data"))
-			let sound = parseSymbol(dataSection, stringSection, soundSymbol, DataType.UiGallerySound, { count: -1, relocations: soundRelocs })
-			data.sound = sound
-
-			// shop
-			let shopSymbol = findSymbol("wld::fld::data::s_UIShopData")
-			let shopRelocs = peekable(allRelocations.get(".data"))
-			let shops = parseSymbol(dataSection, stringSection, shopSymbol, DataType.UiShop, { count: -1, relocations: shopRelocs })
-
-			// sell data
-
-			//for (const shop of shops) {
-				//const { soldItems: symbolName } = shop
-
-				//if (symbolName == undefined)
-					//continue
-
-				//let soldRelocs = peekable(allRelocations.get(".data"))
-				//let symbol = findSymbol(symbolName)
-				//let children = parseSymbol(dataSection, stringSection, symbol, DataType.UiSellItem, { count: -1, relocations: soldRelocs })
-
-				//let soldItems = {
-					//symbolName,
-					//children,
-				//}
-
-				//shop.soldItems = soldItems
-			//}
-
-			data.shop = shops
-
-			// models
-			let modelRelocs = peekable(allRelocations.get(".data"))
-			let modelDataSymbol = findSymbol("wld::fld::data::s_uiModelData")
-			let models = parseSymbol(dataSection, stringSection, modelDataSymbol, DataType.UiModel, { count: -1, relocations: modelRelocs })
-			data.model = models
-
-			// model properties
-			let modelProperties = []
-
-			for (const model of models) {
-				const { properties: offset, propertyCount } = model
-
-
-				if (offset == undefined || offset == Pointer.NULL) {
-					model.properties = null
-					continue
-				}
-				let propertyRelocs = peekable(allRelocations.get(".data"))
-
-				let symbol = findSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`) ?? createMissingSymbol(`wld::fld::data::^s_uiModelPropertyData_${model.id}`, dataSection)
-				let children = parseSymbol(dataSection, stringSection, symbol, DataType.UiModelProperty, { count: propertyCount, relocations: propertyRelocs })
-
-				let propertyObj = {
-					symbolName: demangle(symbol.name),
-					children,
-				}
-
-				modelProperties.push(propertyObj);
-				model.properties = propertyObj
-			}
-
-			data.modelProperty = modelProperties
-
 			break
 		}
+
+		//case DataType.DataSnd:
+			//{
+				//const dataSection = findSection('.data')
+				//const rodataSection = findSection('.rodata')
+				//const dataStringSection = findSection('.rodata.str1.1')
+
+				//let sndRelocs = peekable(allRelocations.get(".data"))
+
+
+				//let mainSymbol = findSymbol()
+
+				//let modelTables = parseSymbol(dataSection, dataStringSection, mainSymbol, dataType, { count: dataCount, relocations: modelRelocs })
+				//data = {}
+				//data.main = modelTables
+
+				//parseModelRodata(data, data.main)
+
+				//break
+			//}
 	
 		// parse .data section by data type
 		default: {

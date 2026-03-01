@@ -68,6 +68,7 @@
 		"data_battle_weaponac_party_ac": DataType.BattleWeaponAcPartyAc,
 		"data_battle_audiencekind": DataType.BattleAudienceKind,
     "data_ui": DataType.DataUi,
+    "data_snd": DataType.DataSnd,
 	}
 
 	onMount(() => {
@@ -168,6 +169,8 @@
     <option value="BattleAudienceKind">Battle Audience Parameters (BattleAudienceKind)</option>
 
     <option value="DataUi">User Interface Registry (data_ui)</option>
+
+    <option value="DataSnd">Sound Data Registry (data_snd)</option>
 
   </select>
 	

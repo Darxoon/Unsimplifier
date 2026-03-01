@@ -283,6 +283,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolAddrRelocations: dataSymbolAddrs,
 				}
 
+
 				// model properties
 				for (const model of binary.data.model as Instance<DataType.UiModel>[]) {
 					if (model.properties == undefined)
@@ -300,7 +301,11 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					properties.symbolName = newSymbolName
 					model.propertyCount = children.length
 
-					serializeObjects(data, DataType.UiModelProperty, children, { symbolWrapper: properties })
+					serializeObjects(data, DataType.UiModelProperty, properties.children, {
+						symbolWrapper: model.properties,
+						padding: 1,
+						staleChildSymbols: true,
+					})
 				}
 
 				// ac master
@@ -864,7 +869,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	
 	{
 		// symbol addr relocations
-		const targetSectionName = FILE_TYPES[dataType].pointerTargetSection
+		const targetSectionName = FILE_TYPES[dataType].pointerTargetSection 
 		const targetSectionIndex = sections.findIndex(section => section.name === targetSectionName)
 		const targetSectionSymbolIndex = binary.symbolTable.findIndex(symbol => symbol.info == 3
 			&& symbol.sectionHeaderIndex == targetSectionIndex)
