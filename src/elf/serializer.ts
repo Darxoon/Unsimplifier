@@ -333,65 +333,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				symbolSizeOverrides.set(`wld::fld::data::s_uiMessageData`, (binary.data.msg.length + 1) * FILE_TYPES[DataType.UiMessage].size)
 				serializeObjects(data, DataType.UiMessage, binary.data.msg, { padding: 1 })
 
-				// font styles
-				symbolLocationReference.set(`wld::fld::data::s_UIStyleData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIStyleData`, (binary.data.style.length + 1) * FILE_TYPES[DataType.UiStyle].size)
-				serializeObjects(data, DataType.UiStyle, binary.data.style, { padding: 1 })
-
-				// shops
-				symbolLocationReference.set(`wld::fld::data::s_UIShopData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIShopData`, (binary.data.shop.length + 1) * FILE_TYPES[DataType.UiShop].size)
-				serializeObjects(data, DataType.UiShop, binary.data.shop, { padding: 1 })
-
-				// icons
-				symbolLocationReference.set(`wld::fld::data::s_UIIconData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIIconData`, (binary.data.icon.length + 1) * FILE_TYPES[DataType.UiIcon].size)
-				serializeObjects(data, DataType.UiIcon, binary.data.icon, { padding: 1 })
-
-				// mail
-				symbolLocationReference.set(`wld::fld::data::s_UIMailData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIMailData`, (binary.data.mail.length + 1) * FILE_TYPES[DataType.UiMail].size)
-				serializeObjects(data, DataType.UiMail, binary.data.mail, { padding: 1 })
-
-				// map
-				symbolLocationReference.set(`wld::fld::data::s_UIMapData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIMapData`, (binary.data.map.length + 1) * FILE_TYPES[DataType.UiMap].size)
-				serializeObjects(data, DataType.UiMap, binary.data.map, { padding: 1 })
-
-				// uranaisi
-				symbolLocationReference.set(`wld::fld::data::s_UIUranaisiNextData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIUranaisiNextData`, (binary.data.uranaisi.length + 1) * FILE_TYPES[DataType.UiUranaisiNext].size)
-				serializeObjects(data, DataType.UiUranaisiNext, binary.data.uranaisi, { padding: 1 })
-
-				// starpieces
-				symbolLocationReference.set(`wld::fld::data::s_UIStarpieceData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIStarpieceData`, (binary.data.starpiece.length + 1) * FILE_TYPES[DataType.UiStarpiece].size)
-				serializeObjects(data, DataType.UiStarpiece, binary.data.starpiece, { padding: 1 })
-
-				// shines
-				symbolLocationReference.set(`wld::fld::data::s_UIShineData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIShineData`, (binary.data.shine.length + 1) * FILE_TYPES[DataType.UiShine].size)
-				serializeObjects(data, DataType.UiShine, binary.data.shine, { padding: 1 })
-
-				// gallery art
-				symbolLocationReference.set(`wld::fld::data::s_UIGalleryArtData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIGalleryArtData`, (binary.data.art.length + 1) * FILE_TYPES[DataType.UiGalleryArt].size)
-				serializeObjects(data, DataType.UiGalleryArt, binary.data.art, { padding: 1 })
-
-				// gallery sound
-				symbolLocationReference.set(`wld::fld::data::s_UIGallerySoundData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIGallerySoundData`, (binary.data.sound.length + 1) * FILE_TYPES[DataType.UiGallerySound].size)
-				serializeObjects(data, DataType.UiGallerySound, binary.data.sound, { padding: 1 })
-
-				// ac master
-				symbolLocationReference.set(`wld::fld::data::s_UIAcMasterData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UIAcMasterData`, (binary.data.action.length + 1) * FILE_TYPES[DataType.UiAcMaster].size)
-				serializeObjects(data, DataType.UiAcMaster, binary.data.action, { padding: 1 })
-
-				// windows
-				symbolLocationReference.set(`wld::fld::data::s_UISelectWindowData`, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(`wld::fld::data::s_UISelectWindowData`, (binary.data.window.length + 1) * FILE_TYPES[DataType.UiSelectWindow].size)
-				serializeObjects(data, DataType.UiSelectWindow, binary.data.window, { padding: 1 })
+				serializeIndexData(data, dataType)
 
 				break
 			}
@@ -425,6 +367,17 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			symbolRelocations?: Map<number, OrderedSymbolName>
 			symbolAddrRelocations?: Map<number, OrderedSymbolName>
 		}
+		
+		function serializeIndexData(ctx: SerializeContext, dataType: DataType) {
+			for (const [dataDivision, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
+				const symbolName = FILE_TYPES[childDataType].mainSymbol
+				const padding = FILE_TYPES[childDataType].defaultPadding
+				
+				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
+				symbolSizeOverrides.set(symbolName, (binary.data[dataDivision].length + padding) * FILE_TYPES[childDataType].size)
+				serializeObjects(ctx, childDataType, binary.data[dataDivision], { padding })
+			}
+		}
 
 		interface SerializeObjectsProperties {
 			padding?: number
@@ -446,8 +399,8 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		 * @param paddingAmount If positive, it will append as many zero value instances as specified. If negative, it will remove objects at the end.
 		 * @param addStrings If set to false, then the strings in the objects won't be added to the allStrings set.
 		 */
-		function serializeObjects(sectionElements: SerializeContext, dataType: DataType, objects: object[], properties: SerializeObjectsProperties = {}) {
-			const { writer, stringRelocations, symbolRelocations, symbolAddrRelocations } = sectionElements
+		function serializeObjects(ctx: SerializeContext, dataType: DataType, objects: object[], properties: SerializeObjectsProperties = {}) {
+			const { writer, stringRelocations, symbolRelocations, symbolAddrRelocations } = ctx
 			const { padding: paddingAmount = 0, paddingItem, addStrings = true } = properties
 
 			if (paddingAmount > 0) {
