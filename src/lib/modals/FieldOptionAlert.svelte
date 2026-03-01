@@ -18,7 +18,7 @@
 	export let title: string
 	
 	$: fieldType = FILE_TYPES[dataType].typedef[fieldName]
-	$: allGlobalValues = FILE_TYPES[dataType].dataDivision == null && scanAllGlobalValues()
+	$: allGlobalValues = FILE_TYPES[dataType].dataCategory == null && scanAllGlobalValues()
 	$: hideNulls = fieldType === "string"
 	
 	$: forceMaxHeight = hideNulls && objects.length * 35 + 18 * 16 >= window.visualViewport.height

@@ -1,4 +1,4 @@
-import { ElfBinary, Pointer, type DataDivision } from "./elfBinary";
+import { ElfBinary, Pointer, type DataCategory } from "./elfBinary";
 import { DataType } from "./dataType";
 import { FILE_TYPES } from "./fileTypes";
 import type { Instance } from "./fileTypes";
@@ -119,7 +119,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	// as an array of structs. However, for some file formats (like maplink and data_npc_model),
 	// there are multiple file formats
 
-	let data: { [division in DataDivision]?: any[] }
+	let data: { [category in DataCategory]?: any[] }
 
 	// Parses the .rodata section from a data_x_model file, since these are always the same and can be reused
 	interface RawModelInstance {
@@ -137,7 +137,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		stateCount: number
 	}
 
-	function parseModelRodata(data: { [division in DataDivision]?: any[] }, models: RawModelInstance[]) {
+	function parseModelRodata(data: { [category in DataCategory]?: any[] }, models: RawModelInstance[]) {
 		const rodataSection = findSection('.rodata')
 		const dataStringSection = findSection('.rodata.str1.1')
 
@@ -531,7 +531,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	
 	// Util parsing functions
 	function parseIndexData(section: Section, stringSection: Section, dataType: DataType) {
-		for (const [dataDivision, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
+		for (const [category, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
 			const symbolName = FILE_TYPES[childDataType].mainSymbol
 			const symbol = findSymbol(symbolName)
 			
@@ -540,7 +540,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				: undefined
 			
 			const items = parseSymbol(section, stringSection, symbol, childDataType, { count })
-			data[dataDivision] = items
+			data[category] = items
 		}
 	}
 	

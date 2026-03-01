@@ -24,7 +24,7 @@
 	let searchTerm = ""
 	let searchResults: SearchIndex
 	
-	$: objects = overrideObjects ?? binary.data[FILE_TYPES[dataType].dataDivision]
+	$: objects = overrideObjects ?? binary.data[FILE_TYPES[dataType].dataCategory]
 	$: index = createIndex(objects)
 	
 	$: if (tabVisible) initialized = true
@@ -108,11 +108,11 @@
 			object[fieldName] = createSymbolObject()
 		}
 		
-		// TODO: implement a 'name index' to make this work with sub types that don't have a data division
+		// TODO: implement a 'name index' to make this work with sub types that don't have a data category
 		let identifyingField = FILE_TYPES[dataType].identifyingField
 		object[identifyingField] = "unnamed"
 		
-		let allObjects = binary.data[FILE_TYPES[dataType].dataDivision]
+		let allObjects = binary.data[FILE_TYPES[dataType].dataCategory]
 		
 		while (allObjects && allObjects.find(item => item[identifyingField] == object[identifyingField])) {
 			object[identifyingField] = incrementName(object[identifyingField])

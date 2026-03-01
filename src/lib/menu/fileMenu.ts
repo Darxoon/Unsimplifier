@@ -5,7 +5,7 @@ import DataTypePrompt from "$lib/modals/DataTypePrompt.svelte"
 import SaveAsDialog from "$lib/modals/SaveAsDialog.svelte"
 import { globalEditorStrip, loadedAutosave } from "$lib/stores"
 import { compress, decompress, downloadBlob, createFileTab, downloadText } from "$lib/util"
-import { Pointer, type ElfBinary, type DataDivision } from "paper-mario-elfs/elfBinary"
+import { Pointer, type ElfBinary, type DataCategory } from "paper-mario-elfs/elfBinary"
 import { DataType } from "paper-mario-elfs/dataType"
 import parseElfBinary from "paper-mario-elfs/parser"
 import serializeElfBinary from "paper-mario-elfs/serializer"
@@ -201,15 +201,15 @@ with name '${binary.symbolTable[yamlSymbol.index].name}' and now '${yamlSymbol.n
 	if (!(typeof data == 'object'))
 		throw new Error('Invalid yaml file, second document (data section) is not a dict')
 	
-	// TODO: support for data types with other data divisions than 'main'
-	const dataDivisions: DataDivision[] = ['main']
-	let resultData: {[dataDivision in DataDivision]?: UuidTagged[]} = {}
+	// TODO: support for data types with other data categories than 'main'
+	const dataCategories: DataCategory[] = ['main']
+	let resultData: {[category in DataCategory]?: UuidTagged[]} = {}
 	
-	for (const dataDivision of dataDivisions) {
-		if (!(dataDivision in data && data[dataDivision] instanceof Array))
-			throw new Error(`Invalid yaml file, data division '${dataDivision}' does not exist or is invalid`)
+	for (const category of dataCategories) {
+		if (!(category in data && data[category] instanceof Array))
+			throw new Error(`Invalid yaml file, data category '${category}' does not exist or is invalid`)
 		
-		resultData[dataDivision] = parseYamlItems(dataType, data[dataDivision] as unknown[], dataDivision, symbolNameTable, binary)
+		resultData[category] = parseYamlItems(dataType, data[category] as unknown[], category, symbolNameTable, binary)
 	}
 	
 	// apply changes to base file
@@ -229,13 +229,13 @@ with name '${binary.symbolTable[yamlSymbol.index].name}' and now '${yamlSymbol.n
 }
 
 function parseYamlItems(dataType: DataType, yamlItems: unknown[],
-	dataDivision: DataDivision, symbolNameTable: unknown, baseBinary: ElfBinary): UuidTagged[] {
+	dataCategory: DataCategory, symbolNameTable: unknown, baseBinary: ElfBinary): UuidTagged[] {
 	
 	let elfItems: UuidTagged[] = []
 	
 	for (const [item, i] of enumerate(yamlItems)) {
 		if (!(typeof item == 'object'))
-			throw new Error(`Invalid yaml file, object ${i} in '${dataDivision}' is invalid`)
+			throw new Error(`Invalid yaml file, object ${i} in '${dataCategory}' is invalid`)
 		
 		// @ts-expect-error
 		let obj: UuidTagged = {}
@@ -252,7 +252,7 @@ function parseYamlItems(dataType: DataType, yamlItems: unknown[],
 					yamlValue = item['field_0x' + FILE_TYPES[dataType].fieldOffsets[fieldName].toString(16)]
 				else
 					throw new Error(
-`Invalid yaml file, object ${i} in '${dataDivision}' \
+`Invalid yaml file, object ${i} in '${dataCategory}' \
 is missing field '${fieldName}' or '${defaultFieldName}'`)
 			}
 			
@@ -261,7 +261,7 @@ is missing field '${fieldName}' or '${defaultFieldName}'`)
 					if (typeof yamlValue != 'string' && yamlValue != null)
 						throw new Error(
 `Invalid yaml file, expected string for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+in '${dataCategory}' object ${i} but got '${yamlValue}'`)
 					
 					obj[fieldName] = yamlValue
 					break
@@ -270,7 +270,7 @@ in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 					if (typeof yamlValue != 'boolean')
 						throw new Error(
 `Invalid yaml file, expected boolean for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+in '${dataCategory}' object ${i} but got '${yamlValue}'`)
 					
 					obj[fieldName] = yamlValue
 					break
@@ -281,7 +281,7 @@ in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 					if (typeof yamlValue != 'number' || Math.round(yamlValue) != yamlValue)
 						throw new Error(
 `Invalid yaml file, expected ${fieldType} for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+in '${dataCategory}' object ${i} but got '${yamlValue}'`)
 					
 					obj[fieldName] = yamlValue
 					break
@@ -290,7 +290,7 @@ in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 					if (typeof yamlValue != 'number')
 						throw new Error(
 `Invalid yaml file, expected ${fieldType} for '${fieldName}' \
-in '${dataDivision}' object ${i} but got '${yamlValue}'`)
+in '${dataCategory}' object ${i} but got '${yamlValue}'`)
 					
 					obj[fieldName] = yamlValue
 					break
@@ -298,21 +298,21 @@ in '${dataDivision}' object ${i} but got '${yamlValue}'`)
 					if (typeof yamlValue != 'object')
 						throw new Error(
 `Invalid yaml file, expected Vector3 for '${fieldName}' \
-in '${dataDivision}' object ${i} but got ${yamlValue}`)
+in '${dataCategory}' object ${i} but got ${yamlValue}`)
 					
 					const { x, y, z } = yamlValue as { x: number, y: number, z: number }
 					
 					if (typeof x != 'number' || typeof y != 'number' || typeof z != 'number')
-						throw new Error(`Invalid yaml file, invalid Vector3 '${fieldName}' in '${dataDivision}' object ${i}`)
+						throw new Error(`Invalid yaml file, invalid Vector3 '${fieldName}' in '${dataCategory}' object ${i}`)
 					
 					obj[fieldName] = new Vector3(x, y, z)
 					break
 				case "symbol":
 				case "symbolAddr": {
 					if (!(yamlValue instanceof Array))
-						throw new Error(`Invalid yaml file, invalid child array '${fieldName}' in '${dataDivision}' object ${i}`)
+						throw new Error(`Invalid yaml file, invalid child array '${fieldName}' in '${dataCategory}' object ${i}`)
 					
-					let symbolName = symbolNameTable[dataDivision][item[FILE_TYPES[dataType].identifyingField]]
+					let symbolName = symbolNameTable[dataCategory][item[FILE_TYPES[dataType].identifyingField]]
 					
 					if (symbolName == undefined) {
 						symbolName = "new_symbol_" + Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)
@@ -323,7 +323,7 @@ in '${dataDivision}' object ${i} but got ${yamlValue}`)
 						children: parseYamlItems(
 							FILE_TYPES[dataType].childTypes[fieldName],
 							yamlValue,
-							dataDivision,
+							dataCategory,
 							symbolNameTable,
 							baseBinary,
 						),
@@ -342,7 +342,7 @@ in '${dataDivision}' object ${i} but got ${yamlValue}`)
 					break
 				}
 				default:
-					throw new Error(`Invalid field type ${fieldType} (object ${i} in '${dataDivision}')`)
+					throw new Error(`Invalid field type ${fieldType} (object ${i} in '${dataCategory}')`)
 			}
 		}
 		
@@ -487,13 +487,13 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 	// second section: data
 	out += "---\n# Content of the elf file\n"
 	
-	let symbolNameRegistry: Map<DataDivision, Map<string, string>> = new Map()
+	let symbolNameRegistry: Map<DataCategory, Map<string, string>> = new Map()
 	
-	for (const [ dataDivision, items ] of Object.entries(binary.data)) {
+	for (const [ dataCategory, items ] of Object.entries(binary.data)) {
 		let symbolNames: Map<string, string> = new Map()
-		symbolNameRegistry.set(dataDivision as DataDivision, symbolNames)
+		symbolNameRegistry.set(dataCategory as DataCategory, symbolNames)
 		
-		out += dataDivision + ":\n"
+		out += dataCategory + ":\n"
 		
 		let isFirst = true
 		for (const obj of items) {
@@ -540,8 +540,8 @@ function toYaml(binary: ElfBinary, baseBinary: ElfBinary, basePath: string, data
 	if (symbolNameRegistry.size > 0 || modifiedSymbols.length > 0 || newSymbols.length > 0) {
 		out += "\n---\n# Symbol Names\n"
 		
-		for (const [dataDivision, symbolNames] of symbolNameRegistry) {
-			out += dataDivision + ':\n'
+		for (const [dataCategory, symbolNames] of symbolNameRegistry) {
+			out += dataCategory + ':\n'
 			
 			for (const [id, symbolName] of symbolNames) {
 				out += `  ${id}: ${stringToYaml(symbolName, 1)}\n`

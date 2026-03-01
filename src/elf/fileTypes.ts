@@ -1,4 +1,4 @@
-import { dataDivisions, Pointer, type DataDivision } from "./elfBinary";
+import { dataCategories, Pointer, type DataCategory } from "./elfBinary";
 import { DataType } from "./dataType";
 import { Vector3 } from "./misc";
 import { ValueUuid, VALUE_UUID, type UuidTagged, DATA_TYPE } from "./valueIdentifier";
@@ -116,12 +116,12 @@ interface DataTypeMetadata {
 	 */
 	identifyingField?: string
 	/**
-	 * The data division in which items of this data type will be placed in.
+	 * The data category in which items of this data type will be placed in.
 	 * 
 	 * `"main"` by default; if it's explicitly set to `null` then the items will not
-	 * be put into any data division.
+	 * be put into any data category.
 	 */
-	dataDivision?: DataDivision | null
+	dataCategory?: DataCategory | null
 	/**
 	 * Which section should be targeted for all relocations of type `"symbolAddr"`
 	 * in this data type and all children.
@@ -161,7 +161,7 @@ interface DataTypeMetadata {
 	/**
 	 * If this data type is an index type, this is the index of all its root child types
 	 */
-	rootTypes?: {[dataDivision in DataDivision]?: DataType}
+	rootTypes?: {[dataCategory in DataCategory]?: DataType}
 	
 	// these do nothing yet
 	childField?: string
@@ -514,7 +514,7 @@ Used for the loading of new maps (?)`),
 		__: {
 			displayName: "Item",
 			identifyingField: "type",
-			dataDivision: null,
+			dataCategory: null,
 		},
 
 		type: "string",
@@ -742,7 +742,7 @@ Specifies the type of the item. Possible values:
 	[DataType.SndBattle]: {
 		__: {
 			displayName: "Battle BGM List",
-			dataDivision: "tracks",
+			dataCategory: "tracks",
 		},
 
 		id: "string",
@@ -1534,7 +1534,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Battle Drops",
 			identifyingField: "type",
-			dataDivision: null,
+			dataCategory: null,
 		},
 
 		field_0x00: "int",
@@ -1557,7 +1557,7 @@ Specifies the type of the item. Possible values:
 	[DataType.Maplink]: {
 		__: {
 			displayName: "Maplink",
-			dataDivision: "links",
+			dataCategory: "links",
 		},
 
 		stage: "string",
@@ -1669,7 +1669,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Asset Group",
 			identifyingField: "fileName",
-			dataDivision: null,
+			dataCategory: null,
 			// nestedAllValues: true,
 		},
 
@@ -1683,7 +1683,7 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "State",
 			identifyingField: "description",
-			dataDivision: null,
+			dataCategory: null,
 			// childFieldLabel: "faceArray",
 			// childField: "face",
 			// nestedAllValues: true,
@@ -1707,7 +1707,7 @@ Some commonly found translations:
 	[DataType.ModelFaceGroup]: {
 		__: {
 			displayName: "Face Array",
-			dataDivision: null,
+			dataCategory: null,
 			// childField: "faces",
 			// nestedAllValues: true,
 			childTypes: {
@@ -1725,7 +1725,7 @@ Some commonly found translations:
 	[DataType.ModelFace]: {
 		__: {
 			displayName: "Face",
-			dataDivision: null,
+			dataCategory: null,
 			// childField: "animations",
 			// nestedAllValues: true,
 			childTypes: {
@@ -1744,7 +1744,7 @@ Some commonly found translations:
 	[DataType.ModelAnimation]: {
 		__: {
 			displayName: "Animation",
-			dataDivision: null,
+			dataCategory: null,
 		},
 
 		description: "string",
@@ -1807,6 +1807,7 @@ Some commonly found translations:
 	},
 	[DataType.DataUi]: {
 		__: {
+			romfsPath: "data/data_ui.elf.zst",
 			rootTypes: {
 				style: DataType.UiStyle,
 				shop: DataType.UiShop,
@@ -1826,7 +1827,7 @@ Some commonly found translations:
 	[DataType.UiModel]: {
 		__: {
 			displayName: "Model",
-			dataDivision: "model",
+			dataCategory: "model",
 			defaultPadding: 1,
 			childTypes: {
 				properties: DataType.UiModelProperty,
@@ -1844,7 +1845,7 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 	[DataType.UiModelProperty]: {
 		__: {
 			displayName: "Model Property",
-			dataDivision: null,
+			dataCategory: null,
 		},
 		id: "string",
 		model: "string",
@@ -1863,7 +1864,7 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 	[DataType.UiMessage]: {
 		__: {
 			displayName: "Message",
-			dataDivision: "msg",
+			dataCategory: "msg",
 			defaultPadding: 1,
 		},
 		id: "string",
@@ -1907,7 +1908,7 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 	[DataType.UiShop]: {
 		__: {
 			displayName: "Shop",
-			dataDivision: "shop",
+			dataCategory: "shop",
 			mainSymbol: "wld::fld::data::s_UIShopData",
 			defaultPadding: 1,
 		},
@@ -1924,7 +1925,7 @@ Whether this item is available in the shop by default or not.`),
 	[DataType.UiAcMaster]: {
 		__: {
 			displayName: "Action Command",
-			dataDivision: "action",
+			dataCategory: "action",
 			mainSymbol: "wld::fld::data::s_UIAcMasterData",
 			defaultPadding: 1,
 		},
@@ -1942,7 +1943,7 @@ Whether this item is available in the shop by default or not.`),
 	[DataType.UiGalleryArt]: {
 		__: {
 			displayName: "Gallery Art",
-			dataDivision: "art",
+			dataCategory: "art",
 			mainSymbol: "wld::fld::data::s_UIGalleryArtData",
 			defaultPadding: 1,
 		},
@@ -1956,7 +1957,7 @@ Whether this item is available in the shop by default or not.`),
 	[DataType.UiGallerySound]: {
 		__: {
 			displayName: "Gallery Sound",
-			dataDivision: "sound",
+			dataCategory: "sound",
 			mainSymbol: "wld::fld::data::s_UIGallerySoundData",
 			defaultPadding: 1,
 		},
@@ -1973,7 +1974,7 @@ Whether this item is available in the shop by default or not.`),
 	[DataType.UiIcon]: {
 		__: {
 			displayName: "Icon",
-			dataDivision: "icon",
+			dataCategory: "icon",
 			mainSymbol: "wld::fld::data::s_UIIconData",
 			defaultPadding: 1,
 		},
@@ -1997,7 +1998,7 @@ Texture name from romfs/ui/icon/icon.bntx.zst`),
 	[DataType.UiMail]: {
 		__: {
 			displayName: "Mail",
-			dataDivision: "mail",
+			dataCategory: "mail",
 			mainSymbol: "wld::fld::data::s_UIMailData",
 			defaultPadding: 1,
 		},
@@ -2018,7 +2019,7 @@ Body of the mail from mail.msbt`),
 	[DataType.UiMap]: {
 		__: {
 			displayName: "Map Location",
-			dataDivision: "map",
+			dataCategory: "map",
 			mainSymbol: "wld::fld::data::s_UIMapData",
 			defaultPadding: 1,
 		},
@@ -2033,7 +2034,7 @@ Map description from global.msbt`),
 	[DataType.UiSelectWindow]: {
 		__: {
 			displayName: "Selection Box",
-			dataDivision: "window",
+			dataCategory: "window",
 			mainSymbol: "wld::fld::data::s_UISelectWindowData",
 			identifyingField: "type",
 			defaultPadding: 1,
@@ -2059,7 +2060,7 @@ Map description from global.msbt`),
 	[DataType.UiShine]: {
 		__: {
 			displayName: "Shine Sprite",
-			dataDivision: "shine",
+			dataCategory: "shine",
 			mainSymbol: "wld::fld::data::s_UIShineData",
 			defaultPadding: 1,
 		},
@@ -2079,7 +2080,7 @@ A description of where this shine sprite is located. Common values include:
 	[DataType.UiStarpiece]: {
 		__: {
 			displayName: "Star Piece",
-			dataDivision: "starpiece",
+			dataCategory: "starpiece",
 			mainSymbol: "wld::fld::data::s_UIStarpieceData",
 			defaultPadding: 1,
 		},
@@ -2092,7 +2093,7 @@ A description of where this shine sprite is located. Common values include:
 	[DataType.UiStyle]: {
 		__: {
 			displayName: "Font Style",
-			dataDivision: "style",
+			dataCategory: "style",
 			mainSymbol: "wld::fld::data::s_UIStyleData",
 			defaultPadding: 1,
 		},
@@ -2122,7 +2123,7 @@ A description of where this shine sprite is located. Common values include:
 	[DataType.UiUranaisiNext]: {
 		__: {
 			displayName: "Merluvlee Data",
-			dataDivision: "uranaisi",
+			dataCategory: "uranaisi",
 			mainSymbol: "wld::fld::data::s_UIUranaisiNextData",
 			defaultPadding: 1,
 		},
@@ -2136,7 +2137,7 @@ A description of where this shine sprite is located. Common values include:
 	//[DataType.DataSnd]: {
 		//__: {
 			//displayName: "Sound",
-			//dataDivision: null,
+			//dataCategory: null,
 			//defaultPadding: 1,
 		//},
 		//id: "string",
@@ -2191,12 +2192,12 @@ interface FileTypeRegistry {
 	 */
 	identifyingField: string
 	/**
-	 * The data division in which items of this data type will be placed in.
+	 * The data category in which items of this data type will be placed in.
 	 * 
 	 * `"main"` by default; if it's explicitly set to `null` then the items will not
-	 * be put into any data division.
+	 * be put into any data category.
 	 */
-	dataDivision: DataDivision,
+	dataCategory: DataCategory,
 	/**
 	 * Which section should be targeted for all relocations of type `"symbolAddr"`
 	 * in this data type and all children.
@@ -2234,7 +2235,7 @@ interface FileTypeRegistry {
 	/**
 	 * If this data type is an index type, this is the index of all its root child types
 	 */
-	rootTypes: {[dataDivision in DataDivision]?: DataType},
+	rootTypes: {[dataCategory in DataCategory]?: DataType},
 	
 	// for future sub-types
 	childFieldLabel?: string
@@ -2265,7 +2266,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 	const {
 		displayName,
 		identifyingField,
-		dataDivision,
+		dataCategory,
 		pointerTargetSection,
 		romfsPath,
 		childTypes,
@@ -2328,7 +2329,7 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		
 		displayName,
 		identifyingField: identifyingField ?? "id",
-		dataDivision: dataDivision === null ? null : dataDivision ?? dataDivisions.main,
+		dataCategory: dataCategory === null ? null : dataCategory ?? dataCategories.main,
 		
 		pointerTargetSection: pointerTargetSection ?? ".data",
 		

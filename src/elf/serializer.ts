@@ -369,13 +369,13 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		}
 		
 		function serializeIndexData(ctx: SerializeContext, dataType: DataType) {
-			for (const [dataDivision, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
+			for (const [category, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
 				const symbolName = FILE_TYPES[childDataType].mainSymbol
 				const padding = FILE_TYPES[childDataType].defaultPadding
 				
 				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(symbolName, (binary.data[dataDivision].length + padding) * FILE_TYPES[childDataType].size)
-				serializeObjects(ctx, childDataType, binary.data[dataDivision], { padding })
+				symbolSizeOverrides.set(symbolName, (binary.data[category].length + padding) * FILE_TYPES[childDataType].size)
+				serializeObjects(ctx, childDataType, binary.data[category], { padding })
 			}
 		}
 

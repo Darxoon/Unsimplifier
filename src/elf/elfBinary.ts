@@ -6,12 +6,12 @@ import type { Section, Symbol } from "./types"
  */
 export class ElfBinary {
 	sections: Section[]
-	data: {[division in DataDivision]?: any[]}
+	data: {[category in DataCategory]?: any[]}
 	symbolTable: Symbol[]
 	
 	constructor(
 		sections: Section[], 
-		data: {[division in DataDivision]?: any[]}, 
+		data: {[category in DataCategory]?: any[]}, 
 		symbolTable: Symbol[], 
 	) {
 		this.sections = sections
@@ -36,7 +36,7 @@ export class ElfBinary {
 	}
 }
 
-export const dataDivisions = {
+export const dataCategories = {
 	main: "main",
 	assetGroup: "assetGroup",
 	state: "state",
@@ -66,7 +66,7 @@ export const dataDivisions = {
 	tracks: "tracks",
 } as const
 
-export type DataDivision = keyof typeof dataDivisions
+export type DataCategory = keyof typeof dataCategories
 
 export class Pointer {
 	private readonly _offset: number
