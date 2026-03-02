@@ -5,7 +5,11 @@
 	
 	export let menu: MenuCategory[] = []
 	
-	let buildDate = parseInt(PUBLIC_IS_DEV_VERSION) ? new Date() : new Date(parseInt(PUBLIC_VERSION_TIMESTAMP))
+	let buildDate = new Date(parseInt(PUBLIC_VERSION_TIMESTAMP))
+	
+	function formatDate(date: Date): string {
+		return date.toLocaleDateString("en-UK", { dateStyle: "long" })
+	}
 </script>
 
 <div class="title_card_wrapper">
@@ -27,7 +31,11 @@
 				{/each}
 			</ul>
 			<span class="build_timestamp_wrapper">
-				<div class="build_timestamp">Last built {buildDate.toLocaleDateString("en-UK", { dateStyle: "long" })}</div>
+				{#if parseInt(PUBLIC_IS_DEV_VERSION)}
+					<div class="build_timestamp">Development Build ({formatDate(new Date())})</div>
+				{:else}
+					<div class="build_timestamp">Last updated {formatDate(buildDate)}</div>
+				{/if}
 			</span>
 		</div>
 	</div>
