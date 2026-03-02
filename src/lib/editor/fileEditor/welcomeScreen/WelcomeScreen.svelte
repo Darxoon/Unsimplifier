@@ -178,11 +178,11 @@ ${filePath}. Please report this to the developer (Darxoon)
                         <h2>Learn</h2>
                         
                         <ul>
-                            <li><a href="https://github.com/Darxoon/Unsimplifier#unsimplifier">Read the introduction</a></li>
+                            <li><a href="https://github.com/Darxoon/Unsimplifier#unsimplifier">Read the introduction to this tool</a></li>
+                            <li><a href="https://gamebanana.com/tuts/17530">Read the introduction to modding TTYD</a></li>
                             <li><a href="https://docs.google.com/spreadsheets/d/1pZogGh00xy939FdCG62uWjxZnkP1G4gjDGBG4TntbKY/"
                                 target="_blank" rel="noopener noreferrer">Visit jdaster's spreadsheet documentation</a></li>
-                            <li>Join <a href="https://discord.gg/pdYpWw8">Star Haven</a>
-                                or <a href="https://discord.gg/9EzRrfVfPg">Modern Paper Mario Modding</a> on discord</li>
+                            <li>Join <a href="https://discord.gg/9EzRrfVfPg">Modern Paper Mario Modding</a> on discord</li>
                         </ul>
                     </div>
                     <div class="card recent">
@@ -190,7 +190,7 @@ ${filePath}. Please report this to the developer (Darxoon)
                         
                         {#if $recentFiles && $recentFiles.length > 0}
                             <ul>
-                                {#each recentFilesShort ? $recentFiles.slice(0, 3) : $recentFiles as item}
+                                {#each recentFilesShort ? $recentFiles.slice(0, 4) : $recentFiles as item}
                                     <li><button class="item" on:click={() => openRecentFile(item)}>{item.label}</button></li>
                                 {/each}
                             </ul>
@@ -231,7 +231,7 @@ ${filePath}. Please report this to the developer (Darxoon)
                     <p>Let's set up Unsimplifier so you can start modding! :)</p>
                     
                     <p>To use this tool, you need a copy of the Paper Mario: TTYD Remake
-                        and either the&nbsp;emulator <a href="https://www.ryujinx.org/">Ryujinx</a> or a homebrewed
+                        and either a&nbsp;Nintendo Switch emulator or a homebrewed
                         Nintendo Switch with <a href="https://nh-server.github.io/switch-guide/">Atmosphere</a>
                         in order to create a RomFS dump. (Skip the following step if you already have one)</p>
                     
@@ -239,8 +239,8 @@ ${filePath}. Please report this to the developer (Darxoon)
                         <a href="https://github.com/DarkMatterCore/nxdumptool/releases">NXDumpTool</a> and extract
                         a RomFS dump with it.</p>
                     
-                    <p>If you are using <em>Ryujinx</em>, create a folder named "romfs"
-                        somewhere in your file system and make sure you have TTYD appearing in Ryujinx's main menu.
+                    <p>If you are using <em>an emulator</em>, create a folder named "romfs"
+                        somewhere in your file system and make sure you have TTYD appearing in your emulator's main menu.
                         Right click the game, then select Extract&nbsp;Data&nbsp;&gt;&nbsp;RomFS and select the
                         <em>romfs</em> folder you just created.</p>
                     
@@ -249,6 +249,8 @@ ${filePath}. Please report this to the developer (Darxoon)
                     <p><input type="file" bind:this={folderSelector} on:change={uploadRomfs} multiple></p>
                     
                     <p>(it will not be uploaded, only stored locally in your browser)</p>
+                    
+                    <p>To starting modding TTYD in general, check out <a href="https://gamebanana.com/tuts/17530">this tutorial</a>.</p>
                     
                     {#if setupLabelOverride}
                         <p>{setupLabelOverride}</p>

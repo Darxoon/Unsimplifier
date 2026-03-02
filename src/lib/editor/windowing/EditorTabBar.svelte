@@ -203,7 +203,7 @@
 <ul class="tab_bar" role="menubar" aria-orientation="horizontal" bind:this={tabBar} on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
 	{#if showBugReporter}
 		<li style="font-weight: 600;">
-			<a href="https://discord.com/invite/pdYpWw8"
+			<a href="https://discord.gg/9EzRrfVfPg"
 				target="_blank" rel="noopener noreferrer">Need help?</a>
 		</li>
 	{/if}
