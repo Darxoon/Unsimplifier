@@ -59,14 +59,14 @@
 	}
 	
 	onMount(() => {
-		window.addEventListener('scroll', viewportCheck)
+		document.body.addEventListener('scroll', viewportCheck)
 		window.addEventListener('mousemove', onMouseMove)
 		
 		viewportCheck()
 	})
 	
 	onDestroy(() => {
-		window.removeEventListener('scroll', viewportCheck)
+		document.body.removeEventListener('scroll', viewportCheck)
 		window.removeEventListener('mousemove', onMouseMove)
 	})
 	
