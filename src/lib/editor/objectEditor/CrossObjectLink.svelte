@@ -20,7 +20,7 @@
 	let link: HTMLDivElement
 	
 	$: label = targetObjects != undefined
-		? `Click to open (${length(targetObjects)} item${length(targetObjects) < 2 ? '' : 's'})`
+		? `Open in tab (${length(targetObjects)} item${length(targetObjects) < 2 ? '' : 's'})`
 		: error == undefined ? `Click to create new content` : 'Could not create content (Error)'
 		
 	

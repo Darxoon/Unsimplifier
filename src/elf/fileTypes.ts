@@ -164,8 +164,6 @@ interface DataTypeMetadata {
 	rootTypes?: {[dataCategory in DataCategory]?: DataType}
 	
 	// these do nothing yet
-	childField?: string
-	// childFieldLabel
 	// nestedAllValues?: boolean
 	entryPoints?: { [objectType: number]: any }
 }
@@ -1684,8 +1682,6 @@ Specifies the type of the item. Possible values:
 			displayName: "State",
 			identifyingField: "description",
 			dataCategory: null,
-			// childFieldLabel: "faceArray",
-			// childField: "face",
 			// nestedAllValues: true,
 			childTypes: {
 				substates: DataType.ModelFaceGroup,
@@ -2238,8 +2234,6 @@ interface FileTypeRegistry {
 	rootTypes: {[dataCategory in DataCategory]?: DataType},
 	
 	// for future sub-types
-	childFieldLabel?: string
-	childField?: string
 	nestedAllValues?: boolean
 	entryPoints?: {[objectType: number]: any}
 	
@@ -2344,8 +2338,6 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 		rootTypes: rootTypes ?? {},
 		
 		// for future sub-types
-		// childField: typedef.__childField as string | undefined,
-		// childFieldLabel: typedef.__childFieldLabel as string | undefined,
 		// countSymbol: typedef.__countSymbol as string | undefined,
 		
 		instantiate(): object {

@@ -20,6 +20,7 @@
 	export let dataType: DataType
 	export let indices: Set<number> = undefined
 	export let highlightedFields: WeakMap<object, string[]> = undefined
+	export let depth = 0
 	
 	let objectEditors: ObjectEditor[] = []
 	let areEditorsOpen: boolean[] = []
@@ -112,8 +113,11 @@
 <Debouncer bind:this={debouncer} requiredDelaySeconds={1} autoStart={true} on:finished={() => countShown += 80} />
 
 {#each objectSlice as obj, i (obj[VALUE_UUID])}
-	<ObjectEditor bind:this={objectEditors[i]} bind:obj={obj} bind:open={areEditorsOpen[i]}
+	<ObjectEditor
+		binary={binary} dataType={dataType} title={titleOf(obj)} depth={depth}
+		noVerticalPadding={i == objectSlice.length - 1}
+		highlightedFields={highlightedFields?.get(obj)}
+		bind:this={objectEditors[i]} bind:obj={obj} bind:open={areEditorsOpen[i]}
 		on:open on:duplicate={() => duplicateObject(obj)} on:delete={() => deleteObject(i)}
-		on:appear={() => appear(i)} on:showFieldMenu={e => showFieldMenu(e.detail)} on:createContent
-		binary={binary} dataType={dataType} title={titleOf(obj)} highlightedFields={highlightedFields?.get(obj)} />
+		on:appear={() => appear(i)} on:showFieldMenu={e => showFieldMenu(e.detail)} on:createContent />
 {/each}

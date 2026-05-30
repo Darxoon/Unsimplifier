@@ -11,8 +11,8 @@
 	import { hexFields } from "./viewAsHex";
 	import ButtonStrip from './ButtonStrip.svelte';
 	import FieldIcons from './FieldIcons.svelte';
-	import ObjectEditorTailExpander from './ObjectEditorTailExpander.svelte';
     import { ChevronDownIcon } from "svelte-feather-icons";
+    import BasicObjectArray from "../fileEditor/cardListEditor/BasicObjectArray.svelte";
 	
 	// TODO: try using event maps
 	const dispatch = createEventDispatcher()
@@ -22,9 +22,11 @@
 	export let dataType: DataType | undefined = undefined
 	export let showButtons = true
 	export let binary: ElfBinary
+	export let depth = 0
 	
 	export let backgroundColor: string = dataTypeColors[dataType] ?? defaultDataTypeColor
 	export let labelHighlightColor: string = objectEditorHighlights[dataType] ?? defaultObjectEditorHighlight
+	export let noVerticalPadding: boolean = false
 	
 	export let open = false
 	
@@ -46,6 +48,9 @@
 	let entryLabelElements: HTMLDivElement[] = []
 	
 	let fieldErrors: {[fieldName: string]: any} = {}
+	
+	let loadedChildViews: {[fieldName: string]: boolean} = {}
+	let openedChildViews: {[fieldName: string]: boolean} = {}
 	
 	export function scrollIntoView() {
 		editor.scrollIntoView({
@@ -114,7 +119,8 @@
 <svelte:options accessors={true} />
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="card editor" style="--bg-card: {actualBackgroundColor}; --bg-label-highlight: {actualLabelHighlightColor}" bind:this={editor}
+<div class="card editor" class:no-vertical-padding={noVerticalPadding} bind:this={editor}
+		style="--bg-card: {actualBackgroundColor}; --bg-label-highlight: {actualLabelHighlightColor}"
 		on:mouseenter={e => mouseInside = true} on:mouseleave={e => mouseInside = false}>
 	
 	<div class="title" class:rotated={open}
@@ -150,6 +156,15 @@
 							targetDataType={FILE_TYPES[dataType].childTypes[field]}
 							tabTitle={FILE_TYPES[dataType].metadata[field]?.tabName} error={fieldErrors[field]}
 							on:open on:create={() => createContent(obj, field)} />
+						
+						{#if value != null}
+							<button class="children-expander" class:opened={openedChildViews[field]} on:click={() => {
+								loadedChildViews[field] = true
+								openedChildViews[field] = !openedChildViews[field]
+							}}><ChevronDownIcon class="arrow-icon" /><span>{
+								openedChildViews[field] ? "Hide" : "Show"
+							}</span></button>
+						{/if}
 					{:else}
 						<InputField on:valueChanged={updateEntries} noSpaces={FILE_TYPES[dataType].metadata[field]?.noSpaces ?? false}
 							fieldType={FILE_TYPES[dataType].typedef[field]} key={field} value={value}
@@ -157,26 +172,41 @@
 					{/if}
 				</div>
 				
+				<!-- Children -->
+				{#if loadedChildViews[field]}
+					<div class="children card"
+						style="--child-view-bg: var(--child-view-bg-{depth % 4})"
+						class:invisible={!openedChildViews[field]}
+					>
+						<p class="children-title">Contents of '{toReadableString(field)}':</p>
+						
+						<BasicObjectArray binary={binary} dataType={FILE_TYPES[dataType].childTypes[field]}
+							depth={depth + 1} objects={"children" in value ? value.children : value} on:open />
+					</div>
+				{/if}
+				
 			{/if}
 			{/each}
 		</div>
-		
-		{#if FILE_TYPES[dataType].childField && typeof obj[FILE_TYPES[dataType].childField] === "object" && obj[FILE_TYPES[dataType].childField]}
-			<ObjectEditorTailExpander dataType={dataType} visible={open} child={obj[FILE_TYPES[dataType].childField]} binary={binary} />
-		{:else if FILE_TYPES[dataType].childField}
-			<p class="child-content-null">Content could not be created because there are no other valid objects present</p>
-		{/if}
 	{/if}	
 </div>
 
 <style lang="scss">
 	:root {
 		--bg-label-highlight: #eaeaea;
+		--child-view-bg-0: #afda7b;
+		--child-view-bg-1: #83caf4;
+		--child-view-bg-2: #f7a3ae;
+		--child-view-bg-3: #fdd5bd;
 	}
 	
 	.editor {
-		margin: 1rem auto;
+		margin: 0 auto 1rem auto;
 		max-width: 56rem;
+		
+		&.no-vertical-padding {
+			margin: 0 auto;
+		}
 	}
 	
 	.title {
@@ -215,23 +245,52 @@
 			&.bold { font-weight: bold }
 			&.italic { font-style: italic }
 			&.highlighted { background: #ffe687; border-radius: 3px }
+			
+			&:nth-child(4n-1) {
+				background: var(--bg-label-highlight);
+				border-radius: 3px;
+			}
 		}
 		
 		.value {
 			margin-bottom: 6px;
+			display: flex;
+			
+			.children-expander {
+				flex-shrink: 0;
+				padding: 0 2px;
+				border: none;
+				background: none;
+				font-size: inherit;
+				
+				&.opened {
+					& > :global(.arrow-icon) {
+						rotate: 180deg;
+					}
+				}
+				
+				& > :global(.arrow-icon) {
+					height: 100%;
+				}
+				
+				span {
+					vertical-align: center;
+					padding-bottom: 5px;
+					display: inline-block;
+				}
+			}
 		}
 		
-		:nth-child(4n-1) {
-			background: var(--bg-label-highlight);
-			border-radius: 3px;
+		.children {
+			grid-column: 1 / -1;
+			margin-bottom: 1rem;
+			background: var(--child-view-bg);
+			
+			.children-title {
+				margin-top: 0;
+				font-size: 14pt;
+			}
 		}
-	}
-	
-	.child-content-null {
-		margin-top: 0.3em;
-		margin-bottom: 0;
-		
-		font-size: 20px;
 	}
 	
 	.invisible {
