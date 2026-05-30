@@ -9,6 +9,7 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strictNullChecks": false,
+		"strict": false,
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias and vite.config.js
 	// and are automatically merged in here by svelte kit

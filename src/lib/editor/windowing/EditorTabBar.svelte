@@ -218,7 +218,7 @@
 			</div>
 		</li>
 	{/if}
-	{#each immediateTabs as tab, i}
+	{#each immediateTabs as tab, i (tab.id)}
 		<li bind:this={tabElements[i]} use:nonnativeButton={() => { activeIndex = i; dispatch('selectTabContent', i) }}
 			class="tab_button" role="menuitem"
 			class:active={immediateActiveIndex == i}

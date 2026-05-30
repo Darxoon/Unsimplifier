@@ -58,7 +58,7 @@ export async function createTemporarySave(windows: SaveFile[][]) {
 	db.overview.put({ id: 0, timestamp: Date.now(), saveId })
 }
 
-export async function getLatestSave() {
+export async function getLatestSave(): Promise<SaveFile[][]> {
 	let latestSaveEntry = await db.overview.orderBy('timestamp').last()
 	let saveId = latestSaveEntry?.saveId ?? 0
 	

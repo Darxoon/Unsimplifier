@@ -122,7 +122,9 @@
         const content = isCompressed ? await decompress(await contentPromise) : await contentPromise
         
         try {
+            console.time("parse elf binary")
             var binary = parseElfBinary(dataType, content)
+            console.timeEnd("parse elf binary")
         } catch (e) {
             showModal(TextAlert, {
                 title: "Parse Error",

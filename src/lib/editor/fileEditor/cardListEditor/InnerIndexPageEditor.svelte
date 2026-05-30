@@ -13,16 +13,6 @@
 	export let dataType: DataType
 	export let fileName: string
 	
-	let editorElements = []
-	
-	export function collapseAll() {
-		editorElements.forEach(editor => editor.open = false)
-	}
-	
-	export function expandAll() {
-		editorElements.forEach(editor => editor.open = true)
-	}
-	
 	$: items = Object.entries(getIndexChildTypes(dataType))
 </script>
 

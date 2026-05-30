@@ -2,15 +2,17 @@
 	import { afterUpdate, onMount } from "svelte";
 
 	import EditorWindow from "./windowing/EditorWindow.svelte";
-	import { globalDraggedTab, tabWasAccepted, type Tab } from "./globalDragging";
+	import { globalDraggedTab, tabWasAccepted, type Tab, type Window } from "./globalDragging";
 	import type { SaveFile } from "$lib/save/autosave";
     import { excludeFromArrayPure, insertIntoArrayPure, replaceInArrayPure } from "$lib/util";
     import logging from "$lib/logging";
     import { OpenWindowEvent } from "./events";
-    import CardListEditor from "./fileEditor/CardListEditor.svelte";
     import serializeElfBinary from "paper-mario-elfs/serializer";
 
-	let tabs: Tab[][] = [[]]
+	let windows: Window[] = [{
+		id: Symbol("Window"),
+		tabs: [],
+	}]
 	let selectedTabs = [0]
 	let activeEditor: number =  0
 	
@@ -30,29 +32,26 @@
 		isWide = mediaQuery.matches
 	})
 	
-	let tabToAdd: Tab
-	let tabToAddEditorIndex = 0
-	
 	afterUpdate(() => {
-		if (tabToAdd) {
-			editorWindows[tabToAddEditorIndex].addTab(tabToAdd)
-			activeEditor = tabToAddEditorIndex
-			tabToAdd = null
+		// close all windows with no tabs, except window #0
+		if (windows.length > 1) {
+			for (let i = windows.length - 1; i >= 0; i--) {
+				if (windows[i].tabs.length == 0)
+					windows = excludeFromArrayPure(windows, windows[i])
+			}
 		}
 		
-		// close all windows with no tabs, except window #0
-		if (tabs.length > 1)
-			for (let i = tabs.length - 1; i >= 0; i--) {
-				if (tabs[i].length == 0)
-					tabs = excludeFromArrayPure(tabs, tabs[i])
-			}
-		
-		if (tabs.length == 0)
-			tabs = [[]]
+		if (windows.length == 0) {
+			// TODO: this is a lot of repeated code
+			windows = [{
+				id: Symbol("Window"),
+				tabs: [],
+			}]
+		}
 	})
 	
-	export function load(newTabs: Tab[][]) {
-		tabs = newTabs
+	export function load(newTabs: Window[]) {
+		windows = newTabs
 	}
 	
 	export function collapseAll() {
@@ -64,26 +63,29 @@
 	}
 	
 	export function reset() {
-		tabs = [[]]
+		windows = [{
+			id: Symbol("Window"),
+			tabs: [],
+		}]
 		selectedTabs = [0]
 	}
 	
 	export function appendTab(tab: Tab) {
-		selectedTabs[0] = tabs[0].length
+		selectedTabs[0] = windows[0].tabs.length
 		
-		tabs[0] = [
-			...tabs[0],
+		windows[0].tabs = [
+			...windows[0].tabs,
 			tab
 		]
 	}
 	
 	export function activeTab(): Tab {
-		return tabs[activeEditor][selectedTabs[activeEditor]]
+		return windows[activeEditor].tabs[selectedTabs[activeEditor]]
 	}
 	
 	// used for temporary saves
 	export function toSaveData(): SaveFile[][] {
-		return tabs.map(currentTabs => windowToSaveFiles(currentTabs))
+		return windows.map(currentTabs => windowToSaveFiles(currentTabs.tabs))
 	}
 	
 	function windowToSaveFiles(windowTabs: Tab[]): SaveFile[] {
@@ -113,8 +115,8 @@
 		return saveFiles
 	}
 	
-	export function getTab(tabId: Symbol) {
-		return tabs.flat().find(tab => tab.id == tabId)
+	export function getTab(tabId: Symbol): Tab {
+		return windows.map(window => window.tabs).flat().find(tab => tab.id == tabId)
 	}
 	
 	export function closeTab(tab: Tab, recursive: boolean) {
@@ -126,8 +128,8 @@
 					closeTab(child, true)
 			}
 		
-		for (let i = 0; i < tabs.length; i++) {
-			let index = tabs[i].indexOf(tab)
+		for (let i = 0; i < windows.length; i++) {
+			let index = windows[i].tabs.indexOf(tab)
 			
 			if (index != -1) {
 				editorWindows[i].closeTab(index)
@@ -142,22 +144,21 @@
 </script>
 
 <div class="editors">
-	<!-- TODO: replace tabs with windows and use a proper persistent each key -->
-	{#each tabs as tabList, i (tabList)}
+	{#each windows as window, i (window.id)}
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div on:mousedown|capture={e => activeEditor = i}>
 			<EditorWindow isActive={activeEditor == i} showBugReporter={i == 0} index={i}
-				bind:this={editorWindows[i]} bind:selectedIndex={selectedTabs[i]} bind:tabs={tabList} 
+				bind:this={editorWindows[i]} bind:selectedIndex={selectedTabs[i]} bind:tabs={window.tabs} 
 				on:removeEditor={e => {
-					if (tabs.length > 1) {
+					if (windows.length > 1) {
 						editorWindows[i].setActive()
 						
-						let newTabs = [...tabs]
+						let newTabs = [...windows]
 						newTabs.splice(i, 1)
 						
-						tabs = newTabs
+						windows = newTabs
 					} else {
-						tabs[0] = []
+						windows[0].tabs = []
 						editorWindows[0]?.setActive()
 					}
 				}}
@@ -165,11 +166,14 @@
 					let { tab, direction } = e.detail
 					
 					if (direction == 'origin') {
-						tabs = replaceInArrayPure(tabs, tabs[i], [...tabs[i], tab])
-						selectedTabs[i] = tabs[i].length - 1
+						windows = replaceInArrayPure(windows, windows[i], { ...windows[i], tabs: [...windows[i].tabs, tab] })
+						selectedTabs[i] = windows[i].tabs.length - 1
 					} else {
 						let index = direction == 'right' ? i + 1 : i
-						tabs = insertIntoArrayPure(tabs, index, [tab])
+						windows = insertIntoArrayPure(windows, index, {
+							id: Symbol("Window"),
+							tabs: [tab],
+						})
 						selectedTabs = insertIntoArrayPure(selectedTabs, index, 0)
 					}
 				}}
@@ -186,7 +190,7 @@
 						
 						const childID = Symbol(`Tab ID ${detail.title}`)
 						
-						tabList[selectedTabs[i]]?.children?.push(childID)
+						window.tabs[selectedTabs[i]]?.children?.push(childID)
 						
 						let tab = tabIdentity({
 							id: childID,
@@ -198,11 +202,14 @@
 						})
 						
 						if (isWide) {
-							if (tabs.length < 2) {
-								tabs = [...tabs, [tab]]
+							if (windows.length < 2) {
+								windows = [...windows, {
+									id: Symbol("Window"),
+									tabs: [tab]
+								}]
 							} else {
-								tabToAddEditorIndex = 1
-								tabToAdd = tab
+								editorWindows[1].addTab(tab)
+								activeEditor = 1
 							}
 						} else {
 							editorWindows[0].addTab(tab)

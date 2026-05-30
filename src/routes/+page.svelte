@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { afterUpdate, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	
 	import parseElfBinary from 'paper-mario-elfs/parser';
-	import serializeElfBinary from 'paper-mario-elfs/serializer';
 	
 	import { currentModal, modalVisible, showModal } from '$lib/modal/modal';
 	import Modal from '$lib/modal/Modal.svelte';
@@ -18,6 +17,7 @@
 	
 	import TitleCard from '$lib/TitleCard.svelte';
     import type { MenuCategory } from '$lib/types';
+    import type { Tab } from '$lib/editor/globalDragging';
 	
 	let editorStrip: EditorStrip
 	
@@ -54,12 +54,16 @@
 				return
 			}
 			
-			let tabs = map2d(save, ({ name, filePath, dataType, content, isCompressed }) => 
+			let tabs: Tab[][] = map2d(save, ({ name, filePath, dataType, content, isCompressed }) => 
 				createFileTab(name, filePath, parseElfBinary(dataType, content), dataType, isCompressed)
 			).filter(arr => arr.length > 0)
 			
 			if (tabs.length != 0) {
-				editorStrip.load(tabs)
+				let windows = tabs.map(tabList => ({
+					id: Symbol("Window"),
+					tabs: tabList,
+				}))
+				editorStrip.load(windows)
 			}
 			
 			$loadedAutosave = true

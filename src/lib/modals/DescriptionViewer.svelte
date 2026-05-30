@@ -26,12 +26,12 @@
 
 <Alert title="All Field Descriptions">
 	<div class="wrapper tabbable" bind:this={wrapper}>
-		{#each allMetadataEntries as [dataType, typeMetadata]}
+		{#each allMetadataEntries as [dataType, typeMetadata] (dataType)}
 		{#if Object.entries(typeMetadata).filter(s => s[1].description).length > 0}
 			<h2>{toPlural(FILE_TYPES[dataType].displayName)}:</h2>
 			
 			<div class="descriptions">
-				{#each Object.entries(typeMetadata) as [fieldName, metadata], i}
+				{#each Object.entries(typeMetadata) as [fieldName, metadata] (fieldName)}
 					{#if metadata.description}
 						<div class="element">
 							<b>{toReadableString(fieldName)}:</b>

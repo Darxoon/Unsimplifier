@@ -634,8 +634,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 
 function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
-	// @ts-expect-error
-	let result: UuidTagged = {
+	let result: any = {
 		[DATA_TYPE]: dataType
 	}
 	

@@ -9,10 +9,10 @@
 
 	import StringViewer from "../modal/StringViewer.svelte";
 	import TabbedAlert from "../modal/TabbedAlert.svelte"
-    import { DATA_TYPE, type UuidTagged } from "paper-mario-elfs/valueIdentifier";
+    import { DATA_TYPE, VALUE_UUID, type UuidTagged } from "paper-mario-elfs/valueIdentifier";
 
 	export let dataType: DataType
-	export let objects: any[]
+	export let objects: UuidTagged[]
 	export let binary: ElfBinary
 	export let fieldName: string
 	export let title: string
@@ -110,7 +110,7 @@
 			</div>
 		{/if}
 		<div class="allValues local tabbable" class:forceMaxHeight={forceMaxHeight}>
-			{#each objects as obj, i}
+			{#each objects as obj, i (obj[VALUE_UUID])}
 				{#if hideNulls ? obj[fieldName] !== null && obj[fieldName] != 0 || obj[fieldName] === "" : true}
 					<div class="index">
 						{i}
@@ -134,7 +134,7 @@
 				</div>
 			{/if}
 			<div class="allValues nested tabbable">
-				{#each allGlobalValues as [obj, i, j]}
+				{#each allGlobalValues as [obj, i, j] (obj[VALUE_UUID])}
 					{#if hideNulls ? obj[fieldName] !== null : true}
 						<div class="index">
 							{i}&nbsp;/&nbsp;{j}

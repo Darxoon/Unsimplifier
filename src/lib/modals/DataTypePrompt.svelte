@@ -124,28 +124,28 @@
 		<option value="CharacterParty">Partner Registry (data_character_party)</option>
 		<option value="CharacterItem">Item Registry (data_character_item)</option>
 		<option value="CharacterAobj">Aobj Registry (data_character_aobj)</option>
-    <option value="DataNpcModel">NPC Models (data_model_npc)</option>
-    <option value="DataPlayerModel">Player Models (data_model_player)</option>
-    <option value="DataItemModel">Item Models (data_model_item)</option>
-    <option value="DataMobjModel">Mobj Models (data_model_mobj)</option>
-    <option value="DataGobjModel">Gobj Models (data_model_gobj)</option>
-    <option value="DataBattleModel">Battle Models (data_model_battle)</option>
+		<option value="DataNpcModel">NPC Models (data_model_npc)</option>
+		<option value="DataPlayerModel">Player Models (data_model_player)</option>
+		<option value="DataItemModel">Item Models (data_model_item)</option>
+		<option value="DataMobjModel">Mobj Models (data_model_mobj)</option>
+		<option value="DataGobjModel">Gobj Models (data_model_gobj)</option>
+		<option value="DataBattleModel">Battle Models (data_model_battle)</option>
 
-    <option value="SndBattle">Battle BGM Registry (data_sndBattle)</option>
+		<option value="SndBattle">Battle BGM Registry (data_sndBattle)</option>
 
-    <option value="EventFlag">Event Flags (EventFlg)</option>
-    <option value="MapItemLotTable">Map Item Lot Table (data_map_itemlottable)</option>
-    <option value="MapId">Map Registry (MapId)</option>
+		<option value="EventFlag">Event Flags (EventFlg)</option>
+		<option value="MapItemLotTable">Map Item Lot Table (data_map_itemlottable)</option>
+		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 
-    <option value="ParamActionBalloon">Action Balloon Parameters (data_param_actionballoon)</option>
-    <option value="ParamFade">Screen Transitions (data_param_fade)</option>
-    <option value="ParamField">Field Parameters (data_param_field)</option>
-    <option value="ParamHouseDoor">House Door Parameters (data_param_housedoor)</option>
-    <option value="ParamJump">Jump Parameters (data_param_jump)</option>
-    <option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
-    <option value="ParamPlayer">Player Parameters (data_param_player)</option>
-    <option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
+		<option value="ParamActionBalloon">Action Balloon Parameters (data_param_actionballoon)</option>
+		<option value="ParamFade">Screen Transitions (data_param_fade)</option>
+		<option value="ParamField">Field Parameters (data_param_field)</option>
+		<option value="ParamHouseDoor">House Door Parameters (data_param_housedoor)</option>
+		<option value="ParamJump">Jump Parameters (data_param_jump)</option>
+		<option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
+		<option value="ParamPlayer">Player Parameters (data_param_player)</option>
+		<option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
 		<option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item)</option>
 		<option value="DataMinigamePaperAiper">Paper Minigame Aiper Parameters (DataMinigame_Paper_Aiper)</option>
 		<option value="DataMinigamePaperFan">Paper Minigame Fan Parameters (DataMinigame_Paper_Fan)</option>
@@ -158,21 +158,21 @@
 		<option value="HeartParam">Heart and Flower Drop Parameters (HeartParam)</option>
 		<option value="Parameter">Battle Parameters (Parameter)</option>
 
-    <option value="BattleWeaponMario">Player Attacks (BattleWeaponMario)</option>
-    <option value="BattleWeaponParty">Party Attacks (BattleWeaponParty)</option>
-    <option value="BattleWeaponOther">Other Attacks (BattleWeaponOther)</option>
-    <option value="BattleWeaponEnemy">Enemy Attacks (BattleWeaponEnemy)</option>
-    <option value="BattleWeaponItem">Item Attacks (BattleWeaponItem)</option>
-    <option value="BattleWeaponAcMarioAc">Player Action Commands (BattleWeaponAcMarioAc)</option>
-    <option value="BattleWeaponAcPartyAc">Party Action Commands (BattleWeaponAcPartyAc)</option>
+		<option value="BattleWeaponMario">Player Attacks (BattleWeaponMario)</option>
+		<option value="BattleWeaponParty">Party Attacks (BattleWeaponParty)</option>
+		<option value="BattleWeaponOther">Other Attacks (BattleWeaponOther)</option>
+		<option value="BattleWeaponEnemy">Enemy Attacks (BattleWeaponEnemy)</option>
+		<option value="BattleWeaponItem">Item Attacks (BattleWeaponItem)</option>
+		<option value="BattleWeaponAcMarioAc">Player Action Commands (BattleWeaponAcMarioAc)</option>
+		<option value="BattleWeaponAcPartyAc">Party Action Commands (BattleWeaponAcPartyAc)</option>
 
-    <option value="BattleAudienceKind">Battle Audience Parameters (BattleAudienceKind)</option>
+		<option value="BattleAudienceKind">Battle Audience Parameters (BattleAudienceKind)</option>
 
-    <option value="DataUi">User Interface Registry (data_ui)</option>
+		<option value="DataUi">User Interface Registry (data_ui)</option>
 
-    <option value="DataSnd">Sound Data Registry (data_snd)</option>
+		<option value="DataSnd">Sound Data Registry (data_snd)</option>
 
-  </select>
+	</select>
 	
 	<div class="checkbox" style="margin-top: 0.3rem;">
 		<input type="checkbox" id="iscompressed" bind:checked={isCompressed}>
