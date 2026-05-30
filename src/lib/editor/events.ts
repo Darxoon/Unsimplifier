@@ -5,15 +5,17 @@ export class OpenWindowEvent {
 	title: string
 	content: PageContent
 	isCompressed: boolean
+	inCurrentWindow: boolean
 	
 	/**
 	 * Meant to be set by the EditorWindow where the event inevitably goes through.
 	 */
 	parentTab?: Tab
 	
-	constructor(title: string, isCompressed: boolean, content: PageContent) {
+	constructor(title: string, isCompressed: boolean, inCurrentWindow: boolean, content: PageContent) {
 		this.title = title
 		this.content = content
 		this.isCompressed = isCompressed
+		this.inCurrentWindow = inCurrentWindow
 	}
 }

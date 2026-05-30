@@ -144,7 +144,7 @@ ${filePath}. Please report this to the developer (Darxoon)
             })
         }
         
-        dispatch('open', new OpenWindowEvent(fileName, true, {
+        dispatch('open', new OpenWindowEvent(fileName, true, true, {
             type: "cardList",
             binary,
             dataType,
@@ -205,7 +205,7 @@ ${filePath}. Please report this to the developer (Darxoon)
                     </div>
                 </div>
                 <div class="card open-file">
-                    <h2>Open a file</h2>
+                    <h2>Open a vanilla file</h2>
                     
                     <input type="checkbox" id={checkboxId} class:unsupported={onlyShowUnsupported}
                         bind:checked={onlyShowSupported}

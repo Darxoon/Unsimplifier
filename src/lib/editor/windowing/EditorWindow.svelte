@@ -220,7 +220,7 @@ Do you want to close those too?`,
 			</div>
 		{/each}
 		
-		{#if tabs.length == 0}
+		{#if tabs.length == 0 || selectedIndex == -1}
 			<div>
 				<WelcomeScreen on:open={e => handleOpenWindowEvent(e.detail)} />
 			</div>

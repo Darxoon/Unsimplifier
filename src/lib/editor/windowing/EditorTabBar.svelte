@@ -5,7 +5,7 @@
     import { type Tab, tabWasAccepted, globalDraggedTab } from "../globalDragging";
     import { browser } from "$app/environment";
     import logging from "$lib/logging";
-    import { XIcon } from "svelte-feather-icons";
+    import { PlusIcon, XIcon } from "svelte-feather-icons";
 
 	export let tabs: Tab[]
 	export let activeIndex: number
@@ -217,23 +217,35 @@
 				<XIcon class="icon-close" />
 			</div>
 		</li>
-	{/if}
-	{#each immediateTabs as tab, i (tab.id)}
-		<li bind:this={tabElements[i]} use:nonnativeButton={() => { activeIndex = i; dispatch('selectTabContent', i) }}
-			class="tab_button" role="menuitem"
-			class:active={immediateActiveIndex == i}
-			class:colorInvisible={tab == floating}
-			on:mousedown={() => onTabMouseDown(tab, i)} 
-			on:mousemove={e => onTabMouseMove(tab, i)}>
-			
-			<span class="tabName">{tab.name}</span>
-			<!-- svelte-ignore a11y-no-static-element-interactions -- nonnativeButton gives it a role="button" -->
-			<div class="close_button" class:white-x={state == 'default' && immediateActiveIndex == i}
-				on:mousedown|stopPropagation={noop} use:nonnativeButton={() => dispatch('closeTab', tab)}>
-				<XIcon class="icon-close" />
+	{:else}
+		{#each immediateTabs as tab, i (tab.id)}
+			<li bind:this={tabElements[i]} use:nonnativeButton={() => { activeIndex = i; dispatch('selectTabContent', i) }}
+				class="tab_button" role="menuitem"
+				class:active={immediateActiveIndex == i}
+				class:colorInvisible={tab == floating}
+				on:mousedown={() => onTabMouseDown(tab, i)} 
+				on:mousemove={e => onTabMouseMove(tab, i)}>
+				
+				<span class="tabName">{tab.name}</span>
+				<!-- svelte-ignore a11y-no-static-element-interactions -- nonnativeButton gives it a role="button" -->
+				<div class="close_button" class:white-x={state == 'default' && immediateActiveIndex == i}
+					on:mousedown|stopPropagation={noop} use:nonnativeButton={() => dispatch('closeTab', tab)}>
+					<XIcon class="icon-close" />
+				</div>
+			</li>
+		{/each}
+		
+		<!-- welcome screen button -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<li class="thin" class:active={immediateActiveIndex == -1}
+			use:nonnativeButton={() => { activeIndex = -1; dispatch('selectTabContent', -1) }}
+			on:mousedown={() => { activeIndex = -1; dispatch('selectTabContent', -1) }}
+		>
+			<div class="plus_button" class:white-x={immediateActiveIndex == -1}>
+				<PlusIcon />
 			</div>
 		</li>
-	{/each}
+	{/if}
 	
 	<li class="dragged_tab_overlay" class:invisible={state != 'dragging'} style="--left: {floatingOverlayX}">
 		{floating?.name}
@@ -265,10 +277,13 @@
 		
 		white-space: nowrap;
 		
+		&.thin {
+			padding: 10px 12px;
+		}
+		
 		&.active {
 			color: white;
 			background: var(--editor-bg);
-			transition: background 0.08s;
 		}
 		
 		&.dragged_tab_overlay {
@@ -318,10 +333,21 @@
 			color: #828282;
 		}
 		
-		:global(.icon-close) {
+		& > :global(.icon-close) {
 			width: 100%;
 			height: 100%;
 			stroke-width: 2.5px;
+		}
+	}
+	
+	.plus_button {
+		width: 24px;
+		height: 20px;
+		
+		color: black;
+		
+		&.white-x {
+			color: white;
 		}
 	}
 	

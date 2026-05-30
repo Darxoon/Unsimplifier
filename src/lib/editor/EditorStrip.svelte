@@ -178,10 +178,10 @@
 					}
 				}}
 				on:open={e => {
-					let { detail } = e
+					const { detail } = e
 					
 					if (detail instanceof OpenWindowEvent) {
-						const { title, parentTab, content, isCompressed } = detail
+						const { title, parentTab, content, isCompressed, inCurrentWindow } = detail
 						
 						// triple equals because if parentTab is null that means that this probably was intended
 						if (parentTab === undefined) {
@@ -201,7 +201,9 @@
 							content,
 						})
 						
-						if (isWide) {
+						if (inCurrentWindow) {
+							editorWindows[activeEditor].addTab(tab)
+						} else if (isWide) {
 							if (windows.length < 2) {
 								windows = [...windows, {
 									id: Symbol("Window"),

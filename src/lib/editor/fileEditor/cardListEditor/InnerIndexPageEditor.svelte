@@ -19,7 +19,7 @@
 <div class="editor">
 	{#each items as [name, {dataType, label}]}
 		<div class="card link" use:nonnativeButton={() => {
-			dispatch("open", new OpenWindowEvent(`${name} (${fileName})`, false, {
+			dispatch("open", new OpenWindowEvent(`${name} (${fileName})`, false, false, {
 				type: "cardList",
 				binary,
 				dataType,
