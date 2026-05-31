@@ -468,6 +468,26 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			data.msg = messages
 
 			parseIndexData(dataSection, stringSection, dataType)
+			
+			// fix up shops
+			const rawShops: Instance<DataType.UiShopItem>[] = data.shop
+			
+			let shops: Instance<DataType.UiShop>[] = []
+			for (const shopItem of rawShops) {
+				if (shopItem.shopId != null) {
+					shops.push({
+						[VALUE_UUID]: ValueUuid(`Shop ${shopItem.shopId}`),
+						[DATA_TYPE]: DataType.UiShop,
+						id: shopItem.shopId,
+						items: [],
+					})
+				}
+				
+				let items: Instance<DataType.UiShopItem>[] = shops.at(-1).items
+				items.push(shopItem)
+			}
+			
+			data.shop = shops
 
 			break
 		}

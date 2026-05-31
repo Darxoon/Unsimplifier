@@ -100,6 +100,7 @@ export enum DataType {
 	UiMessage,
 	UiSelectWindow,
 	UiShine,
+	UiShopItem,
 	UiShop,
 	UiSellItem,
 	UiStarpiece,

@@ -1806,7 +1806,7 @@ Some commonly found translations:
 			romfsPath: "data/data_ui.elf.zst",
 			rootTypes: {
 				style: DataType.UiStyle,
-				shop: DataType.UiShop,
+				shop: DataType.UiShopItem,
 				icon: DataType.UiIcon,
 				mail: DataType.UiMail,
 				map: DataType.UiMap,
@@ -1901,22 +1901,37 @@ Not sure what this is for. It seems like it's the same as \`id\`.`),
 		field_0x8c: "int",
 		field_0x90: "int",
 	},
-	[DataType.UiShop]: {
+	[DataType.UiShopItem]: {
 		__: {
-			displayName: "Shop",
-			dataCategory: "shop",
+			displayName: "Sold Item",
+			dataCategory: null,
 			mainSymbol: "wld::fld::data::s_UIShopData",
+			identifyingField: "item",
 			defaultPadding: 1,
 		},
 
-		id: new Property("string", `
-The ID of the shop. Entries that show null are tied to the next shop ID above. Shop list ends at the entry before the next ID.`),
+		// ID field is part of the Shop/Item hybrid which Unsimplifier abstracts over
+		shopId: new Property("string", undefined, { hidden: true }),
 		item: new Property("string", `
 Item ID.`),
 		price: new Property("int", `
 Item Price in coins.`),
 		outOfStock: new Property("bool32", `
 Whether this item is available in the shop by default or not.`),
+	},
+	// fake data type
+	[DataType.UiShop]: {
+		__: {
+			displayName: "Shop",
+			dataCategory: "shop",
+			childTypes: {
+				items: DataType.UiShopItem,
+			}
+		},
+		
+		id: new Property("string", `
+The ID of the shop. Entries that show null are tied to the next shop ID above. Shop list ends at the entry before the next ID.`),
+		items: new Property("symbol", undefined, { tabName: "Shop {id}" }),
 	},
 	[DataType.UiAcMaster]: {
 		__: {

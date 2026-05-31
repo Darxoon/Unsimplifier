@@ -274,6 +274,27 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				}
 
 			case DataType.DataUi: {
+				// fix up shops
+				const shops: Instance<DataType.UiShop>[] = binary.data.shop
+				
+				let rawShops: Instance<DataType.UiShopItem>[] = []
+				for (const shop of shops) {
+					const items: Instance<DataType.UiShopItem>[] = shop.items
+					
+					for (const item of items as Instance<DataType.UiShopItem>[]) {
+						item.shopId = null
+					}
+					
+					if (items.length > 0) {
+						items[0].shopId = shop.id
+					}
+					
+					rawShops.push(...items)
+				}
+				
+				binary.data.shop = rawShops
+				
+				// start serializing
 				const dataSymbolAddrs = new Map()
 				symbolAddrRelocations.set('.data', dataSymbolAddrs)
 
@@ -288,7 +309,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				serializeStringsOnly(DataType.UiModel, binary.data.model)
 				serializeStringsOnly(DataType.UiMessage, binary.data.msg)
 				serializeStringsOnly(DataType.UiStyle, binary.data.style)
-				serializeStringsOnly(DataType.UiShop, binary.data.shop)
+				serializeStringsOnly(DataType.UiShopItem, binary.data.shop)
 				serializeStringsOnly(DataType.UiIcon, binary.data.icon)
 				serializeStringsOnly(DataType.UiMail, binary.data.mail)
 				serializeStringsOnly(DataType.UiMap, binary.data.map)
