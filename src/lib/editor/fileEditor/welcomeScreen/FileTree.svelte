@@ -207,7 +207,7 @@
     <ul role="menu" class="tree" bind:this={treeElement} class:shortened={short && showMoreVisible}>
         {#each fileTree as item, i (item.path)}
             <!-- TODO: keyboard support -->
-            <li style="padding-left: calc(var(--padding-left) + var(--indent-width) * {item.indentation});"
+            <li style="--indentation: {item.indentation}"
                 on:mousedown={() => toggleFolderCollapse(item)}
                 on:dblclick={() => openFile(item)}
                 class:collapsed={item.isCollapsed} class:file={item.isFile} class="fs-item"
@@ -246,6 +246,9 @@
         position: relative;
         user-select: none;
         cursor: pointer;
+        
+        --total-padding-left: calc(var(--padding-left) + var(--indent-width) * var(--indentation));
+        padding-left: var(--total-padding-left);
     }
     
     .tree li:hover {
@@ -264,7 +267,7 @@
         position: absolute;
         left: 0;
         right: 0;
-        text-align: center;
+        padding-left: calc(var(--total-padding-left) + 8rem);
     }
     
     :global(.arrow) {
