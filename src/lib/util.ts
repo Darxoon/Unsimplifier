@@ -214,6 +214,12 @@ const twoLetterAcronyms = [
 	'FP',
 ]
 
+const threeLetterAcronyms = [
+	'SFX',
+	'GFX',
+	'VFX',
+]
+
 export function toReadableString(camelCaseStr: string) {
 	if (camelCaseStr.startsWith('field_'))
 		return camelCaseStr.replace('_', ' ')
@@ -229,28 +235,41 @@ export function toReadableString(camelCaseStr: string) {
 		const newWordBeginning: boolean = currentChar.toUpperCase() === currentChar || output === ''
 		
 		function testSpecialWord(word: string): boolean {
-			return output.endsWith(word[0]) && currentChar == word[1].toLowerCase()
+			return output.at(-word.length + 1) == word[0]
+				&& output.endsWith(word.slice(1, -1).toLowerCase())
+				&& currentChar == word.at(-1).toLowerCase()
 		}
 		
 		// special case for BShapes
 		if (newWordBeginning && output.endsWith(' B')) {
 			output += currentChar.toUpperCase()
+			continue
 		}
 		// special case for two letter acronyms like "ID"
-		else if (
+		if (
 			output.at(-2) == ' '
 			&& twoLetterAcronyms.find(testSpecialWord)
 			&& !(/^[a-z]$/.test(lookAhead))
 		) {
 			output += currentChar.toUpperCase()
+			continue
 		}
-		else if (isNumber && /^\d$/.test(previousChar)) {
+		// special case for three letter acronyms like "SFX"
+		const threeLetterAcronym = threeLetterAcronyms.find(testSpecialWord)
+		if (
+			output.at(-3) == ' '
+			&& threeLetterAcronym
+			&& !(/^[a-z]$/.test(lookAhead))
+		) {
+			output = output.slice(0, -2) + threeLetterAcronym
+			continue
+		}
+		
+		if (isNumber && /^\d$/.test(previousChar)) {
 			output += currentChar
-		}
-		else if (newWordBeginning) {
+		} else if (newWordBeginning) {
 			output += ' ' + currentChar.toUpperCase()
-		} 
-		else {
+		} else {
 			output += currentChar
 		}
 	}
