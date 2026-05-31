@@ -10,6 +10,8 @@
     import type { UuidTagged } from "paper-mario-elfs/valueIdentifier";
     import { incrementName } from "paper-mario-elfs/nameMangling";
     import ObjectEditor from "$lib/editor/objectEditor/ObjectEditor.svelte";
+    import { showModal } from "$lib/modal/modal";
+    import TernaryPrompt from "$lib/modals/TernaryPrompt.svelte";
 
 	export let binary: ElfBinary
 	export let dataType: DataType
@@ -144,7 +146,15 @@
 		objects = objects
 	}
 	
-	function deleteAll() {
+	async function deleteAll() {
+		let success = await showModal(TernaryPrompt, {
+			title: "Warning",
+			content: "You are about to delete all entries in this file. Proceed?",
+			showCancel: false,
+		})
+		if (!success)
+			return
+		
 		objects.length = 0
 		objects = objects
 		
