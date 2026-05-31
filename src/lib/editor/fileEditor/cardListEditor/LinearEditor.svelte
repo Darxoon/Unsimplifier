@@ -205,6 +205,7 @@
 	
 	.listing {
 		min-height: var(--content-height);
+		margin-bottom: 1rem;
 		
 		.maplinkHeader, .sndBattleHeader {
 			margin-top: 2.5rem;
