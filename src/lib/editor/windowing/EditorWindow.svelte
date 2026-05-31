@@ -127,7 +127,7 @@
 		
 		dispatch('dockTab', {
 			direction,
-			tab: $globalDraggedTab,
+			tab: $globalDraggedTab.tab,
 		})
 		
 		$globalDraggedTab = undefined

@@ -2,7 +2,7 @@
 	import { afterUpdate, onMount } from "svelte";
 
 	import EditorWindow from "./windowing/EditorWindow.svelte";
-	import { globalDraggedTab, tabWasAccepted, type Tab, type Window } from "./globalDragging";
+	import { globalDraggedTab, tabWasAccepted, type DockDirection, type Tab, type Window } from "./globalDragging";
 	import type { SaveFile } from "$lib/save/autosave";
     import { excludeFromArrayPure, insertIntoArrayPure, replaceInArrayPure } from "$lib/util";
     import logging from "$lib/logging";
@@ -163,7 +163,7 @@
 					}
 				}}
 				on:dockTab={e => {
-					let { tab, direction } = e.detail
+					let { tab, direction } = e.detail as { tab: Tab, direction: DockDirection }
 					
 					if (direction == 'origin') {
 						windows = replaceInArrayPure(windows, windows[i], { ...windows[i], tabs: [...windows[i].tabs, tab] })
