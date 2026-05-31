@@ -95,8 +95,6 @@ export function duplicateObjectInBinary<T extends object>(binary: ElfBinary, dat
 	console.log('cloning', DataType[dataType], obj)
 	let clone = obj instanceof Array
 		? cloneArray(dataType, obj) as unknown as T
-		: 'item' in obj
-		? {...obj, item: cloneObject(dataType, obj.item)}
 		: 'children' in obj
 		? {...obj, children: cloneArray(dataType, obj.children as any[])}
 		: cloneObject(dataType, obj)

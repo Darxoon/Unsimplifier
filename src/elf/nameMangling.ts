@@ -77,6 +77,9 @@ function isDigit(char: string) {
 }
 
 export function incrementName(name: string, isRoot: boolean = true): string {
+	if (name == null)
+		return null
+	
 	if (!isDigit(name[name.length - 1])) {
 		return isRoot ? name + "2" : name + "1"
 	}
