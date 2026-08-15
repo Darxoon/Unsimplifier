@@ -12,6 +12,8 @@
     import ObjectEditor from "$lib/editor/objectEditor/ObjectEditor.svelte";
     import { showModal } from "$lib/modal/modal";
     import TernaryPrompt from "$lib/modals/TernaryPrompt.svelte";
+    import FieldOptionAlert from "$lib/modals/FieldOptionAlert.svelte";
+    import { toReadableString } from "$lib/util";
 
 	export let binary: ElfBinary
 	export let dataType: DataType
@@ -161,6 +163,17 @@
 		if (overrideObjects)
 			overrideObjects = overrideObjects
 	}
+	
+	function showFieldMenu(dataType: DataType, objects: any[], fieldName: string) {
+		showModal(FieldOptionAlert, {
+			title: `Field '${toReadableString(fieldName)}'`,
+			fieldName,
+			
+			dataType,
+			binary,
+			objects,
+		})
+	}
 </script>
 
 {#if initialized}
@@ -184,14 +197,18 @@
 		{#if dataType === DataType.Maplink}
 			<div class="maplinkHeader">
 				<ObjectEditor title="Maplink Header" bind:obj={binary.data.main[0]} 
-					dataType={DataType.MaplinkHeader} showButtons={false} binary={binary} />
+					dataType={DataType.MaplinkHeader} showButtons={false} binary={binary}
+					on:showFieldMenu={e => showFieldMenu(DataType.MaplinkHeader, binary.data.main, e.detail)}
+					/>
 			</div>
 		{/if}
 		
 		{#if dataType === DataType.SndBattle}
 			<div class="sndBattleHeader">
 				<ObjectEditor title="SndBattle Header" bind:obj={binary.data.main[0]}
-							dataType={DataType.SndBattleHeader} showButtons={false} binary={binary} />
+					dataType={DataType.SndBattleHeader} showButtons={false} binary={binary}
+					on:showFieldMenu={e => showFieldMenu(DataType.SndBattleHeader, binary.data.main, e.detail)}
+					/>
 			</div>
 		{/if}
 

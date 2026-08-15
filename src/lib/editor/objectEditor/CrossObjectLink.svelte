@@ -70,7 +70,7 @@
 </script>
 
 <div class="linkWrapper">
-	<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div class="link"
 		bind:this={link} on:mousedown={focusLink}
 		use:nonnativeButton={click}><span class="text">{label}</span></div>

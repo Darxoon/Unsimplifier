@@ -76,7 +76,7 @@
 		
 		{#if fieldType == "int" || fieldType == "short" || fieldType == "long" || fieldType == "byte"}
 			<div>
-				<input type="checkbox" name="viewAsHex" checked={$hexFields[dataType] && $hexFields[dataType][fieldName]} on:change={e => {
+				<input type="checkbox" id="viewAsHex" name="viewAsHex" checked={$hexFields[dataType] && $hexFields[dataType][fieldName]} on:change={e => {
 					// @ts-ignore
 					setHexField(dataType, fieldName, e.target.checked)
 				}}>
