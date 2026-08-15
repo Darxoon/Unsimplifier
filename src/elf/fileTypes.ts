@@ -5,9 +5,6 @@ import { ValueUuid, VALUE_UUID, type UuidTagged, DATA_TYPE } from "./valueIdenti
 
 export type Typedef<T> = {[fieldName: string]: T}
 
-const scriptDisclaimer = "To find the function's location, you can use \
-[all_functions.json](https://gist.github.com/Darxoon/16bb8777d7f2f8dbef0f2516b8ddce65)."
-
 export interface PropertyOptions {
 	hidden?: boolean
 	tabName?: string
@@ -229,13 +226,13 @@ const typedefs = {
 		field_0x118: "string",
 		field_0x120: "int",
 		field_0x124: "int",
-		initFunction: new Property("string", "Function that runs when NPC is initialized."),
+		initScript: new Property("string", "Function that runs when NPC is initialized."),
 		field_0x130: "int",
 		field_0x134: "int",
 		field_0x138: "int",
 		field_0x13c: "int",
-		talkFunction: new Property("string", "Function that runs when NPC is talked to."),
-		actionFunction: new Property("string", "Function that runs when NPC is hit."),
+		talkScript: new Property("string", "Function that runs when NPC is talked to."),
+		actionScript: new Property("string", "Function that runs when NPC is hit."),
 		field_0x150: "int",
 		field_0x154: "int",
 		field_0x158: "int",
@@ -1590,8 +1587,8 @@ Specifies the type of the item. Possible values:
 		field_0x9c: "int",
 		field_0xa0: "int",
 		field_0xa4: "int",
-		field_0xa8: "string",
-		field_0xb0: "string",
+		enterScript: "string",
+		exitScript: "string",
 		field_0xb8: "int",
 		field_0xbc: "int",
 		field_0xc0: "int",
