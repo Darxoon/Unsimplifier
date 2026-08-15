@@ -1562,9 +1562,20 @@ Specifies the type of the item. Possible values:
 		field_0x20: "int",
 		field_0x24: "int",
 		targetActor: "string",
-		transitionType: "string",
+		transitionType: new Property("string", `
+Which type of screen transition is going to play. Common values:
+
+* ベロ = regular walk
+* 背景ベロ = regular walk (in background)
+* イベント = event
+* ドア = door
+* 土管：下 = pipe (down)
+* 背景土管：下 = pipe (down, in background)
+* 土管：上 = pipe (up)
+* 土管：横 = pipe (horizontal)
+`),
 		objectId: "string",
-		field_0x40: "float",
+		angle: "float",
 		field_0x44: "int",
 		field_0x48: "int",
 		field_0x4c: "int",
@@ -1576,7 +1587,7 @@ Specifies the type of the item. Possible values:
 		field_0x6c: "int",
 		field_0x70: "int",
 		field_0x74: "int",
-		field_0x78: "string",
+		direction: "string",
 		field_0x80: "int",
 		field_0x84: "int",
 		field_0x88: "int",
