@@ -21,7 +21,8 @@ const config = {
 	resolve: {
 		alias: {
 			'paper-mario-elfs': path.resolve('src/elf')
-		}
+		},
+		conditions: process.env.VITEST ? ['browser'] : undefined,
 	},
 };
 

@@ -40,7 +40,7 @@ const BINARY_HEADER: Uint8Array = new Uint8Array([
 ])
 
 
-export default function serializeElfBinary(dataType: DataType, binary: ElfBinary): ArrayBuffer {
+export default function serializeElfBinary(dataType: DataType, binary: ElfBinary, verbose: boolean = true): ArrayBuffer {
 	// In order to serialize an ELF binary, we don't have to regenerate the entire file.
 	// All we need to do is change the sections that need to be changed and then reconstruct
 	// the rest of the structure.
@@ -885,7 +885,9 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		updatedSections.set('.rela' + sectionName, writer.toArrayBuffer())
 	}
 	
-	console.log('allRelocations', allRelocations)
+	if (verbose) {
+		console.log('allRelocations', allRelocations)
+	}
 	
 	
 	
@@ -925,7 +927,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 	const sectionHeaderTableLocation = writer.size
 	
 	for (const section of sections) {
-		if (section.name == ".rela.data") {
+		if (section.name == ".rela.data" && verbose) {
 			console.log(section.name, section.offset.toString(16))
 		}
 		

@@ -131,16 +131,16 @@
 		<option value="DataGobjModel">Gobj Models (data_model_gobj)</option>
 		<option value="DataBattleModel">Battle Models (data_model_battle)</option>
 
-		<option value="SndBattle">Battle BGM Registry (data_sndBattle)</option>
+		<option value="SndBattle">Battle BGM Registry (data_sndBattle) (Warning: unstable, potentially broken)</option>
 
-		<option value="EventFlag">Event Flags (EventFlg)</option>
+		<option value="EventFlag">Event Flags (EventFlg) (Warning: unstable, potentially broken)</option>
 		<option value="MapItemLotTable">Map Item Lot Table (data_map_itemlottable)</option>
 		<option value="MapId">Map Registry (MapId)</option>
 		<option value="ItemList">Battle Item RNG Table (ItemList)</option>
 
 		<option value="ParamActionBalloon">Action Balloon Parameters (data_param_actionballoon)</option>
 		<option value="ParamFade">Screen Transitions (data_param_fade)</option>
-		<option value="ParamField">Field Parameters (data_param_field)</option>
+		<option value="ParamField">Field Parameters (data_param_field) (Warning: unstable, potentially broken)</option>
 		<option value="ParamHouseDoor">House Door Parameters (data_param_housedoor)</option>
 		<option value="ParamJump">Jump Parameters (data_param_jump)</option>
 		<option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>

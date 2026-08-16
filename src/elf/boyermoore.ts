@@ -106,10 +106,3 @@ export default class BoyerMoore {
     return [boyerMooreSearch, pattern.byteLength];
   }
 }
-
-
-// Simple usage example
-const boyerMoore = new BoyerMoore(new Uint8Array([0x12, 0x13, 0x14]));
-const indexes = boyerMoore.findIndexes(new Uint8Array([0x01, 0x02, 0x12, 0x13, 0x14]));
-console.log(indexes);
-

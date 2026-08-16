@@ -16,7 +16,7 @@ export class EmptyFileError extends Error {
 	}
 }
 
-export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuffer): ElfBinary {
+export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuffer, verbose: boolean = true): ElfBinary {
 	const view = new DataView(arrayBuffer)
 	const reader = new BinaryReader(view)
 
@@ -544,8 +544,10 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	
 	let binary = new ElfBinary(sections, data, symbolTable)
 	
-	console.log('binary', binary)
-	console.log('data', data)
+	if (verbose) {
+		console.log('binary', binary)
+		console.log('data', data)
+	}
 	
 	return binary
 	
