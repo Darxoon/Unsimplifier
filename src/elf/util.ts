@@ -2,7 +2,7 @@ import type { ElfBinary } from "./elfBinary"
 import { DataType } from "./dataType"
 import { FILE_TYPES } from "./fileTypes"
 import { demangle, incrementName } from "./nameMangling"
-import type { Symbol } from "./types"
+import type { Relocation, Symbol } from "./types"
 import { ValueUuid, VALUE_UUID } from "./valueIdentifier"
 
 export function* enumerate<T>(arr: T[]): Generator<[T, number], void, unknown> {
@@ -11,24 +11,43 @@ export function* enumerate<T>(arr: T[]): Generator<[T, number], void, unknown> {
 	}
 }
 
-export type Peekable<T> = Generator<T, never> & { peek: () => T | null }
-
-export function peekable<T>(iterable: Iterable<T> | Iterator<T>): Peekable<T> {
-	let iterator: Iterator<T> = iterable[globalThis.Symbol.iterator] ? iterable[globalThis.Symbol.iterator]() : iterable
-	let state = iterator.next();
+export class RelocationStream {
+	current: [number, Relocation] | null
 	
-	// @ts-expect-error
-	const i: Peekable<T> = (function* (initial) {
-		while (!state.done) {
-		const current = state.value;
-		state = iterator.next();
-		const arg = yield current;
+	private relocations: [number, Relocation][]
+	private relocationIndex: number
+	
+	constructor(relocations: [number, Relocation][]) {
+		this.relocations = relocations
+		this.current = this.relocations[0]
+		this.relocationIndex = 1
+	}
+	
+	clone(): RelocationStream {
+		let other = new RelocationStream(this.relocations)
+		other.current = this.current
+		other.relocationIndex = this.relocationIndex
+		return other
+	}
+	
+	next(): [number, Relocation] | null {
+		if (this.relocationIndex >= this.relocations.length) {
+			let prev = this.current
+			this.current = null;
+			return prev
 		}
-		return state.value;
-	})()
+		
+		let prev = this.current
+		this.current = this.relocations[this.relocationIndex++]
+		return prev
+	}
+}
 
-	i.peek = () => state.done ? null : state.value;
-	return i;
+export function relocationStream(relocations: Map<number, Relocation>): RelocationStream {
+	let relocationArr = [...relocations.entries()]
+	relocationArr.sort(([offsetA], [offsetB]) => offsetA - offsetB)
+	
+	return new RelocationStream(relocationArr)
 }
 
 const customPrototype = Object.create(Map.prototype)
