@@ -190,35 +190,29 @@ test('reserialize data_battle_audiencekind', async () => {
     await testMatch(DataType.BattleAudienceKind, 'data/battle/audience/data_battle_audiencekind.elf.zst')
 })
 
-// Currently does not match
-// test('reserialize data_model_battle', async () => {
-//     await testMatch(DataType.DataBattleModel, 'data/model/data_model_battle.elf.zst')
-// })
+test('reserialize data_model_battle', async () => {
+    await testMatch(DataType.DataBattleModel, 'data/model/data_model_battle.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_model_gobj', async () => {
-//     await testMatch(DataType.DataGobjModel, 'data/model/data_model_gobj.elf.zst')
-// })
+test('reserialize data_model_gobj', async () => {
+    await testMatch(DataType.DataGobjModel, 'data/model/data_model_gobj.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_model_item', async () => {
-//     await testMatch(DataType.DataItemModel, 'data/model/data_model_item.elf.zst')
-// })
+test('reserialize data_model_item', async () => {
+    await testMatch(DataType.DataItemModel, 'data/model/data_model_item.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_model_mobj', async () => {
-//     await testMatch(DataType.DataMobjModel, 'data/model/data_model_mobj.elf.zst')
-// })
+test('reserialize data_model_mobj', async () => {
+    await testMatch(DataType.DataMobjModel, 'data/model/data_model_mobj.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_model_npc', async () => {
-//     await testMatch(DataType.DataNpcModel, 'data/model/data_model_npc.elf.zst')
-// })
+test('reserialize data_model_npc', async () => {
+    await testMatch(DataType.DataNpcModel, 'data/model/data_model_npc.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_model_player', async () => {
-//     await testMatch(DataType.DataPlayerModel, 'data/model/data_model_player.elf.zst')
-// })
+test('reserialize data_model_player', async () => {
+    await testMatch(DataType.DataPlayerModel, 'data/model/data_model_player.elf.zst')
+})
 
 test('reserialize data_ui', async () => {
     await testMatch(DataType.DataUi, 'data/data_ui.elf.zst')

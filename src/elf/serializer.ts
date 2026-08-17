@@ -237,6 +237,21 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			case DataType.DataPlayerModel:
 			case DataType.DataBattleModel:
 				{
+					// ----------------  data  ----------------
+					let dataSymbolAddrs = new Map()
+					symbolAddrRelocations.set('.data', dataSymbolAddrs)
+
+					let data: SerializeContext = {
+						writer: dataWriter,
+						stringRelocations: dataStringRelocations,
+						symbolAddrRelocations: dataSymbolAddrs,
+					}
+
+					// staleChildSymbols is needed because data is serialized before its dependencies (rodata)
+					// meaning that the symbol names are going to refer to the old ones
+					// before they will have been reassigned
+					serializeObjects(data, dataType, binary.data.main, { padding: 1, staleChildSymbols: true })
+
 					// ----------------  rodata  ----------------
 					let rodataStringRelocations = new Map()
 					stringRelocations.set('.rodata', rodataStringRelocations)
@@ -253,18 +268,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 
 					let serializedRodata = serializeModelRodata(rodata, binary.data.main, binary.data.main.length, "wld::fld::data")
 					updatedSections.set('.rodata', serializedRodata)
-
-					// ----------------  data  ----------------
-					let dataSymbolAddrs = new Map()
-					symbolAddrRelocations.set('.data', dataSymbolAddrs)
-
-					let data: SerializeContext = {
-						writer: dataWriter,
-						stringRelocations: dataStringRelocations,
-						symbolAddrRelocations: dataSymbolAddrs,
-					}
-
-					serializeObjects(data, dataType, binary.data.main, { padding: 1 })
 
 					break
 				}
@@ -807,7 +810,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				unusedNameEntries.delete(symbolId)
 				
 				if (symbolId != newId) {
-					console.warn(`Updating name of Symbol ${JSON.stringify(symbolId)} to ${JSON.stringify(newId)}`)
+					console.log(`Updating name of Symbol ${JSON.stringify(symbolId)} to ${JSON.stringify(newId)}`)
 				}
 				
 				symbol.name = newId
