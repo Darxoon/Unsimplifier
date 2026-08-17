@@ -4,6 +4,7 @@
 	import MenuStripItem from "./menu/MenuStripItem.svelte";
     import type { MenuCategory } from "./types";
     import { openedMenu } from "./stores";
+    import { browser } from "$app/environment";
 	
 	export let menu: MenuCategory[] = []
 	
@@ -18,7 +19,9 @@
 	})
 	
 	onDestroy(() => {
-		document.removeEventListener('mousedown', closeOpenedMenuListener)
+		if (browser) {
+			document.removeEventListener('mousedown', closeOpenedMenuListener)
+		}
 	})
 	
 	function closeOpenedMenuListener() {
