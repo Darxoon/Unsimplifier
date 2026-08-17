@@ -1066,12 +1066,13 @@ Specifies the type of the item. Possible values:
 		field_0x44: "int",
 		field_0x48: "int",
 	},
-	[DataType.EventFlag]: {
+	[DataType.EventFlg]: {
 		__: {
 			displayName: "Event Flags",
 			romfsPath: "data/event/EventFlg.elf.zst",
 
 			countSymbol: "wld::fld::data::kNum",
+			defaultPadding: 1,
 		},
 
 		id: "string",

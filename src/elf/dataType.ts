@@ -22,7 +22,7 @@ export enum DataType {
 	MapId,
 	ItemList,
 	MapItemLotTable,
-	EventFlag,
+	EventFlg,
 
 	SndBattle,
 

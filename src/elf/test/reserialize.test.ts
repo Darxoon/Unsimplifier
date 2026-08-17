@@ -18,8 +18,6 @@ async function decompress(buffer: Uint8Array): Promise<Uint8Array<ArrayBuffer>> 
 }
 
 async function testMatch(dataType: DataType, filepath: string) {
-    console.log("Reserializing " + filepath + "...")
-    
     const file = await fs.readFile(__dirname + '/orig/' + filepath)
     const decompressed = await decompress(file)
     
@@ -75,10 +73,9 @@ test('reserialize data_map_itemlottable', async () => {
     await testMatch(DataType.MapItemLotTable, 'data/map/data_map_itemlottable.elf.zst')
 })
 
-// Currently does not match
-// test('reserialize EventFlg', async () => {
-//     await testMatch(DataType.EventFlag, 'data/event/EventFlg.elf.zst')
-// })
+test('reserialize EventFlg', async () => {
+    await testMatch(DataType.EventFlg, 'data/event/EventFlg.elf.zst')
+})
 
 test('reserialize data_ItemList', async () => {
     await testMatch(DataType.ItemList, 'data/battle/data_ItemList.elf.zst')
