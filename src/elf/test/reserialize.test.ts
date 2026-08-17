@@ -165,40 +165,33 @@ test('reserialize data_Nozzle', async () => {
 //     await testMatch(DataType.Parameter, 'data/battle/data_Parameter.elf.zst')
 // })
 
-// Currently does not match
-// test('reserialize data_battle_weapon_mario', async () => {
-//     await testMatch(DataType.BattleWeaponMario, 'data/battle/weapon/data_battle_weapon_mario.elf.zst')
-// })
+test('reserialize data_battle_weapon_mario', async () => {
+    await testMatch(DataType.BattleWeaponMario, 'data/battle/weapon/data_battle_weapon_mario.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_battle_weapon_party', async () => {
-//     await testMatch(DataType.BattleWeaponParty, 'data/battle/weapon/data_battle_weapon_party.elf.zst')
-// })
+test('reserialize data_battle_weapon_party', async () => {
+    await testMatch(DataType.BattleWeaponParty, 'data/battle/weapon/data_battle_weapon_party.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_battle_weapon_other', async () => {
-//     await testMatch(DataType.BattleWeaponOther, 'data/battle/weapon/data_battle_weapon_other.elf.zst')
-// })
+test('reserialize data_battle_weapon_other', async () => {
+    await testMatch(DataType.BattleWeaponOther, 'data/battle/weapon/data_battle_weapon_other.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_battle_weapon_enemy', async () => {
-//     await testMatch(DataType.BattleWeaponEnemy, 'data/battle/weapon/data_battle_weapon_enemy.elf.zst')
-// })
+test('reserialize data_battle_weapon_enemy', async () => {
+    await testMatch(DataType.BattleWeaponEnemy, 'data/battle/weapon/data_battle_weapon_enemy.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_battle_weapon_item', async () => {
-//     await testMatch(DataType.BattleWeaponItem, 'data/battle/weapon/data_battle_weapon_item.elf.zst')
-// })
+test('reserialize data_battle_weapon_item', async () => {
+    await testMatch(DataType.BattleWeaponItem, 'data/battle/weapon/data_battle_weapon_item.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_battle_weapon_mario_ac', async () => {
-//     await testMatch(DataType.BattleWeaponAcMarioAc, 'data/battle/weapon/data_battle_weapon_mario_ac.elf.zst')
-// })
+test('reserialize data_battle_weapon_mario_ac', async () => {
+    await testMatch(DataType.BattleWeaponAcMarioAc, 'data/battle/weapon/data_battle_weaponac_mario_ac.elf.zst')
+})
 
-// Currently does not match
-// test('reserialize data_battle_weapon_party_ac', async () => {
-//     await testMatch(DataType.BattleWeaponAcPartyAc, 'data/battle/weapon/data_battle_weapon_party_ac.elf.zst')
-// })
+test('reserialize data_battle_weapon_party_ac', async () => {
+    await testMatch(DataType.BattleWeaponAcPartyAc, 'data/battle/weapon/data_battle_weaponac_party_ac.elf.zst')
+})
 
 test('reserialize data_battle_audiencekind', async () => {
     await testMatch(DataType.BattleAudienceKind, 'data/battle/audience/data_battle_audiencekind.elf.zst')

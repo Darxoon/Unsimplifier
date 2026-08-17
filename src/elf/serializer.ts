@@ -359,6 +359,33 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				break
 			}
 
+			case DataType.BattleWeaponMario:
+			case DataType.BattleWeaponParty:
+			case DataType.BattleWeaponOther:
+			case DataType.BattleWeaponEnemy:
+			case DataType.BattleWeaponItem: {
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+					symbolRelocations: undefined,
+				}
+
+				let countSymbolName = FILE_TYPES[dataType].countSymbol
+				
+				let paddingObj: Instance<DataType.BattleWeaponMario> = FILE_TYPES[dataType].instantiate() as Instance<DataType.BattleWeaponMario>
+				paddingObj.iconName = "ICON_ID_NULL"
+				paddingObj.itemName = "ITEM_NULL"
+
+				serializeObjects(data, dataType, [...binary.data.main, paddingObj])
+
+				if (countSymbolName != null) {
+					symbolLocationReference.set(countSymbolName, new Pointer(dataWriter.size))
+					dataWriter.writeInt32(binary.data.main.length)
+				}
+
+				break
+			}
+			
 			default: {
 				let data: SerializeContext = {
 					writer: dataWriter,
