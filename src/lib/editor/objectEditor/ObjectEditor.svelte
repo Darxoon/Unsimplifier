@@ -288,7 +288,6 @@
 			
 			.children-title {
 				margin-top: 0;
-				font-size: 14pt;
 			}
 		}
 	}
