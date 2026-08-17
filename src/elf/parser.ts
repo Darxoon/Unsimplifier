@@ -101,12 +101,22 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	// because they contain multiple data types in the same file, whose placement is indicated by the symbol table
 
 	const symTab = sections.find(section => section.name == ".symtab")
-	let symbolTable: Symbol[] = []
 	let symTabReader = new BinaryReader(symTab.content)
+	
+	let symbolTable: Symbol[] = []
+	let symbolTableMap: Map<number, Symbol> = new Map()
+
+	function addSymbol(symbol: Symbol) {
+		symbolTable.push(symbol)
+		
+		if (symbol.size != 0 && !symbolTableMap.has(symbol.location.value)) {
+			symbolTableMap.set(symbol.location.value, symbol)
+		}
+	}
 
 	while (symTabReader.position < symTab.content.byteLength) {
 		let symbol = Symbol.fromBinaryWriter(symTabReader, symStringSection)
-		symbolTable.push(symbol)
+		addSymbol(symbol)
 	}
 
 
@@ -124,9 +134,9 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	// Parses the .rodata section from a data_x_model file, since these are always the same and can be reused
 	interface RawModelInstance {
 		id: string
-		assetGroups: Pointer
+		assetGroups: Symbol
 		assetGroupCount: number
-		states: Pointer
+		states: Symbol
 		stateCount: number
 	}
 
@@ -143,60 +153,62 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 		const relocations = relocationStream(allRelocations.get(".rodata"))
 		
-		//assetGroups
+		// assetGroups and states
 		let allAssetGroups = []
-
-		for (const model of models) {
-			const { assetGroups: offset, assetGroupCount } = model
-
-
-			if (offset == undefined || offset == Pointer.NULL) {
-				model.assetGroups = null
-				continue
-			}
-			let assetRelocs = relocations.clone()
-
-			let symbol = findSymbol(`wld::fld::data::^${model.id}_model_files`) ?? createMissingSymbol(`wld::fld::data::^${model.id}_model_files`, rodataSection)
-			let children = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAssetGroup, { count: assetGroupCount, relocations: assetRelocs })
-
-			let assetGroupObj = {
-				symbolName: demangle(symbol.name),
-				children,
-			}
-
-			allAssetGroups.push(assetGroupObj);
-			(model as unknown as ModelInstance).assetGroups = assetGroupObj
-		}
-
-		data.assetGroup = allAssetGroups
-
-		// states
 		let allStates = []
 		let allFaceGroups = []
 		let allFaces = []
 		let allAnimations = []
 
 		for (const model of models) {
-			const { states: offset, stateCount } = model
+			// asset groups
+			const { assetGroups: assetGroupSymbol, assetGroupCount } = model
 
-			if (offset == undefined || offset == Pointer.NULL) {
+			if (assetGroupSymbol == undefined) {
+				model.assetGroups = null
+				continue
+			}
+			
+			let assetGroups = parseSymbol(rodataSection, dataStringSection, assetGroupSymbol, DataType.ModelAssetGroup, { count: assetGroupCount })
+
+			let assetGroupObj = {
+				symbolName: demangle(assetGroupSymbol.name),
+				children: assetGroups,
+			}
+
+			allAssetGroups.push(assetGroupObj);
+			(model as unknown as ModelInstance).assetGroups = assetGroupObj
+			
+			// states
+			const { states: stateSymbol, stateCount } = model
+
+			if (stateSymbol == undefined) {
 				model.states = null
 				continue
 			}
 
-			let stateRelocs = relocations.clone()
-
-			let symbol = findSymbol(`wld::fld::data::^${model.id}_state`) ?? createMissingSymbol(`wld::fld::data::^${model.id}_state`, rodataSection)
-			let states = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelState, { count: stateCount, relocations: stateRelocs })
+			let states = parseSymbol(rodataSection, dataStringSection, stateSymbol, DataType.ModelState, { count: stateCount })
 
 			let stateObj = {
-				symbolName: demangle(symbol.name),
+				symbolName: demangle(stateSymbol.name),
 				children: states,
 			}
 
 			allStates.push(stateObj);
 			(model as unknown as ModelInstance).states = stateObj
+		}
 
+		data.assetGroup = allAssetGroups
+		data.state = allStates
+		
+		let faceGroupRelocs = allRelocationIters.get(".rodata").clone()
+		
+		for (const stateObj of allStates) {
+			const states: Instance<DataType.ModelState>[] = stateObj.children
+			
+			let faceRelocs: RelocationStream = undefined
+			let animRelocs: RelocationStream = undefined
+			
 			// faceGroups
 			for (const state of states) {
 				const { substates: symbol, substateCount } = state
@@ -206,9 +218,10 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					continue
 				}
 
-				let faceGroupRelocs = relocations.clone()
-
-				let faceGroups = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFaceGroup, { count: substateCount, relocations: faceGroupRelocs })
+				let faceGroups = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFaceGroup, {
+					count: substateCount,
+					relocations: faceGroupRelocs,
+				})
 
 				let faceGroupObj = {
 					symbolName: demangle(symbol.name),
@@ -218,7 +231,8 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				allFaceGroups.push(faceGroupObj);
 				state.substates = faceGroupObj
 
-
+				faceRelocs ??= faceGroupRelocs.clone()
+				
 				// faces
 				for (const faceGroup of faceGroups) {
 					const { faces: symbol, faceCount } = faceGroup
@@ -228,8 +242,10 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 						continue
 					}
 					
-					let faceRelocs = relocations.clone()
-					let faces = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFace, { count: faceCount, relocations: faceRelocs })
+					let faces = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelFace, {
+						count: faceCount,
+						relocations: faceRelocs,
+					})
 
 					let faceObj = {
 						symbolName: demangle(symbol.name),
@@ -238,6 +254,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 					allFaces.push(faceObj);
 					faceGroup.faces = faceObj
 
+					animRelocs ??= faceRelocs.clone()
 
 					//animations
 					for (const face of faces) {
@@ -248,8 +265,11 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 							continue
 						}
 						
-						let animRelocs = relocations.clone()
-						let animations = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAnimation, { count: animationCount, relocations: animRelocs })
+						// let animRelocs = relocations.clone()
+						let animations = parseSymbol(rodataSection, dataStringSection, symbol, DataType.ModelAnimation, {
+							count: animationCount,
+							relocations: animRelocs,
+						})
 
 						let animationObj = {
 							symbolName: demangle(symbol.name),
@@ -258,17 +278,13 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 						allAnimations.push(animationObj);
 						face.animations = animationObj
 					}
-
 				}
-
 			}
-
 		}
+		
 		data.anime = allAnimations
 		data.face = allFaces
 		data.subState = allFaceGroups
-		data.state = allStates
-
 	}
 
 
@@ -299,7 +315,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 
 		console.error(`Found missing symbol ${name}, created symbol`, symbol)
 
-		symbolTable.push(symbol)
+		addSymbol(symbol)
 		return symbol
 	}
 
@@ -709,7 +725,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		for (let i = 0; i < count && reader.position < reader.arrayBuffer.byteLength; i++) {
 			let offset = reader.position
 			let obj = objFromReader(reader, dataType) as Instance<T>
-			applyRelocations(obj, offset, relocations, symbolTable, stringSection, dataType, allowSkippingRelocations)
+			applyRelocations(obj, offset, relocations, symbolTable, symbolTableMap, stringSection, dataType, allowSkippingRelocations)
 			
 			obj[VALUE_UUID] = ValueUuid(DataType[dataType] + " " + obj[FILE_TYPES[dataType].identifyingField])
 			
@@ -797,19 +813,23 @@ function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
 	return result
 }
 
+function skipRelocations(relocations: RelocationStream, offset: number) {
+	// consume iterator until fitting relocation found
+	while (relocations.current[0] < offset) {
+		relocations.next()
+	}
+}
+
 function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
-	relocations: RelocationStream, symbolTable: Symbol[], stringSection: Section,
-	dataType: T, allowSkippingRelocations: boolean): void {
+		relocations: RelocationStream, symbolTable: Symbol[], symbolTableMap: Map<number, Symbol>,
+		stringSection: Section, dataType: T, allowSkippingRelocations: boolean): void {
 	
 	if (relocations.current == null) {
 		return
 	}
 	
 	if (allowSkippingRelocations) {
-		// consume iterator until fitting relocation found
-		while (relocations.current[0] < offset) {
-			relocations.next()
-		}
+		skipRelocations(relocations, offset)
 	} else {
 		// skipping relocations not allowed (default) so throw error
 		if (relocations.current[0] < offset && !allowSkippingRelocations) {
@@ -820,8 +840,7 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 	const { size, fieldOffsets, typedef } = FILE_TYPES[dataType]
 	
 	while (relocations.current && relocations.current[0] < offset + size) {
-		const x = relocations.next()
-		const [relocationOffset, relocation] = x
+		const [relocationOffset, relocation] = relocations.next()
 		
 		const fieldName = fieldOffsets[relocationOffset - offset]
 		const fieldType = typedef[fieldName]
@@ -837,7 +856,7 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 			obj[fieldName] = targetSymbol
 		} else if (fieldType == "symbolAddr") {
 			let symbolOffset = relocation.targetOffset
-			let symbol = symbolTable.find(sym => sym.location.equals(symbolOffset) && (sym.info & 0xf) == 1)
+			let symbol = symbolTableMap.get(symbolOffset.value)
 			
 			if (symbol == undefined)
 				throw new Error(`Couldn't find symbol with the offset ${symbolOffset}`)

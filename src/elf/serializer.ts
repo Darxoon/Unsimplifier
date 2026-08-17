@@ -71,10 +71,6 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		return sections.findIndex(section => section.name == sectionName)
 	}
 	
-	function findSymbol(name: string): Symbol {
-		return binary.symbolTable.find(symbol => symbol.name === name)
-	}
-	
 	// We will start with the .data and .rodata section.
 	// These sections contain the main content, which can be various stuff depending on the data type,
 	// which is why a lot of data types have their own serializers.

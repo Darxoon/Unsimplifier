@@ -17,11 +17,20 @@ async function decompress(buffer: Uint8Array): Promise<Uint8Array<ArrayBuffer>> 
 	})
 }
 
-async function testMatch(dataType: DataType, filepath: string) {
+async function testMatch(dataType: DataType, filepath: string, timeDeserialization?: boolean) {
     const file = await fs.readFile(__dirname + '/orig/' + filepath)
     const decompressed = await decompress(file)
     
+    if (timeDeserialization) {
+        console.time('Deserialize')
+    }
+    
     const binary = parseElfBinary(dataType, decompressed.buffer, false)
+    
+    if (timeDeserialization) {
+        console.timeEnd('Deserialize')
+    }
+    
     const reserialized = serializeElfBinary(dataType, binary, false)
     
     try {
@@ -191,7 +200,7 @@ test('reserialize data_battle_audiencekind', async () => {
 })
 
 test('reserialize data_model_battle', async () => {
-    await testMatch(DataType.DataBattleModel, 'data/model/data_model_battle.elf.zst')
+    await testMatch(DataType.DataBattleModel, 'data/model/data_model_battle.elf.zst', true)
 })
 
 test('reserialize data_model_gobj', async () => {
@@ -199,15 +208,15 @@ test('reserialize data_model_gobj', async () => {
 })
 
 test('reserialize data_model_item', async () => {
-    await testMatch(DataType.DataItemModel, 'data/model/data_model_item.elf.zst')
+    await testMatch(DataType.DataItemModel, 'data/model/data_model_item.elf.zst', true)
 })
 
 test('reserialize data_model_mobj', async () => {
-    await testMatch(DataType.DataMobjModel, 'data/model/data_model_mobj.elf.zst')
+    await testMatch(DataType.DataMobjModel, 'data/model/data_model_mobj.elf.zst', true)
 })
 
 test('reserialize data_model_npc', async () => {
-    await testMatch(DataType.DataNpcModel, 'data/model/data_model_npc.elf.zst')
+    await testMatch(DataType.DataNpcModel, 'data/model/data_model_npc.elf.zst', true)
 })
 
 test('reserialize data_model_player', async () => {
