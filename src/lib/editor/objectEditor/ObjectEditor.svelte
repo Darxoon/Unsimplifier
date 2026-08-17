@@ -5,7 +5,7 @@
 	import { toReadableString } from "$lib/util";
 	import { createEventDispatcher, onDestroy, onMount } from "svelte";
 	
-	import { dataTypeColors, defaultDataTypeColor, defaultObjectEditorHighlight, objectEditorHighlights } from "./dataTypeColors";
+	import { defaultDataTypeColor, defaultObjectEditorHighlight } from "./dataTypeColors";
 	import CrossObjectLink from "./CrossObjectLink.svelte";
 	import InputField from "./InputField.svelte"
 	import { hexFields } from "./viewAsHex";
@@ -24,8 +24,8 @@
 	export let binary: ElfBinary
 	export let depth = 0
 	
-	export let backgroundColor: string = dataTypeColors[dataType] ?? defaultDataTypeColor
-	export let labelHighlightColor: string = objectEditorHighlights[dataType] ?? defaultObjectEditorHighlight
+	export let backgroundColor: string = defaultDataTypeColor
+	export let labelHighlightColor: string = defaultObjectEditorHighlight
 	export let noVerticalPadding: boolean = false
 	
 	export let open = false

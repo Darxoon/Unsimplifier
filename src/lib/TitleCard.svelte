@@ -1,7 +1,9 @@
 <script lang="ts">
     import { PUBLIC_IS_DEV_VERSION, PUBLIC_OW_VERSION, PUBLIC_VERSION_TIMESTAMP } from "$env/static/public";
+    import { onDestroy, onMount } from "svelte";
 	import MenuStripItem from "./menu/MenuStripItem.svelte";
     import type { MenuCategory } from "./types";
+    import { openedMenu } from "./stores";
 	
 	export let menu: MenuCategory[] = []
 	
@@ -9,6 +11,18 @@
 	
 	function formatDate(date: Date): string {
 		return date.toLocaleDateString("en-UK", { dateStyle: "long" })
+	}
+	
+	onMount(() => {
+		document.addEventListener('mousedown', closeOpenedMenuListener)
+	})
+	
+	onDestroy(() => {
+		document.removeEventListener('mousedown', closeOpenedMenuListener)
+	})
+	
+	function closeOpenedMenuListener() {
+		openedMenu.set(null)
 	}
 </script>
 

@@ -61,7 +61,7 @@ export function openBlob(): Promise<ArrayBuffer> {
 	})
 }
 
-export function downloadBlob(data: Uint8Array | BlobPart, fileName: string, mimeType: string = 'application/octet-stream') {
+export function downloadBlob(data: BlobPart, fileName: string, mimeType: string = 'application/octet-stream') {
 	let blob = new Blob([data], {
 		type: mimeType
 	});
