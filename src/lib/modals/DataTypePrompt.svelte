@@ -146,7 +146,7 @@
 		<option value="ParamPartyHint">Party Hint Parameters (data_param_partyhint)</option>
 		<option value="ParamPlayer">Player Parameters (data_param_player)</option>
 		<option value="ParamGobj">Gobj Parameters (data_param_gobj)</option>
-		<option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item)</option>
+		<option value="ParamGobjItem">Gobj Item Parameters (data_param_gobj_item) (Warning: experimental)</option>
 		<option value="DataMinigamePaperAiper">Paper Minigame Aiper Parameters (DataMinigame_Paper_Aiper)</option>
 		<option value="DataMinigamePaperFan">Paper Minigame Fan Parameters (DataMinigame_Paper_Fan)</option>
 		<option value="DataMinigamePaperRunner">Paper Minigame Runner Parameters (DataMinigame_Paper_Runner)</option>

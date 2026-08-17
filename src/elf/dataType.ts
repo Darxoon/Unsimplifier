@@ -79,12 +79,16 @@ export enum DataType {
 	HeartItem,
 	ParamFieldSortedId,
 
+	GobjRawItemGroup,
+	GobjItemGroup,
+	GobjRawItemParam,
+	GobjItemParam,
+	
 	ModelAssetGroup,
 	ModelState,
 	ModelFaceGroup,
 	ModelFace,
 	ModelAnimation,
-
 	
 	MaplinkHeader,
 

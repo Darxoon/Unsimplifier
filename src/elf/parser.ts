@@ -522,6 +522,67 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 			break
 		}
 		
+		case DataType.ParamGobjItem: {
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+			const rodataSection = findSection('.rodata')
+			
+			const rodataView = new DataView(rodataSection.content)
+			
+			data = {}
+			
+			// item groups
+			let itemGroupSymbol = findSymbol("wld::fld::data::s_gobjItemGroup")
+			let rawItemGroups = parseSymbol(dataSection, stringSection, itemGroupSymbol, DataType.GobjRawItemGroup, { count: -1, allowSkippingRelocations: true })
+			
+			let itemGroupRelocs = peekable(allRelocations.get(".data"))
+			parseChildren(dataSection, stringSection, rawItemGroups, {
+				group: {
+					dataType: DataType.GobjItemGroup,
+					count: 1,
+				},
+			}, itemGroupRelocs)
+			
+			let itemGroups = rawItemGroups.map(rawItemGroup => {
+				const { symbolName, children } = rawItemGroup.group as { symbolName: string, children: Instance<DataType.GobjItemGroup>[] }
+				if (children.length != 1)
+					throw new Error(`Expected 1 ItemGroup value, got ${children.length} (for ${symbolName})`)
+				
+				if (!symbolName.startsWith("wld::fld::data::^gobj_item_group_"))
+					throw new Error(`Unexpected symbol name ${symbolName}, expected something of the pattern "wld::fld::data::^gobj_item_group_..."`)
+				
+				return {
+					...children[0],
+					id: symbolName.slice("wld::fld::data::^gobj_item_group_".length)
+				}
+			})
+			
+			data.itemGroup = itemGroups
+			
+			// gobj item params
+			let countSymbol = findSymbol("wld::fld::data::s_data_num")
+			const dataCount = rodataView.getInt32(countSymbol.location.value, true)
+			
+			let itemParamSymbol = findSymbol("wld::fld::data::s_gobjItemParam")
+			let itemParams = parseSymbol(dataSection, stringSection, itemParamSymbol, DataType.GobjRawItemParam, { count: dataCount })
+			
+			// Convert symbol names to item group ids
+			for (const param of itemParams) {
+				param[DATA_TYPE] = DataType.GobjItemParam
+				
+				if (param.itemGroup) {
+					if (!param.itemGroup.startsWith("wld::fld::data::^gobj_item_group_"))
+						throw new Error(`Unexpected symbol name ${param.itemGroup}, expected something of the pattern "wld::fld::data::^gobj_item_group_..."`)
+					
+					param.itemGroup = param.itemGroup.slice("wld::fld::data::^gobj_item_group_".length)
+				}
+			}
+			
+			data.itemParam = itemParams as Instance<DataType.GobjItemParam>[]
+			
+			break
+		}
+		
 		// parse .data section by data type
 		default: {
 			const dataSection = findSection('.data')
@@ -590,6 +651,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	function parseChildren<T extends DataType>(
 		section: Section, stringSection: Section, items: Instance<T>[],
 		childFields: {[fieldName in PotentialChildFields<Instance<T>>]?: ParseChildProps},
+		relocations?: Peekable<[number, Relocation]>,
 	) {
 		for (const [fieldName, _props] of Object.entries(childFields)) {
 			const props = _props as ParseChildProps
@@ -603,7 +665,7 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				const count = props.countField ? item[props.countField] : props.count
 	
 				let symbol = findSymbol(symbolName) ?? createMissingSymbol(symbolName, section)
-				let children = parseSymbol(section, stringSection, symbol, props.dataType, { count })
+				let children = parseSymbol(section, stringSection, symbol, props.dataType, { count, relocations })
 	
 				let propertyObj = {
 					symbolName: demangle(symbol.name),
@@ -673,28 +735,36 @@ function objFromReader(reader: BinaryReader, dataType: DataType): UuidTagged {
 	}
 	
 	for (const [fieldName, fieldType] of Object.entries(FILE_TYPES[dataType].typedef)) {
+		const ignoreValue = FILE_TYPES[dataType].metadata[fieldName].ignoreValue
+		if (ignoreValue !== undefined) {
+			result[fieldName] = ignoreValue
+			continue
+		}
+		
+		const offset = reader.position
+		
 		switch (fieldType) {
 			case "string":
 				if (reader.readInt32() != 0)
-					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a string when it contains non-pointer data`)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a string when it contains non-pointer data (at 0x${offset.toString(16)})`)
 				if (reader.readInt32() != 0)
-					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a string when it contains non-pointer data`)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a string when it contains non-pointer data (at 0x${offset.toString(16)})`)
 				
 				result[fieldName] = null
 				break
 			case "symbol":
 				if (reader.readInt32() != 0)
-					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data`)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data (at 0x${offset.toString(16)})`)
 				if (reader.readInt32() != 0)
-					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data`)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbol when it contains non-pointer data (at 0x${offset.toString(16)})`)
 				
 				result[fieldName] = null
 				break
 			case "symbolAddr":
 				if (reader.readInt32() != 0)
-					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbolAddr when it contains non-pointer data`)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbolAddr when it contains non-pointer data (at 0x${offset.toString(16)})`)
 				if (reader.readInt32() != 0)
-					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbolAddr when it contains non-pointer data`)
+					throw new Error(`Field '${fieldName}' on DataType ${DataType[dataType]} is a symbolAddr when it contains non-pointer data (at 0x${offset.toString(16)})`)
 				
 				result[fieldName] = null
 				break
@@ -754,12 +824,13 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 		}
 	}
 	
-	const size = FILE_TYPES[dataType].size
+	const { size, fieldOffsets, typedef } = FILE_TYPES[dataType]
 	
 	while (relocations.peek() && relocations.peek()[0] < offset + size) {
 		const [relocationOffset, relocation] = relocations.next().value
-		let fieldName = FILE_TYPES[dataType].fieldOffsets[relocationOffset - offset] as string
-		let fieldType = FILE_TYPES[dataType].typedef[fieldName]
+		
+		const fieldName = fieldOffsets[relocationOffset - offset]
+		const fieldType = typedef[fieldName]
 		
 		if (fieldName == undefined) {
 			throw new Error(`Relocation to not existing field at offset 0x${(relocationOffset - offset).toString(16)} (${DataType[dataType]})`)
@@ -769,6 +840,7 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 			obj[fieldName] = stringSection.getStringAt(relocation.targetOffset)
 		} else if (fieldType == "symbol") {
 			let targetSymbol = symbolTable[relocation.infoHigh]
+			// TODO: use the full symbol not just the name to avoid duplicate work
 			obj[fieldName] = targetSymbol.name
 		} else if (fieldType == "symbolAddr") {
 			let symbolOffset = relocation.targetOffset
@@ -779,7 +851,8 @@ function applyRelocations<T extends DataType>(obj: Instance<T>, offset: number,
 			
 			obj[fieldName] = symbol.name
 		} else {
-			throw new Error(`Field '${fieldName}' should be string or pointer, not '${fieldType}' (at offset 0x${offset.toString(16)}, ${DataType[dataType]})`)
+			console.log('relocation', relocation)
+			throw new Error(`Field '${fieldName}' should be string or pointer, not '${fieldType}' (at offset 0x${relocationOffset.toString(16)}, ${DataType[dataType]})`)
 		}
 	}
 }

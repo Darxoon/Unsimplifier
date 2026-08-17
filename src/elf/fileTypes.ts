@@ -6,9 +6,22 @@ import { ValueUuid, VALUE_UUID, type UuidTagged, DATA_TYPE } from "./valueIdenti
 export type Typedef<T> = {[fieldName: string]: T}
 
 export interface PropertyOptions {
+	/**
+	 * Hides the field from the UI
+	 */
 	hidden?: boolean
+	/**
+	 * Tab name in the UI of a field that can open child tabs
+	 */
 	tabName?: string
+	/**
+	 * Disallows spaces in a string
+	 */
 	noSpaces?: boolean
+	/**
+	 * If set, skips serializing and deserializing this field and sets it to the default value
+	 */
+	ignoreValue?: any
 }
 
 export type PropertyType = "string" | "symbol" | "symbolAddr" | "Vector3" | "float"
@@ -26,6 +39,7 @@ export class Property<T extends PropertyType = PropertyType> {
 	hidden: boolean
 	tabName?: string
 	noSpaces: boolean
+	ignoreValue?: any
 	
 	constructor(type: T, description?: string, options?: PropertyOptions) {
 		this.type = type
@@ -33,6 +47,7 @@ export class Property<T extends PropertyType = PropertyType> {
 		this.hidden = options?.hidden ?? false
 		this.tabName = options?.tabName
 		this.noSpaces = options?.noSpaces ?? false
+		this.ignoreValue = options?.ignoreValue
 	}
 }
 
@@ -950,23 +965,67 @@ Specifies the type of the item. Possible values:
 	},
 	[DataType.ParamGobjItem]: {
 		__: {
-			displayName: "Gobj Item Parameters",
 			romfsPath: "data/param/data_param_gobj_item.elf.zst",
+			rootTypes: {
+				itemGroup: DataType.GobjRawItemGroup,
+			}
 		},
-
-		id: "string",
-		field_0x08: "string",
-		field_0x10: "long",
+	},
+	[DataType.GobjRawItemGroup]: {
+		__: {
+			dataCategory: "itemGroup",
+			mainSymbol: "wld::fld::data::s_gobjItemGroup",
+			defaultPadding: 1,
+		},
+		
+		group: "symbolAddr",
+	},
+	[DataType.GobjItemGroup]: {
+		__: {
+			displayName: "Item Group",
+			dataCategory: "itemGroup",
+		},
+		
+		// Fake field based on symbol name
+		id: new Property("string", undefined, { ignoreValue: null }),
+		
+		field_0x0: "int",
+		field_0x4: "int",
+		field_0x8: "string",
+		field_0x10: "string",
 		field_0x18: "string",
 		field_0x20: "string",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "int",
-		field_0x3c: "int",
-		field_0x40: "int",
-		field_0x44: "int",
+		field_0x28: "string",
+		field_0x30: "string",
+		field_0x38: "string",
+		field_0x40: "string",
+	},
+	[DataType.GobjRawItemParam]: {
+		__: {
+			displayName: "Item Param",
+			dataCategory: "itemParam",
+			identifyingField: "mapId",
+		},
+		
+		mapId: "string",
+		itemId: "string",
+		field_0x10: "int",
+		field_0x14: "int",
+		itemGroup: "symbolAddr",
+	},
+	[DataType.GobjItemParam]: {
+		// Identical to GobjRawItemParam except itemGroup is now a string (referring to the item group's ID)
+		__: {
+			displayName: "Item Param",
+			dataCategory: "itemParam",
+			identifyingField: "mapId",
+		},
+		
+		mapId: "string",
+		itemId: "string",
+		field_0x10: "int",
+		field_0x14: "int",
+		itemGroup: "string",
 	},
 	[DataType.DataMinigamePaperAiper]: {
 		__: {
@@ -2341,11 +2400,11 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 			}
 		}
 		
-		const { type, tabName, noSpaces, hidden } = property
-		fieldMetadata[fieldName] = new Property(type, description, { hidden, noSpaces, tabName })
+		const { type, tabName, noSpaces, hidden, ignoreValue } = property
+		fieldMetadata[fieldName] = new Property(type, description, { hidden, noSpaces, tabName, ignoreValue })
 	}
 	
-	const { fieldOffsets, size } = generateOffsets(fieldTypes)
+	const { fieldOffsets, size } = generateOffsets(fieldTypes, fieldMetadata)
 	
 	return {
 		typedef: fieldTypes,
@@ -2394,11 +2453,16 @@ function generateTypedefFor(dataType: DataType, typedef: TypeDefinition): FileTy
 }
 
 		
-function generateOffsets(typedef: Typedef<PropertyType>) {
+function generateOffsets(typedef: Typedef<PropertyType>, fieldMetadata: Typedef<Property>) {
 	let result: Typedef<number> & {[offset: number]: string} = {}
 	let offset = 0
 	for (const [fieldName, fieldType] of Object.entries(typedef)) {
 		result[fieldName] = offset
+		
+		if (fieldMetadata[fieldName].ignoreValue !== undefined) {
+			continue
+		}
+		
 		result[offset] = fieldName
 		offset += {
 			string: 8,

@@ -38,12 +38,15 @@ export class ElfBinary {
 
 export const dataCategories = {
 	main: "main",
+	
+	// data_model
 	assetGroup: "assetGroup",
 	state: "state",
 	subState: "subState",
 	face: "face",
 	anime: "anime",
 
+	// data_ui
 	model: "model",
 	msg: "msg",
 	shop: "shop",
@@ -59,6 +62,10 @@ export const dataCategories = {
 	style: "style",
 	uranaisi: "uranaisi",
 
+	// data_param_gobj_item
+	itemGroup: "itemGroup",
+	itemParam: "itemParam",
+	
 	// maplink
 	links: "links",
 
