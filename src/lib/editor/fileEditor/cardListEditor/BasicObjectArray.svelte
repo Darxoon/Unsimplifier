@@ -100,7 +100,10 @@
 	function titleOf(obj: any) {
 		let { displayName, identifyingField } = FILE_TYPES[dataType]
 		let index = objects.indexOf(obj)
-		return `${displayName} ${index}: ${obj[identifyingField]}`
+		if (obj[identifyingField] != null)
+			return `${displayName} ${index}: ${obj[identifyingField]}`
+		else
+			return `${displayName} ${index}`
 	}
 	
 	function appear(index: number) {

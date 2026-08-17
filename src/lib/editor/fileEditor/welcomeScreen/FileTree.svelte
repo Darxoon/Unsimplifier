@@ -50,7 +50,7 @@
         "data_Monosiri",
         "data_FallObj",
         "data_Nozzle",
-        // "data_HeartParam",
+        "data_HeartParam",
         "data_Parameter",
         "data_battle_weapon_mario",
         "data_battle_weapon_party",

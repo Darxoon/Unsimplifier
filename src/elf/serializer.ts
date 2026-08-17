@@ -151,7 +151,7 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 					symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.HeartItem].size)
 
-					serializeObjects(data, dataType, children, { padding: 1 })
+					serializeObjects(data, DataType.HeartItem, children, { padding: 1 })
 				}
 
 				symbolLocationReference.set("wld::btl::data::s_Data", new Pointer(dataWriter.size))

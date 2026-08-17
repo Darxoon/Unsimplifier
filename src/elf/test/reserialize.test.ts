@@ -155,10 +155,9 @@ test('reserialize data_Nozzle', async () => {
     await testMatch(DataType.Nozzle, 'data/battle/data_Nozzle.elf.zst')
 })
 
-// Currently does not match
-// test('reserialize data_HeartParam', async () => {
-//     await testMatch(DataType.HeartParam, 'data/battle/data_HeartParam.elf.zst')
-// })
+test('reserialize data_HeartParam', async () => {
+    await testMatch(DataType.HeartParam, 'data/battle/data_HeartParam.elf.zst')
+})
 
 // Currently does not match
 // test('reserialize data_Parameter', async () => {
