@@ -512,6 +512,16 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 				//break
 			//}
 	
+		case DataType.ParamField: {
+			const dataSection = findSection('.data')
+			const stringSection = findSection('.rodata.str1.1')
+
+			data = {}
+			
+			parseIndexData(dataSection, stringSection, dataType)
+			break
+		}
+		
 		// parse .data section by data type
 		default: {
 			const dataSection = findSection('.data')
@@ -555,6 +565,8 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 	function parseIndexData(section: Section, stringSection: Section, dataType: DataType) {
 		for (const [category, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
 			const symbolName = FILE_TYPES[childDataType].mainSymbol
+			if (symbolName == null)
+				throw new Error(`Root DataType ${DataType[childDataType]} does not have a mainSymbol`)
 			const symbol = findSymbol(symbolName)
 			
 			const count = FILE_TYPES[childDataType].defaultPadding > 0

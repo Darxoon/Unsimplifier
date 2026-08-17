@@ -97,10 +97,9 @@ test('reserialize data_param_fade', async () => {
     await testMatch(DataType.ParamFade, 'data/param/data_param_fade.elf.zst')
 })
 
-// Currently does not match
-// test('reserialize data_param_field', async () => {
-//     await testMatch(DataType.ParamField, 'data/param/data_param_field.elf.zst')
-// })
+test('reserialize data_param_field', async () => {
+    await testMatch(DataType.ParamField, 'data/param/data_param_field.elf.zst')
+})
 
 // Currently errors
 // test('reserialize data_param_gobj_item', async () => {
@@ -159,10 +158,9 @@ test('reserialize data_HeartParam', async () => {
     await testMatch(DataType.HeartParam, 'data/battle/data_HeartParam.elf.zst')
 })
 
-// Currently does not match
-// test('reserialize data_Parameter', async () => {
-//     await testMatch(DataType.Parameter, 'data/battle/data_Parameter.elf.zst')
-// })
+test('reserialize data_Parameter', async () => {
+    await testMatch(DataType.Parameter, 'data/battle/data_Parameter.elf.zst')
+})
 
 test('reserialize data_battle_weapon_mario', async () => {
     await testMatch(DataType.BattleWeaponMario, 'data/battle/weapon/data_battle_weapon_mario.elf.zst')

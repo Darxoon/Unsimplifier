@@ -799,13 +799,35 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Field Parameters",
 			romfsPath: "data/param/data_param_field.elf.zst",
+			
+			mainSymbol: "wld::fld::data::s_data",
 			countSymbol: "wld::fld::data::s_data_num",
+			
+			rootTypes: {
+				main: DataType.ParamField,
+				sortedId: DataType.ParamFieldSortedId,
+			},
 		},
 
 		id: "string",
 		rate: "float",
 		field_0x0c: "int",
 		field_0x10: "string",
+	},
+	[DataType.ParamFieldSortedId]: {
+		// TODO: sortedIDs should not be exposed to the user at all, they should be automatically computed
+		__: {
+			displayName: "Sorted ID",
+			dataCategory: "sortedId",
+			
+			mainSymbol: "wld::fld::data::s_sorted_id_list",
+			countSymbol: "wld::fld::data::s_sorted_id_list_num",
+			identifyingField: "paramId",
+		},
+		
+		paramId: "string",
+		index: "int",
+		field_0x8: "int",
 	},
 	[DataType.ParamPartyHint]: {
 		__: {
@@ -1060,7 +1082,6 @@ Specifies the type of the item. Possible values:
 			romfsPath: "data/battle/data_Parameter.elf.zst",
 
 			countSymbol: "wld::btl::data::s_DataNum",
-			defaultPadding: 1,
 		},
 
 		id: "string",

@@ -8,6 +8,7 @@
 
 	export let binary: ElfBinary
 	export let dataType: DataType
+	export let requireLinearEditor: boolean = false
 	export let tabVisible: boolean
 	
 	export let overrideObjects: UuidTagged[] = undefined
@@ -30,7 +31,7 @@
 	}
 </script>
 
-{#if requiresIndexEditor}
+{#if requiresIndexEditor && !requireLinearEditor}
 	<InnerIndexPageEditor bind:this={inner} dataType={dataType} binary={binary} fileName={fileName} on:open />
 <!-- {:else if nonStandardDataTypes.has(dataType)}
 	<div>This file does not have an editor yet.</div> -->

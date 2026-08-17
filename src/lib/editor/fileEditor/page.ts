@@ -9,6 +9,7 @@ export interface CardList {
     dataType: DataType
     filePath?: string
     overrideObjects?: UuidTagged[]
+    requireLinearEditor?: boolean
 }
 
 export interface Docs {

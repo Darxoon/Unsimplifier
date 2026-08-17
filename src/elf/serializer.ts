@@ -386,6 +386,17 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				break
 			}
 			
+			case DataType.ParamField: {
+				let data: SerializeContext = {
+					writer: dataWriter,
+					stringRelocations: dataStringRelocations,
+					symbolRelocations: undefined,
+				}
+
+				serializeIndexData(data, dataType)
+				break
+			}
+			
 			default: {
 				let data: SerializeContext = {
 					writer: dataWriter,
@@ -418,12 +429,20 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 		
 		function serializeIndexData(ctx: SerializeContext, dataType: DataType) {
 			for (const [category, childDataType] of Object.entries(FILE_TYPES[dataType].rootTypes)) {
+				dataWriter.alignTo(8)
+				
+				const countSymbolName = FILE_TYPES[childDataType].countSymbol
 				const symbolName = FILE_TYPES[childDataType].mainSymbol
 				const padding = FILE_TYPES[childDataType].defaultPadding
 				
 				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
 				symbolSizeOverrides.set(symbolName, (binary.data[category].length + padding) * FILE_TYPES[childDataType].size)
 				serializeObjects(ctx, childDataType, binary.data[category], { padding })
+				
+				if (countSymbolName != null) {
+					symbolLocationReference.set(countSymbolName, new Pointer(dataWriter.size))
+					dataWriter.writeInt32(binary.data[category].length)
+				}
 			}
 		}
 

@@ -77,6 +77,7 @@ export enum DataType {
 	TypeAmount,
 	ListItem,
 	HeartItem,
+	ParamFieldSortedId,
 
 	ModelAssetGroup,
 	ModelState,

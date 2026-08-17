@@ -30,6 +30,7 @@
         bind:fileName={fileName}
         
         tabVisible={tabVisible}
+        requireLinearEditor={content.requireLinearEditor}
         on:open bind:this={contentElement} />
 {:else if content.type == "docs"}
     <Documentation />

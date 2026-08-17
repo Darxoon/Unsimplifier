@@ -23,6 +23,7 @@
 				type: "cardList",
 				binary,
 				dataType,
+				requireLinearEditor: true,
 			}))
 		}}>
 			<ExternalLinkIcon class="icon-link" />

@@ -2,6 +2,7 @@ import { DataType } from "paper-mario-elfs/dataType";
 
 const indexDataTypes: Set<DataType> = new Set([
 	DataType.DataUi,
+	DataType.ParamField,
 ])
 
 /**
@@ -55,6 +56,14 @@ const complexEditorCategories: {[dataType: number]: ComplexCategoryList} = {
 		},
 		"Merluvlee": {
 			dataType: DataType.UiUranaisiNext,
+		},
+	},
+	[DataType.ParamField]: {
+		"Parameters": {
+			dataType: DataType.ParamField,
+		},
+		"Sorted IDs": {
+			dataType: DataType.ParamFieldSortedId,
 		},
 	},
 }

@@ -62,6 +62,9 @@ export const dataCategories = {
 	// maplink
 	links: "links",
 
+	// data_param_field
+	sortedId: "sortedId",
+
 	// sound
 	tracks: "tracks",
 } as const
