@@ -81,10 +81,9 @@ test('reserialize data_ItemList', async () => {
     await testMatch(DataType.ItemList, 'data/battle/data_ItemList.elf.zst')
 })
 
-// Currently does not match
-// test('reserialize data_sndBattle', async () => {
-//     await testMatch(DataType.SndBattle, 'sound/data/data_sndBattle.elf.zst')
-// })
+test('reserialize data_sndBattle', async () => {
+    await testMatch(DataType.SndBattle, 'sound/data/data_sndBattle.elf.zst')
+})
 
 test('reserialize data_param_actionballoon', async () => {
     await testMatch(DataType.ParamActionBalloon, 'data/param/data_param_actionballoon.elf.zst')

@@ -760,7 +760,7 @@ Specifies the type of the item. Possible values:
 			displayName: "Battle BGM Header",
 		},
 
-		battletracks: new Property("symbol", undefined, { hidden: true }),
+		battletracks: new Property("symbolAddr", undefined, { hidden: true }),
 		trackAmount: new Property("int", undefined, { hidden: true }),
 		field_0xc: "int",
 	},

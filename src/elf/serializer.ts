@@ -200,13 +200,13 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 			}
 
 			case DataType.SndBattle: {
-				const dataSymbols = new Map()
-				symbolRelocations.set('.data', dataSymbols)
-
+				let dataSymbolAddrs = new Map()
+				symbolAddrRelocations.set('.data', dataSymbolAddrs)
+				
 				let data: SerializeContext = {
 					writer: dataWriter,
 					stringRelocations: dataStringRelocations,
-					symbolRelocations: dataSymbols,
+					symbolAddrRelocations: dataSymbolAddrs,
 				}
 
 				const header = binary.data.main[0] as Instance<DataType.SndBattleHeader>
@@ -215,16 +215,12 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 				const battletracks = header.battletracks as { children: Instance<typeof dataType>[], symbolName: string }
 				const { children, symbolName } = battletracks
 
-				let newSymbolName = `snd::data::s_battleData`
-
-				symbolNameOverrides.set(symbolName, newSymbolName)
 				symbolLocationReference.set(symbolName, new Pointer(dataWriter.size))
-				symbolSizeOverrides.set(symbolName, (children.length + 1) * FILE_TYPES[DataType.SndBattle].size)
+				symbolSizeOverrides.set(symbolName, children.length * FILE_TYPES[DataType.SndBattle].size)
 
-				battletracks.symbolName = newSymbolName
 				header.trackAmount = children.length
 
-				serializeObjects(data, dataType, children, { symbolWrapper: battletracks, padding: 1 })
+				serializeObjects(data, dataType, children, { symbolWrapper: battletracks })
 
 				// serialize header
 				symbolLocationReference.set("snd::data::s_battleDataList", new Pointer(dataWriter.size))

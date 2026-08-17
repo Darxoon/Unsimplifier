@@ -67,8 +67,8 @@
 		"data_battle_weaponac_mario_ac": DataType.BattleWeaponAcMarioAc,
 		"data_battle_weaponac_party_ac": DataType.BattleWeaponAcPartyAc,
 		"data_battle_audiencekind": DataType.BattleAudienceKind,
-    "data_ui": DataType.DataUi,
-    "data_snd": DataType.DataSnd,
+		"data_ui": DataType.DataUi,
+		"data_snd": DataType.DataSnd,
 	}
 
 	onMount(() => {
@@ -131,7 +131,7 @@
 		<option value="DataGobjModel">Gobj Models (data_model_gobj)</option>
 		<option value="DataBattleModel">Battle Models (data_model_battle)</option>
 
-		<option value="SndBattle">Battle BGM Registry (data_sndBattle) (Warning: unstable, potentially broken)</option>
+		<option value="SndBattle">Battle BGM Registry (data_sndBattle)</option>
 
 		<option value="EventFlg">Event Flags (EventFlg)</option>
 		<option value="MapItemLotTable">Map Item Lot Table (data_map_itemlottable)</option>

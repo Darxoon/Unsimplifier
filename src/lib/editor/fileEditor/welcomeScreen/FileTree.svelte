@@ -36,7 +36,7 @@
         "data_sndBattle",
         "data_param_actionballoon",
         "data_param_fade",
-        //"data_param_field",
+        "data_param_field",
         "data_param_housedoor",
         "data_param_jump",
         "data_param_gobj",
