@@ -526,10 +526,18 @@ export default function parseElfBinary(dataType: DataType, arrayBuffer: ArrayBuf
 		case DataType.ParamField: {
 			const dataSection = findSection('.data')
 			const stringSection = findSection('.rodata.str1.1')
+			
+			const dataView = new DataView(dataSection.content)
 
 			data = {}
-			
-			parseIndexData(dataSection, stringSection, dataType)
+
+			const countSymbol = findSymbol("wld::fld::data::s_data_num")
+			const dataCount = dataView.getInt32(countSymbol.location.value, true)
+
+			let paramSymbol = findSymbol("wld::fld::data::s_data")
+			let params = parseSymbol(dataSection, stringSection, paramSymbol, dataType, { count: dataCount })
+			data.main = params
+
 			break
 		}
 		

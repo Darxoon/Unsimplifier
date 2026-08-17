@@ -3,8 +3,8 @@ import { DataType } from "./dataType";
 import { FILE_TYPES, type Instance } from "./fileTypes";
 import { BinaryWriter } from "./misc";
 import { Relocation, Section, Symbol } from "./types";
-import { enumerate, noUndefinedMap } from "./util";
-import type { UuidTagged } from "./valueIdentifier";
+import { enumerate, isAlphaNumeric, noUndefinedMap } from "./util";
+import { DATA_TYPE, VALUE_UUID, ValueUuid, type UuidTagged } from "./valueIdentifier";
 
 type SectionName = string
 type Offset = number
@@ -388,6 +388,52 @@ export default function serializeElfBinary(dataType: DataType, binary: ElfBinary
 					symbolRelocations: undefined,
 				}
 
+				// generate sortedIDs
+				const params = binary.data.main as Instance<DataType.ParamField>[]
+				const sortedIds: Instance<DataType.ParamFieldSortedId>[] = []
+				
+				for (let i = 0; i < params.length; i++) {
+					const param = params[i];
+					
+					if (param.id) {
+						sortedIds.push({
+							[DATA_TYPE]: DataType.ParamFieldSortedId,
+							[VALUE_UUID]: ValueUuid(`SortedId ${param.id}`),
+							paramId: param.id,
+							index: i,
+							field_0x8: 0,
+						})
+					}
+				}
+				
+				sortedIds.sort((itemA, itemB) => {
+					const a = itemA.paramId
+					const b = itemB.paramId
+					
+					// custom comparison because localeCompare differs with what they used wrt underscores
+					const length = Math.min(a.length, b.length)
+					
+					for (let i = 0; i < length; i++) {
+						if (a[i] == '_' && isAlphaNumeric(b[i]))
+							return 1
+						if (b[i] == '_' && isAlphaNumeric(a[i]))
+							return -1
+						
+						const cmp = a[i].localeCompare(b[i])
+						if (cmp != 0)
+							return cmp
+					}
+					
+					if (a.length < b.length)
+						return -1
+					else if (a.length > b.length)
+						return 1
+					else
+						return 0
+				})
+				
+				binary.data.sortedId = sortedIds
+				
 				serializeIndexData(data, dataType)
 				break
 			}
