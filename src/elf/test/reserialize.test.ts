@@ -1,10 +1,11 @@
 import { test, expect } from 'vitest'
 import fs from 'fs/promises'
 import { ZstdCodec } from 'zstd-codec'
-import parseElfBinary from 'paper-mario-elfs/parser'
+import parseElfBinary, { EmptyFileError } from 'paper-mario-elfs/parser'
 import { DataType } from 'paper-mario-elfs/dataType'
 import serializeElfBinary from 'paper-mario-elfs/serializer'
 import path from 'path'
+import type { ElfBinary } from 'paper-mario-elfs/elfBinary'
 
 async function decompress(buffer: Uint8Array): Promise<Uint8Array<ArrayBuffer>> {
 	return new Promise((resolve, reject) => {
@@ -25,13 +26,31 @@ async function testMatch(dataType: DataType, filepath: string, timeDeserializati
         console.time('Deserialize')
     }
     
-    const binary = parseElfBinary(dataType, decompressed.buffer, false)
+    let binary: ElfBinary
+    try {
+        binary = parseElfBinary(dataType, decompressed.buffer, false)
+    } catch (e) {
+        if (e instanceof EmptyFileError) {
+            return
+        } else {
+            throw new Error(`Failed parsing ${filepath}`, {
+                cause: e
+            })
+        }
+    }
     
     if (timeDeserialization) {
         console.timeEnd('Deserialize')
     }
     
-    const reserialized = serializeElfBinary(dataType, binary, false)
+    let reserialized: ArrayBuffer
+    try {
+        reserialized = serializeElfBinary(dataType, binary, false)
+    } catch (e) {
+        throw new Error(`Failed serializing ${filepath}`, {
+            cause: e
+        })
+    }
     
     try {
         expect(decompressed.buffer, "Does not match").toStrictEqual(reserialized)
@@ -43,16 +62,33 @@ async function testMatch(dataType: DataType, filepath: string, timeDeserializati
     }
 }
 
-// TODO: These don't have tests yet
-// Npc
-// Item
-// Mobj
-// Aobj
-// Bshape
-// GobjRes
-// Effect
-// MapParam
-// Maplink
+async function fileExists(path: string): Promise<boolean> {
+    try {
+        const stat = await fs.stat(path)
+        return stat.isFile()
+    } catch {
+        return false
+    }
+}
+
+async function testMatchAll(dataType: DataType, baseDir: string, fileName: string) {
+    const maps = await fs.readdir(__dirname + '/orig/' + baseDir, { withFileTypes: true })
+    const promises = []
+    
+    for (const mapEntry of maps) {
+        if (!mapEntry.isDirectory())
+            continue
+        
+        const fullPath = path.join(mapEntry.parentPath, mapEntry.name, fileName)
+        if (!await fileExists(fullPath))
+            continue
+        
+        const filePath = path.join(baseDir, mapEntry.name, fileName)
+        promises.push(testMatch(dataType, filePath))
+    }
+    
+    await Promise.all(promises)
+}
 
 test('reserialize data_character_npc', async () => {
     await testMatch(DataType.CharacterNpc, 'data/character/data_character_npc.elf.zst')
@@ -231,3 +267,39 @@ test('reserialize data_ui', async () => {
 // test('reserialize data_snd', async () => {
 //     await testMatch(DataType.DataSnd, 'sound/data/data_snd.elf.zst')
 // })
+
+test('reserialize all data_Npc files', async () => {
+    await testMatchAll(DataType.Npc, 'data/map', 'data_Npc.elf.zst')
+})
+
+test('reserialize all data_Item files', async () => {
+    await testMatchAll(DataType.Item, 'data/map', 'data_Item.elf.zst')
+})
+
+test('reserialize all data_Mobj files', async () => {
+    await testMatchAll(DataType.Mobj, 'data/map', 'data_Mobj.elf.zst')
+})
+
+test('reserialize all data_Aobj files', async () => {
+    await testMatchAll(DataType.Aobj, 'data/map', 'data_Aobj.elf.zst')
+})
+
+test('reserialize all data_Bshape files', async () => {
+    await testMatchAll(DataType.Bshape, 'data/map', 'data_Bshape.elf.zst')
+})
+
+test('reserialize all data_GobjRes files', async () => {
+    await testMatchAll(DataType.GobjRes, 'data/map', 'data_GobjRes.elf.zst')
+})
+
+test('reserialize all data_Effect files', async () => {
+    await testMatchAll(DataType.Effect, 'data/map', 'data_Effect.elf.zst')
+})
+
+test('reserialize all data_MapParam files', async () => {
+    await testMatchAll(DataType.MapParam, 'data/map', 'MapParam.elf.zst')
+})
+
+test('reserialize all data_MapLink files', async () => {
+    await testMatchAll(DataType.Maplink, 'data/map', 'data_MapLink.elf.zst')
+})
