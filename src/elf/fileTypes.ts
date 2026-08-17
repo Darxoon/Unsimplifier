@@ -1158,6 +1158,9 @@ Specifies the type of the item. Possible values:
 		__: {
 			displayName: "Player Attacks",
 			romfsPath: "data/battle/weapon/data_battle_weapon_mario.elf.zst",
+			// Ignored by serializer since it uses a custom padding
+			// but used by parser to trim off that padding
+			defaultPadding: 1,
 		},
 
 		id: "string",
@@ -1534,18 +1537,6 @@ Specifies the type of the item. Possible values:
 		field_0x04: "int",
 		field_0x08: "int",
 		field_0x0c: "int",
-		field_0x10: "int",
-		field_0x14: "int",
-		field_0x18: "int",
-		field_0x1c: "int",
-		field_0x20: "int",
-		field_0x24: "int",
-		field_0x28: "int",
-		field_0x2c: "int",
-		field_0x30: "int",
-		field_0x34: "int",
-		field_0x38: "int",
-		field_0x3c: "int",
 	},
 	[DataType.Maplink]: {
 		__: {
